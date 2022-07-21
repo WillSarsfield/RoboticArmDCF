@@ -1,5 +1,7 @@
 from tkinter import *
 from tkinter import ttk
+import sys
+import os
 
 root = Tk()
 root.tk.call('lappend', 'auto_path', './awthemes-10.4.0')
@@ -11,7 +13,11 @@ l.grid(column=0, row=0, sticky=(N,W,E,S))
 s = ttk.Scrollbar(root, orient=VERTICAL, command=l.yview)
 s.grid(column=1, row=0, sticky=(N,S))
 l['yscrollcommand'] = s.set
-button1 = ttk.Button(root, text="Button1").grid(column=0, columnspan=2, row=1, sticky=(W))
+
+def hello_world():
+    os.system('python3 hello_world.py')
+
+button1 = ttk.Button(root, text="Hello World", command=hello_world).grid(column=0, columnspan=2, row=1, sticky=(W))
 button3 = ttk.Button(root, text="Button3").grid(column=0, columnspan=2, row=1, sticky=(E))
 button2 = ttk.Button(root, text="Button2").grid(column=0, columnspan=2, row=1)
 root.grid_columnconfigure(0, weight=1)
