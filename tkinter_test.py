@@ -2,6 +2,12 @@ from tkinter import *
 from tkinter import ttk
 import sys
 import os
+import serial
+import time
+
+arduinoPort = '/dev/cu.usbmodem1301' #for mac
+arduino = serial.Serial(port=arduinoPort,baudrate=9600, timeout=.1)
+time.sleep(2)
 
 root = Tk()
 root.tk.call('lappend', 'auto_path', './awthemes-10.4.0')
@@ -17,8 +23,20 @@ l['yscrollcommand'] = s.set
 def hello_world():
     os.system('python3 hello_world.py')
     
+lightState=1
 def toggle_lights():
-    os.system('python3 toggle_lights.py')
+    def write_read(x):
+        arduino.write(bytes(x,'utf-8'))
+        time.sleep(0.05)
+        data=int(arduino.readline().decode())
+        return data
+
+    num = input("input: ")
+    while True: 
+        print("sent:",num)
+        num = str(write_read(num))
+        print("recieved:",num)
+
 
 button1 = ttk.Button(root, text="Hello World", command=hello_world).grid(column=0, columnspan=2, row=1, sticky=(W))
 button3 = ttk.Button(root, text="Toggle Lights", command=toggle_lights).grid(column=0, columnspan=2, row=1, sticky=(E))
@@ -27,4 +45,4 @@ root.grid_columnconfigure(0, weight=1)
 root.grid_rowconfigure(0, weight=1)
 for i in range(1,101):
     l.insert('end', 'Line %d of 100' % i)
-root.mainloop()
+root.mainloop() 

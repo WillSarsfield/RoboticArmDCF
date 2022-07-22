@@ -7,13 +7,13 @@ arduino = serial.Serial(port=arduinoPort,baudrate=9600, timeout=.1)
 time.sleep(1)
 
 def write_read(x):
-    arduino.write(x)
+    arduino.write(bytes(x,'utf-8'))
     time.sleep(0.05)
-    data=arduino.readline()
+    data=int(arduino.readline().decode())
     return data
 
-num = bytes(input("input: "),'utf-8')
+num = input("input: ")
 while True:
     print("sent:",num)
-    num = write_read(num)
+    num = str(write_read(num))
     print("recieved:",num)
