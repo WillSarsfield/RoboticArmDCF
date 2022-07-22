@@ -16,9 +16,12 @@ l['yscrollcommand'] = s.set
 
 def hello_world():
     os.system('python3 hello_world.py')
+    
+def toggle_lights():
+    os.system('python3 toggle_lights.py')
 
 button1 = ttk.Button(root, text="Hello World", command=hello_world).grid(column=0, columnspan=2, row=1, sticky=(W))
-button3 = ttk.Button(root, text="Button3").grid(column=0, columnspan=2, row=1, sticky=(E))
+button3 = ttk.Button(root, text="Toggle Lights", command=toggle_lights).grid(column=0, columnspan=2, row=1, sticky=(E))
 button2 = ttk.Button(root, text="Button2").grid(column=0, columnspan=2, row=1)
 root.grid_columnconfigure(0, weight=1)
 root.grid_rowconfigure(0, weight=1)

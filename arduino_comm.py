@@ -6,13 +6,13 @@ arduinoPort = '/dev/cu.usbmodem1301' #for mac
 arduino = serial.Serial(port=arduinoPort,baudrate=9600, timeout=.1)
 
 def write_read(x):
-    arduino.write(bytes(x, 'utf-8'))
-    time.sleep(0.05)
+    arduino.write(x)
+    time.sleep(0.10)
     data=arduino.readline()
     return data
 
+num = bytes(input("input: "),'utf-8')
 while True:
-    num = input("Enter a number: ")
-    value = write_read(num)
-    #print(value)
-    #print(type(value))
+    print("sent:",num)
+    num = write_read(num)
+    print("recieved:",num)

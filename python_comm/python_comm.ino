@@ -9,4 +9,3 @@ void loop() {
 while (!Serial.available());
 x=Serial.readString().toInt();
 Serial.print(x+1);
-}
