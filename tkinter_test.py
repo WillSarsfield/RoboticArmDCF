@@ -6,7 +6,7 @@ import serial
 import time
 
 arduinoPort = '/dev/cu.usbmodem1301' #for mac
-arduino = serial.Serial(port=arduinoPort,baudrate=9600, timeout=.1)
+#arduino = serial.Serial(port=arduinoPort,baudrate=9600, timeout=.1)
 time.sleep(2)
 
 

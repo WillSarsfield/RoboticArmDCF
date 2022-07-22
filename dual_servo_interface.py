@@ -6,7 +6,7 @@ import serial
 import time
 
 arduinoPort = '/dev/cu.usbmodem1301' #for mac
-arduino = serial.Serial(port=arduinoPort,baudrate=9600, timeout=.1)
+#arduino = serial.Serial(port=arduinoPort,baudrate=9600, timeout=.1)
 time.sleep(2)
 
 
@@ -20,6 +20,13 @@ style.theme_use(custom_style)
 
 def servo1_right():
     arduino.write(bytes("1",'utf-8'))
+    time.sleep(0.5)
+    recieved=arduino.readline()
+    print(recieved)
+    if recieved.decode()=="1":
+        print("move")
+        arduino.write(bytes("180",'utf-8'))
+
     
 def servo1_left():
     arduino.write(bytes("1",'utf-8'))

@@ -18,9 +18,10 @@ servo2.attach(servo2Pin);
 void loop() {
 while (!Serial.available()){}
 selectedServo=Serial.readString().toInt();
-Serial.println(selectedServo);
+Serial.print(selectedServo);
 if (selectedServo==1){
-  servo1Pos=180;
+  while (!Serial.available()){}
+  servo1Pos=Serial.readString().toInt();
   servo1.write(servo1Pos);
 } else if (selectedServo==2){
   servo2Pos=180;
