@@ -28,7 +28,7 @@ def toggle_lights():
     global lightState
     arduino.write(bytes(lightState,'utf-8'))
     time.sleep(0.05)
-    lightState=str(int(arduino.readline().decode()))
+    lightState=arduino.readline().decode()
         
 
 
