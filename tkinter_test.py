@@ -23,19 +23,13 @@ l['yscrollcommand'] = s.set
 def hello_world():
     os.system('python3 hello_world.py')
     
-lightState=1
+lightState="0"
 def toggle_lights():
-    def write_read(x):
-        arduino.write(bytes(x,'utf-8'))
-        time.sleep(0.05)
-        data=int(arduino.readline().decode())
-        return data
-
-    num = input("input: ")
-    while True: 
-        print("sent:",num)
-        num = str(write_read(num))
-        print("recieved:",num)
+    global lightState
+    arduino.write(bytes(lightState,'utf-8'))
+    time.sleep(0.05)
+    lightState=str(int(arduino.readline().decode()))
+        
 
 
 button1 = ttk.Button(root, text="Hello World", command=hello_world).grid(column=0, columnspan=2, row=1, sticky=(W))
