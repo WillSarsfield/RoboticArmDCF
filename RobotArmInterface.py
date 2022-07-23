@@ -8,24 +8,28 @@ class RobotArmInterface():
         custom_style = 'awdark'
         self.root = Tk()
         self.root.title("Arm Programming Interface")
-        self.root.geometry('300x500')
+        self.root.geometry('300x400')
+        #self.root.minsize('250x300')                                   #get the minimum size of the window to work
         self.root.tk.call('lappend', 'auto_path', './awthemes-10.4.0')
         self.root.tk.call('package', 'require', custom_style)
         self.style = ttk.Style()
         self.style.theme_use(custom_style)
 
         self.text_box = Text(self.root, height=5)
-        self.text_box.grid(column=0, columnspan=3, row=0, sticky=(N,W,E,S))
-        self.scrollBar = ttk.Scrollbar(self.root, orient=VERTICAL, command=self.text_box.yview)
-        self.scrollBar.grid(column=3, row=0, sticky=(N,S))
-        self.text_box['yscrollcommand'] = self.scrollBar.set
+        self.text_box.grid(column=0, columnspan=3, row=0, sticky='nsew')
+        self.scrollBary = ttk.Scrollbar(self.root, orient=VERTICAL, command=self.text_box.yview)
+        self.scrollBary.grid(column=3, row=0, sticky='ns')
+        self.text_box['yscrollcommand'] = self.scrollBary.set
+        self.scrollBarx = ttk.Scrollbar(self.root, orient=HORIZONTAL, command=self.text_box.xview)
+        self.scrollBarx.grid(column=0, columnspan=3,row=1, sticky='ew')         #need to sort out word wrap
+        self.text_box['xscrollcommand'] = self.scrollBarx.set
 
         self.saveButton = ttk.Button(self.root, text='Save File', command=lambda:self.save_file())
-        self.saveButton.grid(column=2,row=1,sticky='e')
+        self.saveButton.grid(column=2,columnspan=2,row=2,padx=5,pady=5,sticky='e')
         self.openButton = ttk.Button(self.root, text='Open File', command=lambda:self.open_file())
-        self.openButton.grid(column=1,row=1,sticky='e')
+        self.openButton.grid(column=1,row=2,pady=5)
         self.clearButton = ttk.Button(self.root, text='Clear Text', command=lambda:self.clear_text())
-        self.clearButton.grid(column=0,row=1,sticky='w')
+        self.clearButton.grid(column=0,row=2,padx=5,pady=5,sticky='w')
 
         self.root.grid_columnconfigure(0, weight=1)
         self.root.grid_rowconfigure(0, weight=1)
@@ -38,6 +42,7 @@ class RobotArmInterface():
     def clear_text(self): #remove all text from text box
         self.text_box.delete(1.0,'end')
 
+                #NEXT: store the name of the opened file to replace initialfile attribute
 
     def save_file(self): #opens saveasfile dialog , saves text from text box to file
         new_file=asksaveasfile(parent=self.root,initialdir='./',initialfile='Untitled.txt',defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
@@ -49,7 +54,7 @@ class RobotArmInterface():
         new_file=askopenfile(parent=self.root,initialdir='./',defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
         if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
             self.clear_text()
-            self.text_box.insert('end',new_file.read())
+            self.text_box.insert('1.0',new_file.read())
             new_file.close()
 
 
