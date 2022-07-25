@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter import messagebox
 from tkinter.filedialog import askopenfile, asksaveasfile
 from os.path import basename as basename
+import re 
 
 class RobotArmInterface:
 
@@ -46,26 +47,38 @@ class RobotArmInterface:
     def get_text(self): #get program as a string from the text box 
         text=self.text_box.get('1.0','end-1c')
         return text
-    
+
     def clear_text(self): #remove all text from text box
         self.text_box.delete(1.0,'end')
-        
+
     def compile_text(self): #converts text into format ready for serial comms
         text=self.get_text()
-        text=text.replace('\n','')
+        text=''.join(text.split()).lower() #formatting text: remove whitespace and convert to lowercase
+        command_list=text.split(';') #splits strings into commands separated by ';'
+
+        move_cmd=re.compile('^s\([0-3]\)a\((0[0-9]{2}|1([0-7][0-9]|80))\)$') #matches input of the form 'S(#)A(###)' with # representing the desired servo & angle
+        wait_cmd=re.compile('^w\([0-9]*\)$')                                 #matches input of the form 'W(#)' with # representing the wait time
+        for command in command_list:                                         #note angle must be three digits (i.e. use 003 not 3) & servo # must be between 0-3
+            if not(move_cmd.match(command) or wait_cmd.match(command)):      #also note angle must be less than or equal to 180 to match
+                messagebox.showerror('',command+': unrecognised command')    #include command description here
+                break
+            elif move_cmd.match(command):
+                print('move command detected:',command)
+            elif wait_cmd.match(command):
+                print('wait command detected:',command)
 
     def execute_text(self):
         pass
  
     def save_file(self): #opens saveasfile dialog , saves text from text box to file
-        try:
-            new_file=asksaveasfile(parent=self.root,initialdir='./',initialfile=self.current_filename,defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
-            self.current_filename=basename(newfile.name)
-            if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
-                new_file.writelines(self.get_text())
-                new_file.close()
-        except:
-            messagebox.showerror('IOError','Unable to save file',parent=self.root)
+        #try:
+        new_file=asksaveasfile(parent=self.root,initialdir='./',initialfile=self.current_filename,defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
+        self.current_filename=basename(new_file.name)
+        if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
+            new_file.writelines(self.get_text())
+            new_file.close()
+        #except:
+        #    messagebox.showerror('IOError','Unable to save file',parent=self.root)
 
     def open_file(self):
         try:
