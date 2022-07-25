@@ -9,27 +9,26 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define FREQUENCY 60
 
 int motor[4] = {0,4,8,12};
-int input[4] = {A0,A1,A2,A3};
 float ang[4] = {0.,0.,0.,0.};
 float startAng[4] = {0.,0.,0.,0.};
 float finishAng[4] = {0.,0.,0.,0.};
 int IRpin = 3;
-int code;
 bool pause = true;
-int frame = 0;  
+int frame = 0;
+bool setFlag = true;
 
 IRrecv IR(IRpin);
 decode_results cmd;
 
 void setup() {
-  // put your setup code here, to run once:
   IR.enableIRIn();
   Serial.begin(9600);
   pwm.begin();
   pwm.setPWMFreq(FREQUENCY);
+  calibrate();
 }
 
-void calibrate(){
+void calibrate(){//sets the physical motors to the correct start position when called
   for (int y = 0; y < 4; y += 1){
     for (int x  = 180; x >= startAng[y]; x -= 1){
       moveMotor(x ,motor[y]);
@@ -38,35 +37,55 @@ void calibrate(){
   Serial.println();
 }
 
-void loop(){//loops to check for power and pause, then executes chosen task repeatedly
-  if (IR.decode(&cmd)!=0 && cmd.value == 16712445){
+float getAngle(int motor, int input){//takes serial input and the motor calculated and returns the corresponding angle
+  float angle = (input/(motor*181));
+  return angle;
+}
+
+int getMotor(int input){//takes serial input and returns the corresponding motor
+  int motor = (input/181).floor();
+  return motor;
+}
+
+void loop(){//loops to check for pause, then executes input instruction
+  if (IR.decode(&cmd)!=0 && cmd.value == 16712445){//detects pause and flips pause boolean if pressed
     pause = !pause;
     Serial.println("pause: " + String(pause));
     delay(100);
   }
   IR.resume();
-  if (pause == false){ 
+  if (setFlag == true){//if requested, flag turned true and serial read to change new finish angle
+    int input = Serial.parseInt();
+    if (input == -1){
+      setFlag = false;
+    } else{
+      int currentMotor = getMotor(input);
+      finishAng[currentMotor] = getAngle(currentMotor, input);
+    }
+  }
+  if (pause == false && setFlag == false){ //when unpaused and not looking for angle to read
     frame += 1;
-    if (frame != 181){
+    if (frame < 181){//within frames 0 to 180
       for (int x = 0; x < 4; x += 1){
         ang[x] = map(frame, 0, 180, startAng[x], finishAng[x]);
         moveMotor(ang[x], motor[x]);
       }
       Serial.println();
-    } else {
+    } else {//once frames exceed 180, resets frames and waits for new serial to read
       frame = 0;
-      for (int x = 0; x < 4; x += 1){
+      setFlag = true;
+      for (int x = 0; x < 4; x += 1){//updates the new start angles to the previous finish angles
         startAng[x] = finishAng[x];
       }
     }
   }
 }
 
-void moveMotor(float angle, int motorOut){
+void moveMotor(float angle, int motorOut){//takes the motor and angle specified and physically moves the corresponding servo
   int pulse;
-  pulse = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);
-  pulse = int(float(pulse) / 1000000 * FREQUENCY * 4096);
+  pulse = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);//maps angle to pulse width
+  pulse = int(float(pulse) / 1000000 * FREQUENCY * 4096);//changes pulse width to out pulse sent to servo
   pwm.setPWM(motorOut, 0, pulse);
-  Serial.print(String(pulse) + " ");
+  Serial.print(String(angle) + " ");
   delay(5);
 }
