@@ -11,7 +11,8 @@ class RobotArmInterface():
         self.root = Tk()
         self.root.title("Arm Programming Interface")
         self.root.geometry('300x400')
-        self.root.minsize(300,300)                                   #get the minimum size of the window to work
+        self.root.minsize(300,300)
+        self.root.configure(background='#323232')
         self.root.tk.call('lappend', 'auto_path', './awthemes-10.4.0')
         self.root.tk.call('package', 'require', custom_style)
         self.style = ttk.Style()
@@ -53,12 +54,14 @@ class RobotArmInterface():
 
     def open_file(self):
         global current_filename
-        new_file=askopenfile(parent=self.root,initialdir='./',defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
-        current_filename=basename(new_file.name)
-        if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
-            self.clear_text()
-            self.text_box.insert('1.0',new_file.read())
-            new_file.close()
-
+        try:
+            new_file=askopenfile(parent=self.root,initialdir='./',defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
+            current_filename=basename(new_file.name) #saves the name of the file that was opened, so when it is saved that name is set as default
+            if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
+                self.clear_text()
+                self.text_box.insert('1.0',new_file.read())
+                new_file.close()
+        except:
+            messagebox.showerror('IOError','Error opening file')
 
 application=RobotArmInterface()
