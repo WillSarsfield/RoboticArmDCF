@@ -9,7 +9,7 @@ class RobotArmInterface():
         self.root = Tk()
         self.root.title("Arm Programming Interface")
         self.root.geometry('300x400')
-        #self.root.minsize('250x300')                                   #get the minimum size of the window to work
+        self.root.minsize(300,300)                                   #get the minimum size of the window to work
         self.root.tk.call('lappend', 'auto_path', './awthemes-10.4.0')
         self.root.tk.call('package', 'require', custom_style)
         self.style = ttk.Style()
@@ -42,8 +42,7 @@ class RobotArmInterface():
     def clear_text(self): #remove all text from text box
         self.text_box.delete(1.0,'end')
 
-                #NEXT: store the name of the opened file to replace initialfile attribute
-
+    #NEXT: store the name of the opened file to replace initialfile attribute   
     def save_file(self): #opens saveasfile dialog , saves text from text box to file
         new_file=asksaveasfile(parent=self.root,initialdir='./',initialfile='Untitled.txt',defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
         if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
