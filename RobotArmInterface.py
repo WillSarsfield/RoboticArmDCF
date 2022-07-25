@@ -55,17 +55,20 @@ class RobotArmInterface:
         text=self.get_text()
         text=''.join(text.split()).lower() #formatting text: remove whitespace and convert to lowercase
         command_list=text.split(';') #splits strings into commands separated by ';'
+        print(command_list)
 
         move_cmd=re.compile('^s\([0-3]\)a\((0[0-9]{2}|1([0-7][0-9]|80))\)$') #matches input of the form 'S(#)A(###)' with # representing the desired servo & angle
-        wait_cmd=re.compile('^w\([0-9]*\)$')                                 #matches input of the form 'W(#)' with # representing the wait time
+        wait_cmd=re.compile('^w\([0-9]+\)$')                                 #matches input of the form 'W(#)' with # representing the wait time
         for command in command_list:                                         #note angle must be three digits (i.e. use 003 not 3) & servo # must be between 0-3
-            if not(move_cmd.match(command) or wait_cmd.match(command)):      #also note angle must be less than or equal to 180 to match
+            if command=='': #caused by having a ; at the very end of the string
+                continue
+            elif not(move_cmd.match(command) or wait_cmd.match(command)):    #also note angle must be less than or equal to 180 to match
                 messagebox.showerror('',command+': unrecognised command')    #include command description here
                 break
-            elif move_cmd.match(command):
-                print('move command detected:',command)
-            elif wait_cmd.match(command):
-                print('wait command detected:',command)
+            # elif move_cmd.match(command):
+            #     print('move command detected:',command)
+            # elif wait_cmd.match(command):
+            #     print('wait command detected:',command)
 
     def execute_text(self):
         pass
