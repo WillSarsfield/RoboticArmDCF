@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import ttk
+from tkinter import messagebox
 from tkinter.filedialog import askopenfile, asksaveasfile
 from os.path import basename as basename
 
@@ -48,6 +49,7 @@ class RobotArmInterface():
     def save_file(self): #opens saveasfile dialog , saves text from text box to file
         global current_filename
         new_file=asksaveasfile(parent=self.root,initialdir='./',initialfile=current_filename,defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
+        current_filename=basename(newfile.name)
         if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
             new_file.writelines(self.get_text())
             new_file.close()
@@ -62,6 +64,6 @@ class RobotArmInterface():
                 self.text_box.insert('1.0',new_file.read())
                 new_file.close()
         except:
-            messagebox.showerror('IOError','Error opening file')
+            messagebox.showerror('IOError','Unable to open file',parent=self.root)
 
 application=RobotArmInterface()
