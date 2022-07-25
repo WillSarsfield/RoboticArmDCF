@@ -9,7 +9,7 @@ class RobotArmInterface:
 
     def __init__(self):
         self.current_filename='Untitled.txt'
-        self.custom_style = 'awdark'
+        self.custom_style = 'awdark'            #tkinter theme downloadable from https://sourceforge.net/projects/tcl-awthemes
         self.root = Tk()
         self.root.title("Arm Programming Interface")
         self.root.geometry('460x500')
@@ -55,7 +55,15 @@ class RobotArmInterface:
         text=self.get_text()
         text=''.join(text.split()).lower() #formatting text: remove whitespace and convert to lowercase
         command_list=text.split(';') #splits strings into commands separated by ';'
-        print(command_list)
+
+        def get_raw(*,command,type='move'):
+            if type=='move':
+                paramList=re.findall(r'\d+',command)
+                servoNum,angle=paramList[0],paramList[1] # gets all numbers from the command
+                print(servoNum,angle)
+            elif type=='wait':
+                waitTime=re.findall(r'\d+', command)[0] # gets the wait time from the wait command
+                print(waitTime)
 
         move_cmd=re.compile('^s\([0-3]\)a\((0[0-9]{2}|1([0-7][0-9]|80))\)$') #matches input of the form 'S(#)A(###)' with # representing the desired servo & angle
         wait_cmd=re.compile('^w\([0-9]+\)$')                                 #matches input of the form 'W(#)' with # representing the wait time
@@ -65,10 +73,13 @@ class RobotArmInterface:
             elif not(move_cmd.match(command) or wait_cmd.match(command)):    #also note angle must be less than or equal to 180 to match
                 messagebox.showerror('',command+': unrecognised command')    #include command description here
                 break
-            # elif move_cmd.match(command):
-            #     print('move command detected:',command)
-            # elif wait_cmd.match(command):
-            #     print('wait command detected:',command)
+            elif move_cmd.match(command):
+                # print('move command detected:',command)
+                get_raw(command=command,type='move')
+            elif wait_cmd.match(command):
+                # print('wait command detected:',command)
+                get_raw(command=command,type='wait')
+            
 
     def execute_text(self):
         pass
