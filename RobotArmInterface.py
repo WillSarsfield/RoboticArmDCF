@@ -71,14 +71,14 @@ class RobotArmInterface:
         pass
  
     def save_file(self): #opens saveasfile dialog , saves text from text box to file
-        #try:
-        new_file=asksaveasfile(parent=self.root,initialdir='./',initialfile=self.current_filename,defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
-        self.current_filename=basename(new_file.name)
-        if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
-            new_file.writelines(self.get_text())
-            new_file.close()
-        #except:
-        #    messagebox.showerror('IOError','Unable to save file',parent=self.root)
+        try:
+            new_file=asksaveasfile(parent=self.root,initialdir='./',initialfile=self.current_filename,defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
+            self.current_filename=basename(new_file.name)
+            if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
+                new_file.writelines(self.get_text())
+                new_file.close()
+        except:
+            messagebox.showerror('IOError','Unable to save file',parent=self.root)
 
     def open_file(self):
         try:
