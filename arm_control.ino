@@ -56,9 +56,12 @@ void loop(){//loops to check for pause, then executes input instruction
   IR.resume();
   if (setFlag == true){//if requested, flag turned true and serial read to change new finish angle
     int input = Serial.parseInt();
-    int currentMotor = getMotor(input);
-    finishAng[currentMotor] = getAngle(currentMotor, input);
-    setFlag = false;
+    if (input == -1){
+      setFlag = false;
+    } else{
+      int currentMotor = getMotor(input);
+      finishAng[currentMotor] = getAngle(currentMotor, input);
+    }
   }
   if (pause == false && setFlag == false){ //when unpaused and not looking for angle to read
     frame += 1;
