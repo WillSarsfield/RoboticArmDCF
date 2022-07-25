@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter import messagebox
 from tkinter.filedialog import askopenfile, asksaveasfile
 from os.path import basename as basename
+from pathlib import Path
 import re 
 
 class RobotArmInterface:
@@ -63,27 +64,42 @@ class RobotArmInterface:
                 paramList=re.findall(r'\d+',command)
                 servo_num,angle=int(paramList[0]),int(paramList[1]) # gets all numbers from the move command
                 encoded_val= servo_num*(max_angle+1)+angle      # maps (RxR)->R i.e. there is a unique positive encoded_val for each combination of servo&angle
-                print(servo_num,angle,'encoded as',encoded_val)
+                # print(servo_num,angle,'encoded as',encoded_val)
             elif type=='wait':
                 waitTime=int(re.findall(r'\d+', command)[0]) # gets the wait time from the wait command
                 encoded_val= -waitTime-1                        #wait command is encoded as the negative numbers (1 is subtracted as the value 0 is already used)
-                print(waitTime,'encoded as',encoded_val)
-
+                # print(waitTime,'encoded as',encoded_val)
+            return encoded_val
+        
+        def save_compiled_file(cmd_list):
+            compile_filename=self.current_filename.replace('.txt','_cmd.txt') #can be replaced - this is to distinguish between compiled and uncompiled files
+            savefile=open(compile_filename,'w')
+            if type(savefile)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
+                for cmd in cmd_list:
+                    savefile.write(str(cmd))
+                    savefile.write('\n')
+                savefile.close()
+            
         move_cmd=re.compile('^s\([0-3]\)a\((0[0-9]{2}|1([0-7][0-9]|80))\)$') #matches input of the form 'S(#)A(###)' with # representing the desired servo & angle
         wait_cmd=re.compile('^w\([0-9]+\)$')                                 #matches input of the form 'W(#)' with # representing the wait time
-        for command in command_list:                                         #note angle must be three digits (i.e. use 003 not 3) & servo # must be between 0-3
+                                                                             #note angle must be three digits (i.e. use 003 not 3) & servo # must be between 0-3
+        encoded_cmds=[]                                                      #also note angle must be less than or equal to 180 to match
+        for command in command_list:                                         
             if command=='': #caused by having a ; at the very end of the string
                 continue
-            elif not(move_cmd.match(command) or wait_cmd.match(command)):    #also note angle must be less than or equal to 180 to match
-                messagebox.showerror('',command+': unrecognised command')    #include command description here
-                break
             elif move_cmd.match(command):
                 # print('move command detected:',command)
-                get_raw(command=command,type='move')
+                encoded_cmds.append(get_raw(command=command,type='move'))
             elif wait_cmd.match(command):
                 # print('wait command detected:',command)
-                get_raw(command=command,type='wait')
-            
+                encoded_cmds.append(get_raw(command=command,type='wait'))
+            else:
+                messagebox.showerror('',command+': Unrecognised command')    #include command description here
+                return False
+
+        #print(encoded_cmds)
+        save_compiled_file(encoded_cmds)
+        messagebox.showinfo(parent=self.root, title='Compiler',message='Compiled successfully')
 
     def execute_text(self):
         self.compile_text()
