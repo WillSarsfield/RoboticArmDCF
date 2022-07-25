@@ -10,6 +10,8 @@ class RobotArmInterface:
 
     def __init__(self):
         self.current_filename='Untitled.txt'
+        self.current_compilename='Untitled_cmd.txt'
+        self.compilepath=''
 
         self.custom_style = 'awdark'            #tkinter theme downloadable from https://sourceforge.net/projects/tcl-awthemes
         self.root = Tk()
@@ -72,8 +74,9 @@ class RobotArmInterface:
             return encoded_val
         
         def save_compiled_file(cmd_list):
-            compile_filename=self.current_filename.replace('.txt','_cmd.txt') #can be replaced - this is to distinguish between compiled and uncompiled files
-            savefile=open(compile_filename,'w')
+            self.current_compilename=self.current_filename.replace('.txt','_cmd.txt') #can be replaced - this is to distinguish between compiled and uncompiled files
+            savefile=open(self.current_compilename,'w')
+            self.compilepath=savefile.name
             if type(savefile)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
                 for cmd in cmd_list:
                     savefile.write(str(cmd))
@@ -103,6 +106,15 @@ class RobotArmInterface:
 
     def execute_text(self):
         self.compile_text()
+        try:
+            execute_file=open(self.compilepath,'r')
+            cmd_list=execute_file.read().split()
+            for item in cmd_list:
+                item=int(item)
+            print(cmd_list)
+        except:
+            messagebox.showerror('IOError','Unable to execute file')
+
  
     def save_file(self): #opens saveasfile dialog , saves text from text box to file
         try:
