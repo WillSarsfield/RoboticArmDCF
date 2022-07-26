@@ -5,6 +5,7 @@ int servo1Pos=0;
 int servo2Pos=0;
 int selectedServo;
 int delayTime=100;
+int raw_input;
 
 Servo servo1;
 Servo servo2;
@@ -17,14 +18,7 @@ servo2.attach(servo2Pin);
 
 void loop() {
 while (!Serial.available()){}
-selectedServo=Serial.readString().toInt();
-Serial.print(selectedServo);
-if (selectedServo==1){
-  while (!Serial.available()){}
-  servo1Pos=Serial.readString().toInt();
-  servo1.write(servo1Pos);
-} else if (selectedServo==2){
-  servo2Pos=180;
-  servo2.write(servo2Pos);
-}
+delay(5);
+raw_input=Serial.readString().toInt();
+Serial.println(raw_input);
 }
