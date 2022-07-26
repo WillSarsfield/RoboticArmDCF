@@ -18,7 +18,7 @@ void setup() {
   Serial.begin(9600);
   pwm.begin();
   pwm.setPWMFreq(FREQUENCY);
-  calibrate();
+  //calibrate();
 }
 
 void calibrate(){//sets the physical motors to the correct start position when called
@@ -27,7 +27,6 @@ void calibrate(){//sets the physical motors to the correct start position when c
       moveMotor(x ,motor[y]);
     }
   }
-  Serial.println();
 }
 
 float getAngle(int motor, int input){//takes serial input and the motor calculated and returns the corresponding angle
@@ -42,31 +41,33 @@ int getMotor(int input){//takes serial input and returns the corresponding motor
 
 void loop(){//then executes input instruction
   if (setFlag == true){//serial read to change new finish angle until told to execute
-    while (Serial.available()){}
     while (!Serial.available()){}
-    int input = Serial.readString().toInt() - 1;
-    if (input == -1){
-      setFlag = false;
-    } else{
-      int currentMotor = getMotor(input);
-      finishAng[currentMotor] = getAngle(currentMotor, input);
-    }
+    delay(5);
+    int input = Serial.readString().toInt();
+    Serial.println(input);
+    input--;
+//    if (input == -1){
+//      setFlag = false;
+//    } else{
+//      int currentMotor = getMotor(input);
+//      finishAng[currentMotor] = getAngle(currentMotor, input);
+//    }
   }
-  if (setFlag == false){ //when unpaused and not looking for angle to read
-    frame += 1;
-    if (frame < 181){//within frames 0 to 180
-      for (int x = 0; x < 4; x += 1){
-        ang[x] = map(frame, 0, 180, startAng[x], finishAng[x]);
-        moveMotor(ang[x], motor[x]);
-      }
-    } else {//once frames exceed 180, resets frames and waits for new serial to read
-      frame = 0;
-      setFlag = true;
-      for (int x = 0; x < 4; x += 1){//updates the new start angles to the previous finish angles
-        startAng[x] = finishAng[x];
-      }
-    }
-  }
+//  if (setFlag == false){ //when unpaused and not looking for angle to read
+//    frame += 1;
+//    if (frame < 181){//within frames 0 to 180
+//      for (int x = 0; x < 4; x += 1){
+//        ang[x] = map(frame, 0, 180, startAng[x], finishAng[x]);
+//        moveMotor(ang[x], motor[x]);
+//      }
+//    } else {//once frames exceed 180, resets frames and waits for new serial to read
+//      frame = 0;
+//      setFlag = true;
+//      for (int x = 0; x < 4; x += 1){//updates the new start angles to the previous finish angles
+//        startAng[x] = finishAng[x];
+//      }
+//    }
+//  }
 }
 
 void moveMotor(float angle, int motorOut){//takes the motor and angle specified and physically moves the corresponding servo
@@ -74,5 +75,5 @@ void moveMotor(float angle, int motorOut){//takes the motor and angle specified 
   pulse = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);//maps angle to pulse width
   pulse = int(float(pulse) / 1000000 * FREQUENCY * 4096);//changes pulse width to out pulse sent to servo
   pwm.setPWM(motorOut, 0, pulse);
-  delay(5);
+  //delay(0);
 }
