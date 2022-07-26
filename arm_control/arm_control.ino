@@ -14,10 +14,7 @@ float finishAng[4] = {0.,0.,0.,0.};
 int frame = 0;
 bool setFlag = true;
 
-decode_results cmd;
-
 void setup() {
-  IR.enableIRIn();
   Serial.begin(9600);
   pwm.begin();
   pwm.setPWMFreq(FREQUENCY);
@@ -39,13 +36,15 @@ float getAngle(int motor, int input){//takes serial input and the motor calculat
 }
 
 int getMotor(int input){//takes serial input and returns the corresponding motor
-  int motor = (input/181).floor();
+  int motor = floor(input/181);
   return motor;
 }
 
 void loop(){//then executes input instruction
   if (setFlag == true){//serial read to change new finish angle until told to execute
-    int input = Serial.parseInt() - 1;
+    while (Serial.available()){}
+    while (!Serial.available()){}
+    int input = Serial.readString().toInt() - 1;
     if (input == -1){
       setFlag = false;
     } else{
@@ -60,7 +59,6 @@ void loop(){//then executes input instruction
         ang[x] = map(frame, 0, 180, startAng[x], finishAng[x]);
         moveMotor(ang[x], motor[x]);
       }
-      Serial.println();
     } else {//once frames exceed 180, resets frames and waits for new serial to read
       frame = 0;
       setFlag = true;
@@ -76,6 +74,5 @@ void moveMotor(float angle, int motorOut){//takes the motor and angle specified 
   pulse = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);//maps angle to pulse width
   pulse = int(float(pulse) / 1000000 * FREQUENCY * 4096);//changes pulse width to out pulse sent to servo
   pwm.setPWM(motorOut, 0, pulse);
-  Serial.print(String(angle) + " ");
   delay(5);
 }
