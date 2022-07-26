@@ -11,7 +11,6 @@ class execute_code():
         self.arduino = serial.Serial(port=arduinoPort,baudrate=9600, timeout=1)
 
     def start(self,cmd_list=None):
-        print(cmd_list)
         for cmd in cmd_list:
             print(cmd)
             if int(cmd)<0:

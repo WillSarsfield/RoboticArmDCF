@@ -114,7 +114,7 @@ class RobotArmInterface:
             cmd_list=execute_file.read().split()
             #print(cmd_list)
             executer=execute_code()
-            input()
+            # input()
             time.sleep(1)       #need to give executer time to set up
             #cmd_list=[int(x)for x in cmd_list] #if commands are needed as ints rather than string
             executer.start(cmd_list=cmd_list)
