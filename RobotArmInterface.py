@@ -5,6 +5,7 @@ from tkinter.filedialog import askopenfile, asksaveasfile
 from os.path import basename as basename
 from pathlib import Path
 import re 
+from execute_code import execute_code
 
 class RobotArmInterface:
 
@@ -109,9 +110,10 @@ class RobotArmInterface:
         try:
             execute_file=open(self.compilepath,'r')
             cmd_list=execute_file.read().split()
-            for item in cmd_list:
-                item=int(item)
-            print(cmd_list)
+            #print(cmd_list)
+            executer=execute_code()
+            executer.start(cmd_list=cmd_list)
+            messagebox.showinfo(parent=self.root, title='Executer',message='Executed successfully')
         except:
             messagebox.showerror('IOError','Unable to execute file')
 
