@@ -1,6 +1,5 @@
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
-#include <IRremote.h>
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
@@ -12,12 +11,9 @@ int motor[4] = {0,4,8,12};
 float ang[4] = {0.,0.,0.,0.};
 float startAng[4] = {0.,0.,0.,0.};
 float finishAng[4] = {0.,0.,0.,0.};
-int IRpin = 3;
-bool pause = true;
 int frame = 0;
 bool setFlag = true;
 
-IRrecv IR(IRpin);
 decode_results cmd;
 
 void setup() {
@@ -47,15 +43,9 @@ int getMotor(int input){//takes serial input and returns the corresponding motor
   return motor;
 }
 
-void loop(){//loops to check for pause, then executes input instruction
-  if (IR.decode(&cmd)!=0 && cmd.value == 16712445){//detects pause and flips pause boolean if pressed
-    pause = !pause;
-    Serial.println("pause: " + String(pause));
-    delay(100);
-  }
-  IR.resume();
-  if (setFlag == true){//if requested, flag turned true and serial read to change new finish angle
-    int input = Serial.parseInt();
+void loop(){//then executes input instruction
+  if (setFlag == true){//serial read to change new finish angle until told to execute
+    int input = Serial.parseInt() - 1;
     if (input == -1){
       setFlag = false;
     } else{
@@ -63,7 +53,7 @@ void loop(){//loops to check for pause, then executes input instruction
       finishAng[currentMotor] = getAngle(currentMotor, input);
     }
   }
-  if (pause == false && setFlag == false){ //when unpaused and not looking for angle to read
+  if (setFlag == false){ //when unpaused and not looking for angle to read
     frame += 1;
     if (frame < 181){//within frames 0 to 180
       for (int x = 0; x < 4; x += 1){
