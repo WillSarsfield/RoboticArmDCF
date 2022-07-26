@@ -22,9 +22,11 @@ void setup() {
 }
 
 void loop() {
-  Serial.print(x);
+//  Serial.print(x);
   while (!Serial.available()){}
-  x=!Serial.readString().toInt();
+  delay(5);
+  x=Serial.readString().toInt();
+  Serial.println(x);
 //  digitalWrite(led1,x);
 //  digitalWrite(led2,x);
 //  digitalWrite(led3,x);

@@ -6,6 +6,7 @@ from os.path import basename as basename
 from pathlib import Path
 import re 
 from execute_code import execute_code
+import time
 
 class RobotArmInterface:
 
@@ -67,6 +68,7 @@ class RobotArmInterface:
                 paramList=re.findall(r'\d+',command)
                 servo_num,angle=int(paramList[0]),int(paramList[1]) # gets all numbers from the move command
                 encoded_val= servo_num*(max_angle+1)+angle      # maps (RxR)->R i.e. there is a unique positive encoded_val for each combination of servo&angle
+                encoded_val+=1                                  # need to reserve zero for a separate commmand 
                 # print(servo_num,angle,'encoded as',encoded_val)
             elif type=='wait':
                 waitTime=int(re.findall(r'\d+', command)[0]) # gets the wait time from the wait command
@@ -112,6 +114,9 @@ class RobotArmInterface:
             cmd_list=execute_file.read().split()
             #print(cmd_list)
             executer=execute_code()
+            input()
+            time.sleep(1)       #need to give executer time to set up
+            #cmd_list=[int(x)for x in cmd_list] #if commands are needed as ints rather than string
             executer.start(cmd_list=cmd_list)
             messagebox.showinfo(parent=self.root, title='Executer',message='Executed successfully')
         except:
