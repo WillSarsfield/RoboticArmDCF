@@ -98,7 +98,7 @@ class RobotArmInterface:
                 # print('wait command detected:',command)
                 encoded_cmds.append(get_raw(command=command,type='wait'))
             else:
-                messagebox.showerror('',command+': Unrecognised command')    #include command description here
+                messagebox.showerror(parent=self.root,title='Compiler',message=command+': Unrecognised command')    #include command description here
                 return False
 
         #print(encoded_cmds)
@@ -115,7 +115,7 @@ class RobotArmInterface:
             executer.start(cmd_list=cmd_list)
             messagebox.showinfo(parent=self.root, title='Executer',message='Executed successfully')
         except:
-            messagebox.showerror('IOError','Unable to execute file')
+            messagebox.showerror('IOError','Unable to execute file',parent=self.root)
 
  
     def save_file(self): #opens saveasfile dialog , saves text from text box to file

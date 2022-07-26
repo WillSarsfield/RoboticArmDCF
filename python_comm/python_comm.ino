@@ -25,8 +25,8 @@ void loop() {
   Serial.print(x);
   while (!Serial.available()){}
   x=!Serial.readString().toInt();
-  digitalWrite(led1,x);
-  digitalWrite(led2,x);
-  digitalWrite(led3,x);
-  digitalWrite(led4,x);
+//  digitalWrite(led1,x);
+//  digitalWrite(led2,x);
+//  digitalWrite(led3,x);
+//  digitalWrite(led4,x);
 }
