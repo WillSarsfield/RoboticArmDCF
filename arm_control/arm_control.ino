@@ -19,7 +19,7 @@ void setup() {
   Serial.setTimeout(.1);
   pwm.begin();
   pwm.setPWMFreq(FREQUENCY);
-  //calibrate();
+  calibrate();
 }
 
 void calibrate(){//sets the physical motors to the correct start position when called
