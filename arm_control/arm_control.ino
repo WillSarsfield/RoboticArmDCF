@@ -15,7 +15,8 @@ int frame = 0;
 bool setFlag = true;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
+  Serial.setTimeout(.1);
   pwm.begin();
   pwm.setPWMFreq(FREQUENCY);
   calibrate();
