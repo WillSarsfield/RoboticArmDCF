@@ -114,13 +114,13 @@ class RobotArmInterface:
             cmd_list=execute_file.read().split()
             #print(cmd_list)
             executer=execute_code()
-            # input()
-            time.sleep(1)       #need to give executer time to set up
+            messagebox.showinfo(parent=self.root, title='Executer',message='Wait for calibration to complete')
+            #time.sleep(1)       #need to give executer time to set up
             #cmd_list=[int(x)for x in cmd_list] #if commands are needed as ints rather than string
             executer.start(cmd_list=cmd_list)
             messagebox.showinfo(parent=self.root, title='Executer',message='Executed successfully')
-        except:
-            messagebox.showerror('IOError','Unable to execute file',parent=self.root)
+        except Exception as e:
+            messagebox.showerror('IOError','Unable to execute file:\n'+str(e),parent=self.root)
 
  
     def save_file(self): #opens saveasfile dialog , saves text from text box to file
@@ -130,8 +130,8 @@ class RobotArmInterface:
             if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
                 new_file.writelines(self.get_text())
                 new_file.close()
-        except:
-            messagebox.showerror('IOError','Unable to save file',parent=self.root)
+        except Exception as e:
+            messagebox.showerror('IOError','Unable to save file:\n'+str(e),parent=self.root)
 
     def open_file(self):
         try:
@@ -141,7 +141,7 @@ class RobotArmInterface:
                 self.clear_text()
                 self.text_box.insert('1.0',new_file.read())
                 new_file.close()
-        except:
-            messagebox.showerror('IOError','Unable to open file',parent=self.root)
+        except Exception as e:
+            messagebox.showerror('IOError','Unable to open file:\n'+str(e),parent=self.root)
 
 application=RobotArmInterface()
