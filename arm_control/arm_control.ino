@@ -3,8 +3,8 @@
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
-#define MIN_PULSE_WIDTH 800
-#define MAX_PULSE_WIDTH 2200
+#define MIN_PULSE_WIDTH 400
+#define MAX_PULSE_WIDTH 2400
 #define FREQUENCY 60
 
 int motor[4] = {0,4,8,12};
@@ -15,8 +15,7 @@ int frame = 0;
 bool setFlag = true;
 
 void setup() {
-  Serial.begin(115200);
-  Serial.setTimeout(.1);
+  Serial.begin(9600);
   pwm.begin();
   pwm.setPWMFreq(FREQUENCY);
   calibrate();
@@ -24,15 +23,35 @@ void setup() {
 
 void calibrate(){//sets the physical motors to the correct start position when called
   for (int y = 0; y < 4; y += 1){
-<<<<<<< HEAD
     for (int x  = 180; x >= 0; x -= 1){
       ang[y] = x;
-=======
-    for (int x  = 180; x >= startAng[y]; x -= 1){
->>>>>>> 98edbba88943d5327d553e2db1858a31f04f15f4
       moveMotor(x ,motor[y]);
     }
   }
+}
+
+float getMotorAngle(float angle){
+  return map(angle, 0, 180, -50, 180);
+}
+
+float calcX(){
+  float angle[2] = {0.,0.};
+  float xCoord[2] = {0.,0.};
+  angle[0] = ang[1];
+  angle[1] = ang[2];
+  xCoord[1] = 10.5 * cos(((angle[1])*M_PI)/180.);
+  xCoord[0] = 9 * cos(((angle[1] + 90 - angle[0])*M_PI)/180.);
+  return (xCoord[1] + xCoord[0]);
+}
+
+float calcY(){
+  float angle[2] = {0.,0.};
+  float yCoord[2] = {0.,0.};
+  angle[0] = ang[1];
+  angle[1] = ang[2];
+  yCoord[1] = 10.5 * sin(((angle[1])*M_PI)/180.);
+  yCoord[0] = 9 * sin(((angle[1] + 90 - angle[0])*M_PI)/180.);
+  return (yCoord[1] + yCoord[0]);
 }
 
 int getAngle(int motor, int input){//takes serial input and the motor calculated and returns the corresponding angle
@@ -106,8 +125,9 @@ bool checkBounds(int motor){
 
 void moveMotor(float angle, int motorOut){//takes the motor and angle specified and physically moves the corresponding servo
   int pulse;
-  pulse = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);//maps angle to pulse width
+  angle = getMotorAngle(angle);
+  pulse = map(angle, -50, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);//maps angle to pulse width
   pulse = int(float(pulse) / 1000000 * FREQUENCY * 4096);//changes pulse width to out pulse sent to servo
   pwm.setPWM(motorOut, 0, pulse);
-  //delay(0);
+  delay(5);
 }
