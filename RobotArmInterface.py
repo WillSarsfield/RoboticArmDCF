@@ -70,8 +70,8 @@ class RobotArmInterface:
                 encoded_val= servo_num*(max_angle+1)+angle      # maps (RxR)->R i.e. there is a unique positive encoded_val for each combination of servo&angle
                 encoded_val+=1                                  # need to reserve zero for a separate commmand 
                 # print(servo_num,angle,'encoded as',encoded_val)
-            elif type=='wait':
-                waitTime=int(re.findall(r'\d+', command)[0]) # gets the wait time from the wait command
+            elif type=='do':
+                waitTime=int(re.findall(r'\d+', command)[0]) # gets the wait time from the do command
                 encoded_val= -waitTime-1                        #wait command is encoded as the negative numbers (1 is subtracted as the value 0 is already used)
                 # print(waitTime,'encoded as',encoded_val)
             return encoded_val
@@ -86,10 +86,11 @@ class RobotArmInterface:
                     savefile.write('\n')
                 savefile.close()
             
-        move_cmd=re.compile('^s\([0-3]\)a\((0[0-9]{2}|1([0-7][0-9]|80))\)$') #matches input of the form 'S(#)A(###)' with # representing the desired servo & angle
-        wait_cmd=re.compile('^w\([0-9]+\)$')                                 #matches input of the form 'W(#)' with # representing the wait time
-                                                                             #note angle must be three digits (i.e. use 003 not 3) & servo # must be between 0-3
-        encoded_cmds=[]                                                      #also note angle must be less than or equal to 180 to match
+        move_cmd=re.compile('^s\([0-3]\)a\((0[0-9]{2}|1([0-7][0-9]|80))\)$')#matches input of the form 'S(#)A(###)' with # representing the desired servo & angle
+        wait_cmd=re.compile('^do\([0-9]+\)$')                               #matches input of the form 'DO(#)' with # representing the wait time
+                                                                            #note angle must be three digits (i.e. use 003 not 3) & servo # must be between 0-3
+        encoded_cmds=[]                                                     #also note angle must be less than or equal to 180 to match
+                                                                            #move commands are only executed when a do command is executed
         for command in command_list:                                         
             if command=='': #caused by having a ; at the very end of the string
                 continue
@@ -98,9 +99,11 @@ class RobotArmInterface:
                 encoded_cmds.append(get_raw(command=command,type='move'))
             elif wait_cmd.match(command):
                 # print('wait command detected:',command)
-                encoded_cmds.append(get_raw(command=command,type='wait'))
+                encoded_cmds.append(get_raw(command=command,type='do'))
             else:
-                messagebox.showerror(parent=self.root,title='Compiler',message=command+': Unrecognised command')    #include command description here
+                if len(command)>=100:
+                    command=command[:100]+'[...]' #limit length of message string
+                messagebox.showerror(parent=self.root,title='Compiler',message='Unrecognised command: '+command+'\nSee \'README.txt\' for help')    #include command description here
                 return False
 
         #print(encoded_cmds)
