@@ -5,10 +5,11 @@ import time
 class execute_code():
 
     def __init__(self):
-        arduinoPort = '/dev/cu.usbmodem1101' #for mac - check bottom of arduino editor and modify
-        # arduinoPort = 'COM5' #for windows - may be a different number
+        #arduinoPort = '/dev/cu.usbmodem1101' #for mac - check bottom of arduino editor and modify
+        arduinoPort = 'COM5' #for windows - may be a different number
 
         self.arduino = serial.Serial(port=arduinoPort,baudrate=9600, timeout=1)
+        time.sleep(3)
 
     def start(self,cmd_list=None):
         for cmd in cmd_list:
