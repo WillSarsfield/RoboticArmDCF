@@ -130,5 +130,4 @@ void moveMotor(float angle, int motorOut){//takes the motor and angle specified 
   pulse = map(angle, -50, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);//maps angle to pulse width
   pulse = int(float(pulse) / 1000000 * FREQUENCY * 4096);//changes pulse width to out pulse sent to servo
   pwm.setPWM(motorOut, 0, pulse);
-  delay(5);
 }
