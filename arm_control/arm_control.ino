@@ -18,12 +18,13 @@ void setup() {
   Serial.begin(9600);
   pwm.begin();
   pwm.setPWMFreq(FREQUENCY);
-  //calibrate();
+  calibrate();
 }
 
 void calibrate(){//sets the physical motors to the correct start position when called
   for (int y = 0; y < 4; y += 1){
     for (int x  = 180; x >= 0; x -= 1){
+      ang[y] = x;
       moveMotor(x ,motor[y]);
     }
   }
@@ -91,6 +92,34 @@ void loop(){//then executes input instruction
         startAng[x] = finishAng[x];
       }
     }
+  }
+}
+
+bool checkBounds(int motor){
+  switch (motor){
+    case 0:
+      return true;
+      break;
+    case 1:
+      if (calcY() < -4.5 || calcY() > 15 || calcX() < -4.5 || calcX() > 4.5){
+        return false;
+      } else {
+        return true;
+      }
+      break;
+    case 2:
+      if (ang[2] > 170 || ang[2] < 10 || calcY() < -4.5 || calcY() > 15 || calcX() < -4.5 || calcX() > 4.5){
+          return false;
+        } else {
+          return true;
+        }
+      break;
+    case 3:
+    return true;
+      break;
+    default:
+      return true;
+      break;
   }
 }
 
