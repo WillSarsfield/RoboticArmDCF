@@ -46,7 +46,7 @@ class RobotArmInterface:
         self.executeButton = ttk.Button(self.root, text='Execute', command=lambda:self.execute_text())
         self.executeButton.grid(column=3,row=2,padx=2.5,pady=5,sticky='w')
 
-        self.root.grid_columnconfigure(0,weight=2) #what does this actually do
+        self.root.grid_columnconfigure(0,weight=1)
         self.root.grid_rowconfigure(0, weight=1)
         self.root.mainloop()
 
