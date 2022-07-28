@@ -6,13 +6,20 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define MIN_PULSE_WIDTH 400
 #define MAX_PULSE_WIDTH 2400
 #define FREQUENCY 60
+#define lowerX -15
+#define upperX 15
+#define lowerY 0
+#define upperY 15
+#define lowerZ -15
+#define upperZ 15
 
 int motor[4] = {0,4,8,12};
-int ang[4] = {0,0,0,0};
+float ang[4] = {0.,0.,0.,0.};
 int startAng[4] = {0,0,0,0};
 int finishAng[4] = {0,0,0,0};
-int frame = 0;
+float frame = 0.;
 bool setFlag = true;
+bool valid = true;
 
 void setup() {
   Serial.begin(115200);
@@ -77,7 +84,17 @@ int getMotor(int input){//takes serial input and returns the corresponding motor
   return motor;
 }
 
-
+bool checkBounds(){
+  if (calcTrueX() > upperX || calcTrueX() < lowerX){
+    return false;
+  } else if (calcY() > upperY || calcY() < lowerY){
+    return false;
+  }else if (calcZ() > upperZ || calcZ() < lowerZ){
+    return false;
+  } else{
+    return true;
+  }
+}
 
 void loop(){//then executes input instruction
   if (setFlag == true){//serial read to change new finish angle until told to execute
@@ -91,25 +108,25 @@ void loop(){//then executes input instruction
       int currentMotor = getMotor(input);
       finishAng[currentMotor] = getAngle(currentMotor, input);
       Serial.println("motor: " + String(currentMotor) + " angle:" + String(finishAng[currentMotor]));
-    }
-    //xCalcServo1Angle(input1, input2);
-    //setFlag = false;
+      }
   }
   if (setFlag == false){ //when unpaused and not looking for angle to read
     frame += 1;
-    if (frame < 181){//within frames 0 to 180
-      for (int x = 0; x < 4; x += 1){
-        ang[x] = map(frame, 0, 180, startAng[x], finishAng[x]);
-        moveMotor(ang[x], motor[x]);
-      }
-    } else {//once frames exceed 180, resets frames and waits for new serial to read
-      frame = 0;
-      setFlag = true;
-      for (int x = 0; x < 4; x += 1){//updates the new start angles to the previous finish angles
-        startAng[x] = finishAng[x];
+      if (frame < 181 && checkBounds() != false){//within frames 0 to 180
+        for (int x = 0; x < 4; x += 1){
+          ang[x] = map(frame, 0, 180, startAng[x], finishAng[x]);
+          if (checkBounds() != false){
+            moveMotor(ang[x], motor[x]);
+          }
+        }
+      } else {//once frames exceed 180, resets frames and waits for new serial to read
+        for (int x = 0; x < 4; x += 1){
+          frame = 0;
+          setFlag = true;
+          startAng[x] = ang[x];
+        }
       }
     }
-  }
 }
 
 void moveMotor(float angle, int motorOut){//takes the motor and angle specified and physically moves the corresponding servo
