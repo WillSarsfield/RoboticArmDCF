@@ -6,12 +6,12 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define MIN_PULSE_WIDTH 400
 #define MAX_PULSE_WIDTH 2400
 #define FREQUENCY 60
-#define lowerX -15
-#define upperX 15
+#define lowerX -18
+#define upperX 18
 #define lowerY 0
-#define upperY 15
-#define lowerZ -15
-#define upperZ 15
+#define upperY 18
+#define lowerZ -18
+#define upperZ 18
 
 int motor[4] = {0,4,8,12};
 float ang[4] = {0.,0.,0.,0.};
@@ -85,11 +85,11 @@ int getMotor(int input){//takes serial input and returns the corresponding motor
 }
 
 bool checkBounds(){
-  if (calcTrueX() > upperX || calcTrueX() < lowerX){
+  if (calcTrueX() >= upperX || calcTrueX() <= lowerX){
     return false;
-  } else if (calcY() > upperY || calcY() < lowerY){
+  } else if (calcY() >= upperY || calcY() <= lowerY){
     return false;
-  }else if (calcZ() > upperZ || calcZ() < lowerZ){
+  }else if (calcZ() >= upperZ || calcZ() <= lowerZ){
     return false;
   } else{
     return true;
@@ -105,18 +105,25 @@ void loop(){//then executes input instruction
     if (input == -1){//input read as serial input and translated to motor - angle
       setFlag = false;
     } else{
-      int currentMotor = getMotor(input);
-      finishAng[currentMotor] = getAngle(currentMotor, input);
-      Serial.println("motor: " + String(currentMotor) + " angle:" + String(finishAng[currentMotor]));
+      if (input > 0 && input < 725){
+        int currentMotor = getMotor(input);
+        finishAng[currentMotor] = getAngle(currentMotor, input);
+        Serial.println("motor: " + String(currentMotor) + " angle:" + String(finishAng[currentMotor]));
+      }
       }
   }
   if (setFlag == false){ //when unpaused and not looking for angle to read
     frame += 1;
-      if (frame < 181 && checkBounds() != false){//within frames 0 to 180
+      if (frame < 181 && valid != false){//within frames 0 to 180
         for (int x = 0; x < 4; x += 1){
           ang[x] = map(frame, 0, 180, startAng[x], finishAng[x]);
           if (checkBounds() != false){
             moveMotor(ang[x], motor[x]);
+          } else {
+            valid = false;
+            for (int x = 0; x < 4; x += 1){
+              ang[x] = map(frame - 1, 0, 180, startAng[x], finishAng[x]);
+            }
           }
         }
       } else {//once frames exceed 180, resets frames and waits for new serial to read
@@ -124,6 +131,7 @@ void loop(){//then executes input instruction
           frame = 0;
           setFlag = true;
           startAng[x] = ang[x];
+          valid = true;
         }
       }
     }
