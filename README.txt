@@ -13,7 +13,7 @@ This application is created for assistance in controlling the robot arm as part 
 Upon creating or opening a program file you can check the syntax is correct by using the 'Compile' button
 (See Arm Programming Help).
 If the syntax is recognised, the compiler will convert the program into serial-ready format and save to 'filename_cmd.txt'.
-Do not try to compile or execute this file as the compiler will not recognise it.
+Do not try to compile or execute this new file as the compiler will not recognise it.
 
 Once you are happy with your program you can execute your file. This will first compile the program, then send the _cmd.txt file
 to the arduino via serial which will then interpret each command and execute it.
@@ -60,13 +60,14 @@ Note angles must be given in three digit form e.g. an angle of 10 degrees would 
 -Format-
 do(#);
 -Description-
-Executes all queued move commands simultaneously, followed by a time delay represented by do().
+Executes all queued move commands simultaneously, followed by a time delay represented by #.
 -Constraints-
-do() accepts one parameter with range 0-inf, which selects the delay time in milliseconds before the next command is executed.
+do() accepts one integer parameter with range 0+, which selects the delay time in milliseconds before the next command is executed.
 Note a minimum delay time is added to this value (~4 seconds) to allow the arm to move into its requested position before reading the next command.
-i.e. do(0); would actually execute a delay of 4050 milliseconds.
+i.e. 'do(0);' would actually execute a delay of 4050 milliseconds, 'do(100);' would wait 4150ms etc.
 This delay is executed python-side.
 
 --SYNTAX--
 The syntax ignores whitespace and is not case sensitive. I recommend spacing out the commands with whitespace to make them more readable.
 Commands must be separated by a semicolon.
+

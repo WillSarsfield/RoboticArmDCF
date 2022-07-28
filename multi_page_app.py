@@ -1,6 +1,7 @@
 import tkinter as tk
+from tkinter import ttk
 
-LARGE_FONT = ("Verdant", 12)
+LARGE_FONT = ('Verdant', 12)
 
 class MultiPageApp(tk.Tk):
 
@@ -30,7 +31,7 @@ class StartPage(tk.Frame):
 
     def __init__(self,parent,controller):
         tk.Frame.__init__(self,parent)
-        label = tk.Label(self,text="Start Page", font=LARGE_FONT)
+        label = tk.Label(self,text='Start Page', font=LARGE_FONT)
         label.pack(pady=10,padx=10)
 
         button1 = tk.Button(self, text='Page 1', command=lambda: controller.show_frame(PageOne))
@@ -42,7 +43,7 @@ class StartPage(tk.Frame):
 class PageOne(tk.Frame):
     def __init__(self,parent,controller):
         tk.Frame.__init__(self,parent)
-        label = tk.Label(self,text="Page 1", font=LARGE_FONT)
+        label = tk.Label(self,text='Page 1', font=LARGE_FONT)
         label.pack(pady=10,padx=10)
 
         button1 = tk.Button(self, text='Back to Home', command=lambda: controller.show_frame(StartPage))
@@ -54,7 +55,7 @@ class PageOne(tk.Frame):
 class PageTwo(tk.Frame):
     def __init__(self,parent,controller):
         tk.Frame.__init__(self,parent)
-        label = tk.Label(self,text="Page 2", font=LARGE_FONT)
+        label = tk.Label(self,text='Page 2', font=LARGE_FONT)
         label.pack(pady=10,padx=10)
 
         button1 = tk.Button(self, text='Back to Home', command=lambda: controller.show_frame(StartPage))
