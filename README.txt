@@ -38,6 +38,8 @@ Close the serial monitor and try again.
 3. Unable to open/save file: 'NoneType' object has no attribute 'name'
 - The open/save file dialog was cancelled meaning it was unable to open a file. This can be safely ignored.
 
+4. Unrecognised command: command[...] See 'README.txt' for help
+- Invalid syntax. See below to identify the problem.
 
                             ----ARM PROGRAMMING HELP----
 (not to be confused with the assembly language)
@@ -45,6 +47,7 @@ Close the serial monitor and try again.
 The robot arm can be programmed using a series of commands:
 
 --MOVE COMMAND--
+-Format-
 s(#)a(###);
 -Description-
 Queues a servo to move to a desired angle in degrees, represented by s() and a() respectively.
@@ -54,6 +57,7 @@ a() accepts one three-digit parameter with range 000-180, which selects the desi
 Note angles must be given in three digit form e.g. an angle of 10 degrees would be represented as 010.
 
 --DO COMMAND--
+-Format-
 do(#);
 -Description-
 Executes all queued move commands simultaneously, followed by a time delay represented by do().
