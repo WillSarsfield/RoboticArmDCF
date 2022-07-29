@@ -14,16 +14,20 @@ class RobotArmInterface(Tk):
         self.timeout=.1005
         #-----!!!need to choose port based on connection!!!-------
         #arduinoPort = '/dev/cu.usbmodem11101' #for mac - check bottom of arduino editor and modify 
-        #arduinoPort = 'COM5' #for windows - may be a different number
+        arduinoPort = 'COM5' #for windows - may be a different number
         #---------------------------------------------------------
-        #self.arduino = serial.Serial(port=arduinoPort,baudrate=115200, timeout=self.timeout)
 
         Tk.__init__(self,*args,**kwargs)
+        self.title('Robot Arm Interface')
+        try:
+            self.arduino = serial.Serial(port=arduinoPort,baudrate=115200, timeout=self.timeout)
+        except Exception as e:
+            messagebox.showerror('IOError','Unable to establish connection:\n'+str(e),parent=self)
+            self.destroy()
         self.custom_style = 'awdark'            #tkinter theme downloadable from https://sourceforge.net/projects/tcl-awthemes
         self.geometry('460x300')
         self.minsize(460,300)
         self.maxsize(600,1000)
-        self.title('Robot Arm Interface')
         self.configure(background='#323232')
         self.tk.call('lappend', 'auto_path', './awthemes-10.4.0')
         self.tk.call('package', 'require', self.custom_style)
