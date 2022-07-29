@@ -8,19 +8,20 @@ from execute_code import execute_code
 import serial
 
 class RobotArmInterface(Tk):
-
-    def __init__(self, *args, **kwargs):
+    #-----!!!need to choose port based on connection!!!-------
+    arduinoPort = '/dev/cu.usbmodem1301' #for mac - check bottom of arduino editor and modify 
+    #arduinoPort = 'COM5' #for windows - may be a different number
+    #---------------------------------------------------------
+    timeout=.1005
+    arduino=serial.Serial()
+    def __init__(self, *args, **kwargs):    
         #setting up arduino comms
-        self.timeout=.1005
-        #-----!!!need to choose port based on connection!!!-------
-        #arduinoPort = '/dev/cu.usbmodem11101' #for mac - check bottom of arduino editor and modify 
-        arduinoPort = 'COM5' #for windows - may be a different number
-        #---------------------------------------------------------
 
         Tk.__init__(self,*args,**kwargs)
         self.title('Robot Arm Interface')
         try: #attempt to establish arduino connection
-            self.arduino = serial.Serial(port=arduinoPort,baudrate=115200, timeout=self.timeout)
+            self.arduino.close()
+            self.arduino = serial.Serial(port=self.arduinoPort,baudrate=115200, timeout=self.timeout)
         except Exception as e:
             messagebox.showerror('IOError','Unable to establish connection:\n'+str(e),parent=self)
             self.destroy()
@@ -59,6 +60,7 @@ class RobotArmInterface(Tk):
 class PresetPage(Frame): #start page with preset command buttons for robot arm
 
     def __init__(self,parent,controller):
+        self.controller=controller
         Frame.__init__(self,parent) #contains header_frame and center_frame
 
         self.header_frame = Frame(self)#contains window swapping buttons
@@ -80,17 +82,17 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         #setting up preset buttons, change the text attribute and filename argument within command attribute to execute different programs
         command1 = ttk.Button(self.center_frame,text='Reset',cursor='exchange',command=lambda:self.execute_preset(filename='RESET_cmd.txt'))
         command1.grid(column=0,columnspan=2,row=0,padx=5,pady=2.5,sticky='nsew')
-        command2 = ttk.Button(self.center_frame,text='Command One',cursor='cross',command=lambda:self.execute_preset(filename='COLLECT_SAMPLE.txt'))
+        command2 = ttk.Button(self.center_frame,text='Command One',cursor='cross',command=lambda:self.execute_preset(filename='COLLECT_SAMPLE_cmd.txt'))
         command2.grid(column=0,row=1,padx=5,pady=2.5,sticky='nsew')
-        command3 = ttk.Button(self.center_frame,text='Command Two',cursor='cross',command=lambda:self.execute_preset(filename='IRRADIATE.txt'))
+        command3 = ttk.Button(self.center_frame,text='Command Two',cursor='cross',command=lambda:self.execute_preset(filename='IRRADIATE_cmd.txt'))
         command3.grid(column=0,row=2,padx=5,pady=2.5,sticky='nsew')
-        command4 = ttk.Button(self.center_frame,text='Command Three',cursor='cross',command=lambda:self.execute_preset(filename='POUR_EXAMPLE.txt'))
+        command4 = ttk.Button(self.center_frame,text='Command Three',cursor='cross',command=lambda:self.execute_preset(filename='POUR_EXAMPLE_cmd.txt'))
         command4.grid(column=0,row=3,padx=5,pady=2.5,sticky='nsew')
-        command5 = ttk.Button(self.center_frame,text='Command Four',cursor='cross',command=lambda:self.execute_preset(filename='TEST_BOUNDARIES.txt'))
+        command5 = ttk.Button(self.center_frame,text='Command Four',cursor='cross',command=lambda:self.execute_preset(filename='TEST_BOUNDARIES_cmd.txt'))
         command5.grid(column=1,row=1,padx=5,pady=2.5,sticky='nsew')
-        command6 = ttk.Button(self.center_frame,text='Command Five',cursor='cross',command=lambda:self.execute_preset(filename='TEST_RANGE.txt'))
+        command6 = ttk.Button(self.center_frame,text='Command Five',cursor='cross',command=lambda:self.execute_preset(filename='TEST_RANGE_cmd.txt'))
         command6.grid(column=1,row=2,padx=5,pady=2.5,sticky='nsew')
-        command7 = ttk.Button(self.center_frame,text='Command Six',cursor='cross',command=lambda:self.execute_preset(filename='reset_cmd.txt'))
+        command7 = ttk.Button(self.center_frame,text='Command Six',cursor='cross',command=lambda:self.execute_preset())
         command7.grid(column=1,row=3,padx=5,pady=2.5,sticky='nsew')
 
         self.center_frame.grid_columnconfigure((0,1),weight=1)
@@ -99,12 +101,12 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         self.grid_columnconfigure(0,weight=1) #position of center_frame and header_frame within PresetPage
         self.grid_rowconfigure(1,weight=1)
 
-    def execute_preset(self, filename='reset_cmd.txt'): #reads commands from _cmd.txt file and sends them to the arduino
+    def execute_preset(self, filename='RESET_cmd.txt'): #reads commands from _cmd.txt file and sends them to the arduino
         try:
             with open(filename,'r') as command_file:
                 command_list=command_file.read().splitlines()
                 #print(command_list)
-                executer=execute_code(RobotArmInterface.arduino) #implements execute_code.py
+                executer=execute_code(self.controller.arduino) #implements execute_code.py
                 executer.start(command_list)
         except Exception as e:
             messagebox.showerror('IOError','Unable to execute file:\n'+str(e),parent=self)
@@ -231,8 +233,9 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
             cmd_list=execute_file.read().split()    #--------- if the last compilation failed this will run the
                                                     #last successful compilation which may be a different file.
             #print(cmd_list)
-            arduino = serial.Serial(port=port,baudrate=115200, timeout=RobotArmInterface.timeout) #establish arduino connection to start calibration
-            executer=execute_code(arduino)
+            RobotArmInterface.arduino.close()
+            RobotArmInterface.arduino = serial.Serial(port=port,baudrate=115200, timeout=RobotArmInterface.timeout) #establish arduino connection to start calibration
+            executer=execute_code(RobotArmInterface.arduino)
             if messagebox.askokcancel(parent=self, title='Executer',message='Wait for calibration to complete'):
                 #time.sleep(1)       #need to give executer time to set up
                 #cmd_list=[int(x)for x in cmd_list] #if commands are needed as ints rather than string

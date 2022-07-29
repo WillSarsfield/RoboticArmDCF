@@ -3,7 +3,8 @@ import time
 
 
 class execute_code():
-
+    timeout=.1005
+    min_delay=4050
     def __init__(self,arduino):
         self.arduino=arduino
 
@@ -12,7 +13,7 @@ class execute_code():
             print(cmd)
             if int(cmd)<0:
                 self.arduino.write(bytes('0','utf-8'))
-                time.sleep(-(int(cmd)+1+min_delay)/1000)
+                time.sleep((-(int(cmd)+1)+self.min_delay)/1000)
             else:
                 self.arduino.write(bytes(str(cmd),'utf-8'))
             time.sleep(self.timeout)
