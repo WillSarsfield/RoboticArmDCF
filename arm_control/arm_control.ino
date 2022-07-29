@@ -138,7 +138,11 @@ void loop(){//then executes input instruction
 void moveMotor(float angle, int motorOut){//takes the motor and angle specified and physically moves the corresponding servo
   int pulse;
   angle = getMotorAngle(angle);
-  pulse = map(angle, -50, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);//maps angle to pulse width
+  if (motorOut == 0){
+    pulse = map(angle, -50, 180, MIN_PULSE_WIDTH + 100, MAX_PULSE_WIDTH - 200);//maps angle to pulse width, different for top motor
+  } else{
+    pulse = map(angle, -50, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);//maps angle to pulse width
+  }
   pulse = int(float(pulse) / 1000000 * FREQUENCY * 4096);//changes pulse width to out pulse sent to servo
   pwm.setPWM(motorOut, 0, pulse);
   Serial.println(String(map(angle, -50, 180, 0, 180)) + " x: " + String(calcTrueX()) + " y: " + String(calcY()) + " z: " + String(calcZ()));
