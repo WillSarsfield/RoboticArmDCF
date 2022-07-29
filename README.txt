@@ -1,4 +1,4 @@
-                            ----ROBOT ARM INTERFACE INSTRUCTIONS----
+----ROBOT ARM INTERFACE INSTRUCTIONS----
 This application is created for assistance in controlling the robot arm as part of the Biobox project.
 --FEATURES--
 -Allows opening, editing and saving of text files by using the 'Open File' and 'Save File' buttons
@@ -41,7 +41,7 @@ Close the serial monitor and try again.
 4. Unrecognised command: command[...] See 'README.txt' for help
 - Invalid syntax. See below to identify the problem.
 
-                            ----ARM PROGRAMMING HELP----
+----ARM PROGRAMMING HELP----
 (not to be confused with the assembly language)
 
 The robot arm can be programmed using a series of commands:

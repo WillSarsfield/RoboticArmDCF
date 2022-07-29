@@ -267,7 +267,10 @@ class ReadMe(Frame):
         button3 = ttk.Button(self.header_frame, text='Help Page', command=lambda: controller.show_frame(ReadMe))
         button3.grid(column=2,row=1,sticky='ew')
 
-        self.center_frame.readme_text = Text(self.center_frame)
+        with open('./README.txt','r') as readme_file:
+            self.center_frame.readme_text = Text(self.center_frame,wrap='word')
+            self.center_frame.readme_text.insert('1.0',readme_file.read())
+            readme_file.close()       
         self.center_frame.readme_text.grid(row=0,column=0,sticky='nsew')
         self.center_frame.readme_text.config(state='disabled')
         scrollBary = ttk.Scrollbar(self.center_frame, orient=VERTICAL, command=self.center_frame.readme_text.yview)
