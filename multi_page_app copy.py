@@ -1,6 +1,5 @@
 from tkinter import *
-from tkinter import ttk
-from tkinter import messagebox
+from tkinter import ttk,messagebox,font
 from tkinter.filedialog import askopenfile, asksaveasfile
 from os.path import basename as basename
 from pathlib import Path
@@ -16,12 +15,17 @@ class MultiPageApp(Tk):
         self.custom_style = 'awdark'            #tkinter theme downloadable from https://sourceforge.net/projects/tcl-awthemes
         self.geometry('460x500')
         self.minsize(460,300)
+        self.maxsize(600,1000)
         self.title('Robot Arm Interface')
         self.configure(background='#323232')
         self.tk.call('lappend', 'auto_path', './awthemes-10.4.0')
         self.tk.call('package', 'require', self.custom_style)
-        self.style = ttk.Style()
+        self.style = ttk.Style(self)
         self.style.theme_use(self.custom_style)
+        buttonFont=font.Font(family='Helvetica',size=16)
+        labelFont=font.Font(family='Helvetica',size=15,weight='bold')
+        self.style.configure('TButton',font=buttonFont)
+        self.style.configure('TLabel',font=labelFont,background='#323232',anchor='center')
         container=Frame(self)
 
         container.pack(fill='both',expand=True)
@@ -48,24 +52,45 @@ class StartPage(Frame):
         Frame.__init__(self,parent)
 
         self.header_frame = Frame(self)#contains window swapping buttons
-        self.center_frame = Frame(self)#contains robotic arm movement presets
+        self.center_frame = Frame(self,relief='raised',border=6,background='#323232')#contains robotic arm movement presets
         self.header_frame.grid(row=0,column=0,sticky='nsew')
-        self.center_frame.grid(row=1,column=0,sticky='nsew')
-        self.grid_columnconfigure(0,weight=1)   
+        self.center_frame.grid(row=1,column=0,sticky='nsew')   
 
-        label = Label(self.header_frame,text='Start Page')
-        label.grid(column=0,row=0,columnspan=3)
-        button1 = ttk.Button(self.header_frame, text='Start Page', command=lambda: controller.show_frame(StartPage))
+        label = ttk.Label(self.header_frame,text='Start Page')
+        label.grid(column=0,row=0,columnspan=3,sticky='nsew')
+        button1 = ttk.Button(self.header_frame,text='Start Page', command=lambda: controller.show_frame(StartPage))
         button1.grid(column=0,row=1,sticky='ew')
         button2 = ttk.Button(self.header_frame, text='Text Editor', command=lambda: controller.show_frame(TextEditor))
         button2.grid(column=1,row=1,sticky='ew')
         button3 = ttk.Button(self.header_frame, text='Help Page', command=lambda: controller.show_frame(ReadMe))
         button3.grid(column=2,row=1,sticky='ew')
 
-        self.header_frame.grid_columnconfigure(0,weight=1)
-        self.header_frame.grid_columnconfigure(1,weight=1)
-        self.header_frame.grid_columnconfigure(2,weight=1)
-        self.header_frame.grid_rowconfigure(2, weight=1)
+        self.header_frame.grid_columnconfigure((0,1,2),weight=1)
+
+        command1 = ttk.Button(self.center_frame,text='Reset',cursor='exchange',command=lambda:self.execute_preset(filename='RESET_cmd.txt'))
+        command1.grid(column=0,columnspan=2,row=0,padx=5,pady=2.5,sticky='nsew')
+        command2 = ttk.Button(self.center_frame,text='Command One',cursor='cross',command=lambda:self.execute_preset(filename='reset_cmd.txt'))
+        command2.grid(column=0,row=1,padx=5,pady=2.5,sticky='nsew')
+        command3 = ttk.Button(self.center_frame,text='Command Two',cursor='cross',command=lambda:self.execute_preset(filename='reset_cmd.txt'))
+        command3.grid(column=0,row=2,padx=5,pady=2.5,sticky='nsew')
+        command4 = ttk.Button(self.center_frame,text='Command Three',cursor='cross',command=lambda:self.execute_preset(filename='reset_cmd.txt'))
+        command4.grid(column=0,row=3,padx=5,pady=2.5,sticky='nsew')
+        command5 = ttk.Button(self.center_frame,text='Command Four',cursor='cross',command=lambda:self.execute_preset(filename='reset_cmd.txt'))
+        command5.grid(column=1,row=1,padx=5,pady=2.5,sticky='nsew')
+        command6 = ttk.Button(self.center_frame,text='Command Five',cursor='cross',command=lambda:self.execute_preset(filename='reset_cmd.txt'))
+        command6.grid(column=1,row=2,padx=5,pady=2.5,sticky='nsew')
+        command7 = ttk.Button(self.center_frame,text='Command Six',cursor='cross',command=lambda:self.execute_preset(filename='reset_cmd.txt'))
+        command7.grid(column=1,row=3,padx=5,pady=2.5,sticky='nsew')
+
+        self.center_frame.grid_columnconfigure((0,1),weight=1)
+        self.center_frame.grid_rowconfigure((0,1,2,3),weight=1)
+
+        self.grid_columnconfigure(0,weight=1)
+        self.grid_rowconfigure(1,weight=1)
+
+    def execute_preset(self, filename='reset_cmd.txt'):
+        print(filename)
+        pass
 
 class TextEditor(Frame):
     def __init__(self,parent,controller):
@@ -82,8 +107,8 @@ class TextEditor(Frame):
         self.center_frame.grid(row=1,column=0,sticky='nsew')
         self.footer_frame.grid(row=2,column=0,sticky='nsew')
 
-        label = Label(self.header_frame,text='Text Editor')
-        label.grid(column=0,row=0,columnspan=3) 
+        label = ttk.Label(self.header_frame,text='Text Editor')
+        label.grid(column=0,row=0,columnspan=3,sticky='nsew') 
         button1 = ttk.Button(self.header_frame, text='Start Page', command=lambda: controller.show_frame(StartPage))
         button1.grid(column=0,row=1,sticky='ew')
         button2 = ttk.Button(self.header_frame, text='Text Editor', command=lambda: controller.show_frame(TextEditor))
@@ -91,9 +116,7 @@ class TextEditor(Frame):
         button3 = ttk.Button(self.header_frame, text='Help Page', command=lambda: controller.show_frame(ReadMe))
         button3.grid(column=2,row=1,sticky='ew')
 
-        self.header_frame.grid_columnconfigure(0,weight=1)
-        self.header_frame.grid_columnconfigure(1,weight=1)
-        self.header_frame.grid_columnconfigure(2,weight=1)
+        self.header_frame.grid_columnconfigure((0,1,2),weight=1)
 
         self.center_frame.text_box = Text(self.center_frame, height=5, wrap=NONE)
         self.center_frame.text_box.grid(row=0,column=0,sticky='nsew')
@@ -223,8 +246,8 @@ class TextEditor(Frame):
 class ReadMe(Frame):
     def __init__(self,parent,controller):
         Frame.__init__(self,parent)
-        label = Label(self,text='Help Page')
-        label.grid(column=0,row=0,columnspan=3)
+        label = ttk.Label(self,text='Help Page')
+        label.grid(column=0,row=0,columnspan=3,sticky='nsew')
 
         button1 = ttk.Button(self, text='Start Page', command=lambda: controller.show_frame(StartPage))
         button1.grid(column=0,row=1,sticky='ew')
@@ -236,7 +259,7 @@ class ReadMe(Frame):
         button3.grid(column=2,row=1,sticky='ew')
 
         readme_text = Label(self,text='help')
-        readme_text.grid(row=2,column=0,columnspan=3)
+        readme_text.grid(row=2,column=0,columnspan=3,sticky='nsew')
 
         self.grid_columnconfigure(0,weight=1)
         self.grid_columnconfigure(1,weight=1)
