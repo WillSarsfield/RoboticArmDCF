@@ -71,3 +71,4 @@ This delay is executed python-side.
 The syntax ignores whitespace and is not case sensitive. I recommend spacing out the commands with whitespace to make them more readable.
 Commands must be separated by a semicolon.
 
+If you are still having issues feel free to email me at joseph.percival-2@student.manchester.ac.uk.
