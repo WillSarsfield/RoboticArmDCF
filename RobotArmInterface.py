@@ -5,18 +5,29 @@ from os.path import basename as basename
 from pathlib import Path
 import re 
 from execute_code import execute_code
-import time
+import serial
 
 class RobotArmInterface(Tk):
 
     def __init__(self, *args, **kwargs):
+        #setting up arduino comms
+        self.timeout=.1005
+        #-----!!!need to choose port based on connection!!!-------
+        #arduinoPort = '/dev/cu.usbmodem11101' #for mac - check bottom of arduino editor and modify 
+        arduinoPort = 'COM5' #for windows - may be a different number
+        #---------------------------------------------------------
 
         Tk.__init__(self,*args,**kwargs)
+        self.title('Robot Arm Interface')
+        try:
+            self.arduino = serial.Serial(port=arduinoPort,baudrate=115200, timeout=self.timeout)
+        except Exception as e:
+            messagebox.showerror('IOError','Unable to establish connection:\n'+str(e),parent=self)
+            self.destroy()
         self.custom_style = 'awdark'            #tkinter theme downloadable from https://sourceforge.net/projects/tcl-awthemes
         self.geometry('460x300')
         self.minsize(460,300)
         self.maxsize(600,1000)
-        self.title('Robot Arm Interface')
         self.configure(background='#323232')
         self.tk.call('lappend', 'auto_path', './awthemes-10.4.0')
         self.tk.call('package', 'require', self.custom_style)
@@ -34,19 +45,19 @@ class RobotArmInterface(Tk):
 
         self.frames = {}
 
-        for F in (StartPage, TextEditor, ReadMe):
+        for F in (PresetPage, TextEditor, ReadMe):
             frame = F(container,self)
             self.frames[F] = frame
             frame.grid(row=0,column=0,sticky='nsew')
 
-        self.show_frame(StartPage)
+        self.show_frame(PresetPage)
 
     def show_frame(self,cont):
 
         frame = self.frames[cont]
         frame.tkraise()
 
-class StartPage(Frame):
+class PresetPage(Frame):
 
     def __init__(self,parent,controller):
         Frame.__init__(self,parent)
@@ -56,9 +67,9 @@ class StartPage(Frame):
         self.header_frame.grid(row=0,column=0,sticky='nsew')
         self.center_frame.grid(row=1,column=0,sticky='nsew')   
 
-        label = ttk.Label(self.header_frame,text='Start Page')
+        label = ttk.Label(self.header_frame,text='Presets')
         label.grid(column=0,row=0,columnspan=3,sticky='nsew')
-        button1 = ttk.Button(self.header_frame,text='Start Page', command=lambda: controller.show_frame(StartPage))
+        button1 = ttk.Button(self.header_frame,text='Presets', command=lambda: controller.show_frame(PresetPage))
         button1.grid(column=0,row=1,sticky='ew')
         button2 = ttk.Button(self.header_frame, text='Text Editor', command=lambda: controller.show_frame(TextEditor))
         button2.grid(column=1,row=1,sticky='ew')
@@ -89,8 +100,14 @@ class StartPage(Frame):
         self.grid_rowconfigure(1,weight=1)
 
     def execute_preset(self, filename='reset_cmd.txt'):
-        print(filename)
-        pass
+        try:
+            with open(filename,'r') as command_file:
+                command_list=command_file.read().splitlines()
+                #print(command_list)
+                executer=execute_code(RobotArmInterface.arduino)
+                executer.start(command_list)
+        except Exception as e:
+            messagebox.showerror('IOError','Unable to execute file:\n'+str(e),parent=self)
 
 class TextEditor(Frame):
     def __init__(self,parent,controller):
@@ -109,7 +126,7 @@ class TextEditor(Frame):
 
         label = ttk.Label(self.header_frame,text='Text Editor')
         label.grid(column=0,row=0,columnspan=3,sticky='nsew') 
-        button1 = ttk.Button(self.header_frame, text='Start Page', command=lambda: controller.show_frame(StartPage))
+        button1 = ttk.Button(self.header_frame, text='Presets', command=lambda: controller.show_frame(PresetPage))
         button1.grid(column=0,row=1,sticky='ew')
         button2 = ttk.Button(self.header_frame, text='Text Editor', command=lambda: controller.show_frame(TextEditor))
         button2.grid(column=1,row=1,sticky='ew')
@@ -138,7 +155,7 @@ class TextEditor(Frame):
         clearButton.grid(column=0,row=0,sticky='e',padx=2.5,pady=5)
         compileButton = ttk.Button(self.footer_frame, text='Compile', command=lambda:self.compile_text())
         compileButton.grid(column=1,row=0,sticky='e',padx=2.5,pady=5)
-        executeButton = ttk.Button(self.footer_frame, text='Execute', command=lambda:self.execute_text())
+        executeButton = ttk.Button(self.footer_frame, text='Execute', command=lambda:self.execute_text(RobotArmInterface.arduinoPort))
         executeButton.grid(column=2,row=0,sticky='e',padx=2.5,pady=5)
 
         self.footer_frame.grid_rowconfigure(0,weight=1)
@@ -207,13 +224,14 @@ class TextEditor(Frame):
         save_compiled_file(encoded_cmds)
         messagebox.showinfo(parent=self, title='Compiler',message='Compiled successfully')
 
-    def execute_text(self):
+    def execute_text(self,port):
         try:
             self.compile_text()
             execute_file=open(self.compilepath,'r')
             cmd_list=execute_file.read().split()
             #print(cmd_list)
-            executer=execute_code()
+            arduino = serial.Serial(port=port,baudrate=115200, timeout=RobotArmInterface.timeout)
+            executer=execute_code(arduino)
             if messagebox.askokcancel(parent=self, title='Executer',message='Wait for calibration to complete'):
                 #time.sleep(1)       #need to give executer time to set up
                 #cmd_list=[int(x)for x in cmd_list] #if commands are needed as ints rather than string
@@ -258,7 +276,7 @@ class ReadMe(Frame):
         label = ttk.Label(self.header_frame,text='Help Page')
         label.grid(column=0,row=0,columnspan=3,sticky='nsew')
 
-        button1 = ttk.Button(self.header_frame, text='Start Page', command=lambda: controller.show_frame(StartPage))
+        button1 = ttk.Button(self.header_frame, text='Presets', command=lambda: controller.show_frame(PresetPage))
         button1.grid(column=0,row=1,sticky='ew')
 
         button2 = ttk.Button(self.header_frame, text='Text Editor', command=lambda: controller.show_frame(TextEditor))
