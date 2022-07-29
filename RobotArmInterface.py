@@ -1,6 +1,5 @@
 from tkinter import *
-from tkinter import ttk
-from tkinter import messagebox
+from tkinter import ttk,messagebox,font
 from tkinter.filedialog import askopenfile, asksaveasfile
 from os.path import basename as basename
 from pathlib import Path
@@ -8,54 +7,152 @@ import re
 from execute_code import execute_code
 import time
 
-class RobotArmInterface:
+class RobotArmInterface(Tk):
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+
+        Tk.__init__(self,*args,**kwargs)
+        self.custom_style = 'awdark'            #tkinter theme downloadable from https://sourceforge.net/projects/tcl-awthemes
+        self.geometry('460x300')
+        self.minsize(460,300)
+        self.maxsize(600,1000)
+        self.title('Robot Arm Interface')
+        self.configure(background='#323232')
+        self.tk.call('lappend', 'auto_path', './awthemes-10.4.0')
+        self.tk.call('package', 'require', self.custom_style)
+        self.style = ttk.Style(self)
+        self.style.theme_use(self.custom_style)
+        buttonFont=font.Font(family='Helvetica',size=16)
+        labelFont=font.Font(family='Helvetica',size=15,weight='bold')
+        self.style.configure('TButton',font=buttonFont)
+        self.style.configure('TLabel',font=labelFont,background='#323232',anchor='center')
+        container=Frame(self)
+
+        container.pack(fill='both',expand=True)
+        container.grid_rowconfigure(0,weight=1)
+        container.grid_columnconfigure(0,weight=1)
+
+        self.frames = {}
+
+        for F in (StartPage, TextEditor, ReadMe):
+            frame = F(container,self)
+            self.frames[F] = frame
+            frame.grid(row=0,column=0,sticky='nsew')
+
+        self.show_frame(StartPage)
+
+    def show_frame(self,cont):
+
+        frame = self.frames[cont]
+        frame.tkraise()
+
+class StartPage(Frame):
+
+    def __init__(self,parent,controller):
+        Frame.__init__(self,parent)
+
+        self.header_frame = Frame(self)#contains window swapping buttons
+        self.center_frame = Frame(self,relief='raised',border=6,background='#323232')#contains robotic arm movement presets
+        self.header_frame.grid(row=0,column=0,sticky='nsew')
+        self.center_frame.grid(row=1,column=0,sticky='nsew')   
+
+        label = ttk.Label(self.header_frame,text='Start Page')
+        label.grid(column=0,row=0,columnspan=3,sticky='nsew')
+        button1 = ttk.Button(self.header_frame,text='Start Page', command=lambda: controller.show_frame(StartPage))
+        button1.grid(column=0,row=1,sticky='ew')
+        button2 = ttk.Button(self.header_frame, text='Text Editor', command=lambda: controller.show_frame(TextEditor))
+        button2.grid(column=1,row=1,sticky='ew')
+        button3 = ttk.Button(self.header_frame, text='Help Page', command=lambda: controller.show_frame(ReadMe))
+        button3.grid(column=2,row=1,sticky='ew')
+
+        self.header_frame.grid_columnconfigure((0,1,2),weight=1)
+
+        command1 = ttk.Button(self.center_frame,text='Reset',cursor='exchange',command=lambda:self.execute_preset(filename='RESET_cmd.txt'))
+        command1.grid(column=0,columnspan=2,row=0,padx=5,pady=2.5,sticky='nsew')
+        command2 = ttk.Button(self.center_frame,text='Command One',cursor='cross',command=lambda:self.execute_preset(filename='reset_cmd.txt'))
+        command2.grid(column=0,row=1,padx=5,pady=2.5,sticky='nsew')
+        command3 = ttk.Button(self.center_frame,text='Command Two',cursor='cross',command=lambda:self.execute_preset(filename='reset_cmd.txt'))
+        command3.grid(column=0,row=2,padx=5,pady=2.5,sticky='nsew')
+        command4 = ttk.Button(self.center_frame,text='Command Three',cursor='cross',command=lambda:self.execute_preset(filename='reset_cmd.txt'))
+        command4.grid(column=0,row=3,padx=5,pady=2.5,sticky='nsew')
+        command5 = ttk.Button(self.center_frame,text='Command Four',cursor='cross',command=lambda:self.execute_preset(filename='reset_cmd.txt'))
+        command5.grid(column=1,row=1,padx=5,pady=2.5,sticky='nsew')
+        command6 = ttk.Button(self.center_frame,text='Command Five',cursor='cross',command=lambda:self.execute_preset(filename='reset_cmd.txt'))
+        command6.grid(column=1,row=2,padx=5,pady=2.5,sticky='nsew')
+        command7 = ttk.Button(self.center_frame,text='Command Six',cursor='cross',command=lambda:self.execute_preset(filename='reset_cmd.txt'))
+        command7.grid(column=1,row=3,padx=5,pady=2.5,sticky='nsew')
+
+        self.center_frame.grid_columnconfigure((0,1),weight=1)
+        self.center_frame.grid_rowconfigure((0,1,2,3),weight=1)
+
+        self.grid_columnconfigure(0,weight=1)
+        self.grid_rowconfigure(1,weight=1)
+
+    def execute_preset(self, filename='reset_cmd.txt'):
+        print(filename)
+        pass
+
+class TextEditor(Frame):
+    def __init__(self,parent,controller):
+        Frame.__init__(self,parent)
+
         self.current_filename='Untitled.txt'
         self.current_compilename='Untitled_cmd.txt'
         self.compilepath=''
 
-        self.custom_style = 'awdark'            #tkinter theme downloadable from https://sourceforge.net/projects/tcl-awthemes
-        self.root = Tk()
-        self.root.title("Arm Programming Interface")
-        self.root.geometry('460x500')
-        self.root.minsize(460,300)
-        self.root.configure(background='#323232')
-        self.root.tk.call('lappend', 'auto_path', './awthemes-10.4.0')
-        self.root.tk.call('package', 'require', self.custom_style)
-        self.style = ttk.Style()
-        self.style.theme_use(self.custom_style)
+        self.header_frame = Frame(self)#frame containing window swapping buttons
+        self.center_frame = Frame(self)#frame containing textbox and scrollbars
+        self.footer_frame = Frame(self)#frame containing file manipulation buttons
+        self.header_frame.grid(row=0,column=0,sticky='nsew')
+        self.center_frame.grid(row=1,column=0,sticky='nsew')
+        self.footer_frame.grid(row=2,column=0,sticky='nsew')
 
-        self.text_box = Text(self.root, height=5, wrap=NONE)
-        self.text_box.grid(column=0, columnspan=6, row=0, sticky='nsew')
-        self.scrollBary = ttk.Scrollbar(self.root, orient=VERTICAL, command=self.text_box.yview)
-        self.scrollBary.grid(column=6, row=0, sticky='ns')
-        self.text_box['yscrollcommand'] = self.scrollBary.set
-        self.scrollBarx = ttk.Scrollbar(self.root, orient=HORIZONTAL, command=self.text_box.xview)
-        self.scrollBarx.grid(column=0, columnspan=6,row=1, sticky='ew')
-        self.text_box['xscrollcommand'] = self.scrollBarx.set
+        label = ttk.Label(self.header_frame,text='Text Editor')
+        label.grid(column=0,row=0,columnspan=3,sticky='nsew') 
+        button1 = ttk.Button(self.header_frame, text='Start Page', command=lambda: controller.show_frame(StartPage))
+        button1.grid(column=0,row=1,sticky='ew')
+        button2 = ttk.Button(self.header_frame, text='Text Editor', command=lambda: controller.show_frame(TextEditor))
+        button2.grid(column=1,row=1,sticky='ew')
+        button3 = ttk.Button(self.header_frame, text='Help Page', command=lambda: controller.show_frame(ReadMe))
+        button3.grid(column=2,row=1,sticky='ew')
 
-        self.saveButton = ttk.Button(self.root, text='Save File', command=lambda:self.save_file())
-        self.saveButton.grid(column=5,columnspan=2,row=2,padx=2.5,pady=5,sticky='e')
-        self.openButton = ttk.Button(self.root, text='Open File', command=lambda:self.open_file())
-        self.openButton.grid(column=4,row=2,padx=2.5,pady=5)
-        self.clearButton = ttk.Button(self.root, text='Clear', command=lambda:self.clear_text())
-        self.clearButton.grid(column=1,row=2,padx=2.5,pady=5,sticky='w')
-        self.compileButton = ttk.Button(self.root, text='Compile', command=lambda:self.compile_text())
-        self.compileButton.grid(column=2,row=2,padx=2.5,pady=5,sticky='w')
-        self.executeButton = ttk.Button(self.root, text='Execute', command=lambda:self.execute_text())
-        self.executeButton.grid(column=3,row=2,padx=2.5,pady=5,sticky='w')
+        self.header_frame.grid_columnconfigure((0,1,2),weight=1)
 
-        self.root.grid_columnconfigure(0,weight=1)
-        self.root.grid_rowconfigure(0, weight=1)
-        self.root.mainloop()
+        self.center_frame.text_box = Text(self.center_frame, height=5, wrap=NONE)
+        self.center_frame.text_box.grid(row=0,column=0,sticky='nsew')
+        scrollBary = ttk.Scrollbar(self.center_frame, orient=VERTICAL, command=self.center_frame.text_box.yview)
+        scrollBary.grid(row=0,column=1,sticky='ns')
+        self.center_frame.text_box['yscrollcommand'] = scrollBary.set
+        scrollBarx = ttk.Scrollbar(self.center_frame, orient=HORIZONTAL, command=self.center_frame.text_box.xview)
+        scrollBarx.grid(row=1,column=0,sticky='ew')
+        self.center_frame.text_box['xscrollcommand'] = scrollBarx.set
+
+        self.center_frame.grid_columnconfigure(0,weight=1)
+        self.center_frame.grid_rowconfigure(0,weight=1)
+        
+        saveButton = ttk.Button(self.footer_frame, text='Save File', command=lambda:self.save_file())
+        saveButton.grid(column=4,row=0,sticky='e',padx=2.5,pady=5)
+        openButton = ttk.Button(self.footer_frame, text='Open File', command=lambda:self.open_file())
+        openButton.grid(column=3,row=0,sticky='e',padx=2.5,pady=5)
+        clearButton = ttk.Button(self.footer_frame, text='Clear', command=lambda:self.clear_text())
+        clearButton.grid(column=0,row=0,sticky='e',padx=2.5,pady=5)
+        compileButton = ttk.Button(self.footer_frame, text='Compile', command=lambda:self.compile_text())
+        compileButton.grid(column=1,row=0,sticky='e',padx=2.5,pady=5)
+        executeButton = ttk.Button(self.footer_frame, text='Execute', command=lambda:self.execute_text())
+        executeButton.grid(column=2,row=0,sticky='e',padx=2.5,pady=5)
+
+        self.footer_frame.grid_rowconfigure(0,weight=1)
+        self.footer_frame.grid_columnconfigure(0,weight=1)
+
+        self.grid_columnconfigure(0,weight=1)
+        self.grid_rowconfigure(1, weight=1)
 
     def get_text(self): #get program as a string from the text box 
-        text=self.text_box.get('1.0','end-1c')
+        text=self.center_frame.text_box.get('1.0','end-1c')
         return text
 
     def clear_text(self): #remove all text from text box
-        self.text_box.delete(1.0,'end')
+        self.center_frame.text_box.delete(1.0,'end')
 
     def compile_text(self): #converts text into format ready for serial comms
         text=self.get_text()
@@ -103,12 +200,12 @@ class RobotArmInterface:
             else:
                 if len(command)>=100:
                     command=command[:100]+'[...]' #limit length of message string
-                messagebox.showerror(parent=self.root,title='Compiler',message='Unrecognised command: '+command+'\nSee \'README.txt\' for help')    #include command description here
+                messagebox.showerror(parent=self,title='Compiler',message='Unrecognised command: '+command+'\nSee \'README.txt\' for help')    #include command description here
                 return False
 
         #print(encoded_cmds)
         save_compiled_file(encoded_cmds)
-        messagebox.showinfo(parent=self.root, title='Compiler',message='Compiled successfully')
+        messagebox.showinfo(parent=self, title='Compiler',message='Compiled successfully')
 
     def execute_text(self):
         try:
@@ -117,34 +214,70 @@ class RobotArmInterface:
             cmd_list=execute_file.read().split()
             #print(cmd_list)
             executer=execute_code()
-            if messagebox.askokcancel(parent=self.root, title='Executer',message='Wait for calibration to complete'):
+            if messagebox.askokcancel(parent=self, title='Executer',message='Wait for calibration to complete'):
                 #time.sleep(1)       #need to give executer time to set up
                 #cmd_list=[int(x)for x in cmd_list] #if commands are needed as ints rather than string
                 executer.start(cmd_list=cmd_list)
-                messagebox.showinfo(parent=self.root, title='Executer',message='Execution complete')
+                messagebox.showinfo(parent=self, title='Executer',message='Execution complete')
         except Exception as e:
-            messagebox.showerror('IOError','Unable to execute file:\n'+str(e),parent=self.root)
+            messagebox.showerror('IOError','Unable to execute file:\n'+str(e),parent=self)
 
- 
     def save_file(self): #opens saveasfile dialog , saves text from text box to file
         try:
-            new_file=asksaveasfile(parent=self.root,initialdir='./',initialfile=self.current_filename,defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
+            new_file=asksaveasfile(parent=self,initialdir='./',initialfile=self.current_filename,defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
             self.current_filename=basename(new_file.name)
             if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
                 new_file.writelines(self.get_text())
                 new_file.close()
         except Exception as e:
-            messagebox.showerror('IOError','Unable to save file:\n'+str(e),parent=self.root)
+            messagebox.showerror('IOError','Unable to save file:\n'+str(e),parent=self)
 
     def open_file(self):
         try:
-            new_file=askopenfile(parent=self.root,initialdir='./',defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
+            new_file=askopenfile(parent=self,initialdir='./',defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
             self.current_filename=basename(new_file.name) #saves the name of the file that was opened, so when it is saved that name is set as default
             if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
                 self.clear_text()
-                self.text_box.insert('1.0',new_file.read())
+                self.center_frame.text_box.insert('1.0',new_file.read())
                 new_file.close()
         except Exception as e:
-            messagebox.showerror('IOError','Unable to open file:\n'+str(e),parent=self.root)
+            messagebox.showerror('IOError','Unable to open file:\n'+str(e),parent=self)
 
-application=RobotArmInterface()
+class ReadMe(Frame):
+    def __init__(self,parent,controller):
+        Frame.__init__(self,parent)
+
+        self.header_frame = Frame(self)#frame containing window swapping buttons
+        self.center_frame = Frame(self)#frame containing textbox and scrollbars
+        self.header_frame.grid(row=0,column=0,sticky='nsew')
+        self.center_frame.grid(row=1,column=0,sticky='nsew')
+        self.grid_columnconfigure(0,weight=1)
+        self.grid_rowconfigure(1,weight=1)
+
+
+        label = ttk.Label(self.header_frame,text='Help Page')
+        label.grid(column=0,row=0,columnspan=3,sticky='nsew')
+
+        button1 = ttk.Button(self.header_frame, text='Start Page', command=lambda: controller.show_frame(StartPage))
+        button1.grid(column=0,row=1,sticky='ew')
+
+        button2 = ttk.Button(self.header_frame, text='Text Editor', command=lambda: controller.show_frame(TextEditor))
+        button2.grid(column=1,row=1,sticky='ew')
+    
+        button3 = ttk.Button(self.header_frame, text='Help Page', command=lambda: controller.show_frame(ReadMe))
+        button3.grid(column=2,row=1,sticky='ew')
+
+        self.center_frame.readme_text = Text(self.center_frame)
+        self.center_frame.readme_text.grid(row=0,column=0,sticky='nsew')
+        self.center_frame.readme_text.config(state='disabled')
+        scrollBary = ttk.Scrollbar(self.center_frame, orient=VERTICAL, command=self.center_frame.readme_text.yview)
+        scrollBary.grid(row=0,column=1,sticky='ns')
+        self.center_frame.readme_text['yscrollcommand'] = scrollBary.set
+
+        self.header_frame.grid_columnconfigure((0,1,2),weight=1)
+        self.center_frame.grid_columnconfigure(0,weight=1)
+        self.center_frame.grid_rowconfigure(0,weight=1)
+        self.grid_rowconfigure(1, weight=1)
+        
+app=RobotArmInterface()
+app.mainloop()
