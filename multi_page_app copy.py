@@ -46,22 +46,26 @@ class StartPage(Frame):
 
     def __init__(self,parent,controller):
         Frame.__init__(self,parent)
-        label = Label(self,text='Start Page')
+
+        self.header_frame = Frame(self)#contains window swapping buttons
+        self.center_frame = Frame(self)#contains robotic arm movement presets
+        self.header_frame.grid(row=0,column=0,sticky='nsew')
+        self.center_frame.grid(row=1,column=0,sticky='nsew')
+        self.grid_columnconfigure(0,weight=1)   
+
+        label = Label(self.header_frame,text='Start Page')
         label.grid(column=0,row=0,columnspan=3)
-
-        button1 = ttk.Button(self, text='Start Page', command=lambda: controller.show_frame(StartPage))
+        button1 = ttk.Button(self.header_frame, text='Start Page', command=lambda: controller.show_frame(StartPage))
         button1.grid(column=0,row=1,sticky='ew')
-
-        button2 = ttk.Button(self, text='Text Editor', command=lambda: controller.show_frame(TextEditor))
+        button2 = ttk.Button(self.header_frame, text='Text Editor', command=lambda: controller.show_frame(TextEditor))
         button2.grid(column=1,row=1,sticky='ew')
-    
-        button3 = ttk.Button(self, text='Help Page', command=lambda: controller.show_frame(ReadMe))
+        button3 = ttk.Button(self.header_frame, text='Help Page', command=lambda: controller.show_frame(ReadMe))
         button3.grid(column=2,row=1,sticky='ew')
 
-        self.grid_columnconfigure(0,weight=1)
-        self.grid_columnconfigure(1,weight=1)
-        self.grid_columnconfigure(2,weight=1)
-        self.grid_rowconfigure(2, weight=1)
+        self.header_frame.grid_columnconfigure(0,weight=1)
+        self.header_frame.grid_columnconfigure(1,weight=1)
+        self.header_frame.grid_columnconfigure(2,weight=1)
+        self.header_frame.grid_rowconfigure(2, weight=1)
 
 class TextEditor(Frame):
     def __init__(self,parent,controller):
@@ -79,14 +83,11 @@ class TextEditor(Frame):
         self.footer_frame.grid(row=2,column=0,sticky='nsew')
 
         label = Label(self.header_frame,text='Text Editor')
-        label.grid(column=0,row=0,columnspan=3)
-
+        label.grid(column=0,row=0,columnspan=3) 
         button1 = ttk.Button(self.header_frame, text='Start Page', command=lambda: controller.show_frame(StartPage))
         button1.grid(column=0,row=1,sticky='ew')
-
         button2 = ttk.Button(self.header_frame, text='Text Editor', command=lambda: controller.show_frame(TextEditor))
         button2.grid(column=1,row=1,sticky='ew')
-    
         button3 = ttk.Button(self.header_frame, text='Help Page', command=lambda: controller.show_frame(ReadMe))
         button3.grid(column=2,row=1,sticky='ew')
 
@@ -106,7 +107,6 @@ class TextEditor(Frame):
         self.center_frame.grid_columnconfigure(0,weight=1)
         self.center_frame.grid_rowconfigure(0,weight=1)
         
-
         saveButton = ttk.Button(self.footer_frame, text='Save File', command=lambda:self.save_file())
         saveButton.grid(column=4,row=0,sticky='e',padx=2.5,pady=5)
         openButton = ttk.Button(self.footer_frame, text='Open File', command=lambda:self.open_file())
@@ -120,7 +120,6 @@ class TextEditor(Frame):
 
         self.footer_frame.grid_rowconfigure(0,weight=1)
         self.footer_frame.grid_columnconfigure(0,weight=1)
-
 
         self.grid_columnconfigure(0,weight=1)
         self.grid_rowconfigure(1, weight=1)
@@ -200,7 +199,6 @@ class TextEditor(Frame):
         except Exception as e:
             messagebox.showerror('IOError','Unable to execute file:\n'+str(e),parent=self)
 
- 
     def save_file(self): #opens saveasfile dialog , saves text from text box to file
         try:
             new_file=asksaveasfile(parent=self,initialdir='./',initialfile=self.current_filename,defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
@@ -237,8 +235,6 @@ class ReadMe(Frame):
         button3 = ttk.Button(self, text='Help Page', command=lambda: controller.show_frame(ReadMe))
         button3.grid(column=2,row=1,sticky='ew')
 
-
-
         readme_text = Label(self,text='help')
         readme_text.grid(row=2,column=0,columnspan=3)
 
@@ -247,6 +243,5 @@ class ReadMe(Frame):
         self.grid_columnconfigure(2,weight=1)
         self.grid_rowconfigure(2, weight=1)
         
-
 app=MultiPageApp()
 app.mainloop()
