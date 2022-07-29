@@ -111,7 +111,7 @@ void loop(){//then executes input instruction
   if (setFlag == false){ //when unpaused and not looking for angle to read
     frame += 1;
       for (int x = 0; x < 4; x += 1){
-        if (frame < 91 && valid != false){//within frames 0 to 180
+        if (frame < 91 && valid != false){//within frames 0 to 90
           ang[x] = map(frame, 0, 90, startAng[x], finishAng[x]);
           if (checkBounds() != false){
             moveMotor(ang[x], motor[x]);
@@ -123,7 +123,7 @@ void loop(){//then executes input instruction
           }
         }
       } 
-      if (frame > 91 || valid == false){//once frames exceed 180, resets frames and waits for new serial to read
+      if (frame > 91 || valid == false){//once frames exceed 90, resets frames and waits for new serial to read
         for (int x = 0; x < 4; x += 1){ 
           startAng[x] = ang[x];
           finishAng[x] = ang[x];
