@@ -84,7 +84,7 @@ class PresetPage(Frame):
         command2.grid(column=0,row=1,padx=5,pady=2.5,sticky='nsew')
         command3 = ttk.Button(self.center_frame,text='Command Two',cursor='cross',command=lambda:self.execute_preset(filename='IRRADIATE.txt'))
         command3.grid(column=0,row=2,padx=5,pady=2.5,sticky='nsew')
-        command4 = ttk.Button(self.center_frame,text='Command Three',cursor='cross',command=lambda:self.execute_preset(filename='PUR_EXAMPLE.txt'))
+        command4 = ttk.Button(self.center_frame,text='Command Three',cursor='cross',command=lambda:self.execute_preset(filename='POUR_EXAMPLE.txt'))
         command4.grid(column=0,row=3,padx=5,pady=2.5,sticky='nsew')
         command5 = ttk.Button(self.center_frame,text='Command Four',cursor='cross',command=lambda:self.execute_preset(filename='TEST_BOUNDARIES.txt'))
         command5.grid(column=1,row=1,padx=5,pady=2.5,sticky='nsew')
