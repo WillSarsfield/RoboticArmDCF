@@ -6,12 +6,12 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define MIN_PULSE_WIDTH 400
 #define MAX_PULSE_WIDTH 2400
 #define FREQUENCY 60
-#define lowerX -18
-#define upperX 18
-#define lowerY 0
-#define upperY 18
-#define lowerZ -18
-#define upperZ 18
+#define lowerX -30
+#define upperX 30
+#define lowerY -30
+#define upperY 30
+#define lowerZ -30
+#define upperZ 30
 
 int motor[4] = {0,4,8,12};
 float ang[4] = {0.,0.,0.,0.};
@@ -43,13 +43,11 @@ float getMotorAngle(float angle){
 }
 
 float calcMockX(){//calculates a mock X coordinate from middle servos - used for 2 dimensions
-  float angle[2] = {0.,0.};
-  float xCoord[2] = {0.,0.};
-  angle[0] = ang[1];
-  angle[1] = ang[2];
-  xCoord[1] = 10.5 * cos(((angle[1])*M_PI)/180.);
-  xCoord[0] = 9 * cos(((angle[1] + 90 - angle[0])*M_PI)/180.);
-  return (xCoord[1] + xCoord[0]);
+  float xCoord[3] = {0.,0.,0.};
+  xCoord[2] = 10.5 * cos(((ang[2])*M_PI)/180.);
+  xCoord[1] = 9 * cos(((ang[2] + 90 - ang[1])*M_PI)/180.);
+  xCoord[0] = 5 * cos((((ang[2] + 90 - ang[1]) + 90 - ang[0])*M_PI)/180.);
+  return (xCoord[2] + xCoord[1] + xCoord[0]);
 }
 
 float calcTrueX(){//calculates X coordinate via all servos
@@ -59,13 +57,11 @@ float calcTrueX(){//calculates X coordinate via all servos
 }
 
 float calcY(){// calculates Y coordinate from middle servos
-  float angle[2] = {0.,0.};
-  float yCoord[2] = {0.,0.};
-  angle[0] = ang[1];
-  angle[1] = ang[2];
-  yCoord[1] = 10.5 * sin(((angle[1])*M_PI)/180.);
-  yCoord[0] = 9 * sin(((angle[1] + 90 - angle[0])*M_PI)/180.);
-  return (yCoord[1] + yCoord[0]);
+  float yCoord[3] = {0.,0.,0.};
+  yCoord[2] = 10.5 * sin(((ang[2])*M_PI)/180.);
+  yCoord[1] = 9 * sin(((ang[2] + 90 - ang[1])*M_PI)/180.);
+  yCoord[0] = 5 * sin((((ang[2] + 90 - ang[1]) + 90 - ang[0])*M_PI)/180.);
+  return (yCoord[2] + yCoord[1] + yCoord[0]);
 }
 
 float calcZ(){//calculates Z coordinate from bottom servo
@@ -105,7 +101,7 @@ void loop(){//then executes input instruction
     if (input == -1){//input read as serial input and translated to motor - angle
       setFlag = false;
     } else{
-      if (input > 0 && input < 725){
+      if (input > -1 && input < 725){
         int currentMotor = getMotor(input);
         finishAng[currentMotor] = getAngle(currentMotor, input);
         Serial.println("motor: " + String(currentMotor) + " angle:" + String(finishAng[currentMotor]));
