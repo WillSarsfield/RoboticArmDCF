@@ -38,8 +38,17 @@ void calibrate(){//sets the physical motors to the correct start position when c
   }
 }
 
-float getMotorAngle(float angle){
-  return map(angle, 0, 180, -50, 180);
+float getMotorPulse(float angle,int motorOut){
+  int pulse;
+   if (motorOut == 0){
+    pulse = map(angle, 0, 180, MIN_PULSE_WIDTH+150, MAX_PULSE_WIDTH+100);//maps angle to pulse width, different for top motor
+  }else if (motorOut==2){
+    pulse = map(angle, 0, 180, MIN_PULSE_WIDTH+50, MAX_PULSE_WIDTH+150);//maps angle to pulse width
+  }else{
+    pulse = map(angle, 0, 180, MIN_PULSE_WIDTH+50, MAX_PULSE_WIDTH+150);//maps angle to pulse width
+  }
+  pulse = int(float(pulse) / 1000000 * FREQUENCY * 4096);//changes pulse width to out pulse sent to servo
+  return pulse;
 }
 
 float calcMockX(){//calculates a mock X coordinate from middle servos - used for 2 dimensions
@@ -116,6 +125,7 @@ void loop(){//then executes input instruction
           if (checkBounds() != false){
             moveMotor(ang[x], motor[x]);
           } else {
+            Serial.println("out of bounds");
             valid = false;
             for (int x = 0; x < 4; x += 1){
               ang[x] = map(frame - 1, 0, 90, startAng[x], finishAng[x]);
@@ -137,13 +147,7 @@ void loop(){//then executes input instruction
 
 void moveMotor(float angle, int motorOut){//takes the motor and angle specified and physically moves the corresponding servo
   int pulse;
-  angle = getMotorAngle(angle);
-  if (motorOut == 0){
-    pulse = map(angle, -50, 180, MIN_PULSE_WIDTH + 100, MAX_PULSE_WIDTH - 200);//maps angle to pulse width, different for top motor
-  } else{
-    pulse = map(angle, -50, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);//maps angle to pulse width
-  }
-  pulse = int(float(pulse) / 1000000 * FREQUENCY * 4096);//changes pulse width to out pulse sent to servo
+  pulse = getMotorPulse(angle,motorOut);
   pwm.setPWM(motorOut, 0, pulse);
   Serial.println(String(map(angle, -50, 180, 0, 180)) + " x: " + String(calcTrueX()) + " y: " + String(calcY()) + " z: " + String(calcZ()));
   delay(5);

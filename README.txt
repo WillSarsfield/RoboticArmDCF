@@ -26,8 +26,8 @@ Most bugs occur when the arduino has not been set up properly.
 1. [Errno 2] could not open port portname: [Errno 2] No such file or directory: 'portname'
 - The arduino is not connected to the specified port. Ensure the arduino is connected to this computer.
 If the error still persists, open the arduino IDE and connect the arduino via tools->port. 
-Port should be set to 'COM4' on windows or '/dev/cu.usbmodem1101' on mac (numbers will vary).
-Copy this port name and replace the arduinoPort attribute with this value within execute_code.py.
+Port should be set to 'COM4' on windows or '/dev/cu.usbmodem1101' on mac (number suffixes will vary).
+Copy this port name and replace the arduinoPort attribute with this value within RobotArmInterface.py.
 Save the file and restart the editor.
 (Note this error usually occurs each time the arduino is unplugged as the port tends to change)
 

@@ -20,11 +20,11 @@ class RobotArmInterface(Tk):
         Tk.__init__(self,*args,**kwargs)
         self.title('Robot Arm Interface')
         try: #attempt to establish arduino connection
-            self.arduino.close()
-            self.arduino = serial.Serial(port=self.arduinoPort,baudrate=115200, timeout=self.timeout)
+            RobotArmInterface.arduino.close()
+            RobotArmInterface.arduino = serial.Serial(port=self.arduinoPort,baudrate=115200, timeout=self.timeout)
         except Exception as e:
             messagebox.showerror('IOError','Unable to establish connection:\n'+str(e),parent=self)
-            self.destroy()
+            #self.destroy()
         self.custom_style = 'awdark'            #tkinter theme downloadable from https://sourceforge.net/projects/tcl-awthemes
         self.geometry('460x300')#window start size
         self.minsize(460,300)
@@ -79,20 +79,40 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
 
         self.header_frame.grid_columnconfigure((0,1,2),weight=1)
 
-        #setting up preset buttons, change the text attribute and filename argument within command attribute to execute different programs
-        command1 = ttk.Button(self.center_frame,text='Reset',cursor='exchange',command=lambda:self.execute_preset(filename='RESET_cmd.txt'))
+        command_names=[         #names of each preset button, changing these renames the buttons
+            'Reset',            #0
+            'Collect Sample',   #1
+            'Irradiate',        #2
+            'Pour Example',     #3
+            'Test Boundaries',  #4
+            'Test Range',       #5
+            'Command Six'       #6
+        ]
+
+        presets_matrix = {      #names of compiled files corresponding to each button, change these to change what file the button executes
+            0:'RESET_cmd.txt',
+            1:'COLLECT_SAMPLE_cmd.txt',
+            2:'IRRADIATE_cmd.txt',
+            3:'POUR_EXAMPLE_cmd.txt',
+            4:'TEST_BOUNDARIES_cmd.txt',
+            5:'TEST_RANGE_cmd.txt',
+            6:''
+        }
+
+        #setting up preset buttons, change the command_names text and presets_matrix filename to execute different programs
+        command1 = ttk.Button(self.center_frame,text=command_names[0],cursor='exchange',command=lambda:self.execute_preset(filename=presets_matrix[0]))
         command1.grid(column=0,columnspan=2,row=0,padx=5,pady=2.5,sticky='nsew')
-        command2 = ttk.Button(self.center_frame,text='Collect Sample',cursor='cross',command=lambda:self.execute_preset(filename='COLLECT_SAMPLE_cmd.txt'))
+        command2 = ttk.Button(self.center_frame,text=command_names[1],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[1]))
         command2.grid(column=0,row=1,padx=5,pady=2.5,sticky='nsew')
-        command3 = ttk.Button(self.center_frame,text='Irradiate',cursor='cross',command=lambda:self.execute_preset(filename='IRRADIATE_cmd.txt'))
+        command3 = ttk.Button(self.center_frame,text=command_names[2],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[2]))
         command3.grid(column=0,row=2,padx=5,pady=2.5,sticky='nsew')
-        command4 = ttk.Button(self.center_frame,text='Pour - example',cursor='cross',command=lambda:self.execute_preset(filename='POUR_EXAMPLE_cmd.txt'))
+        command4 = ttk.Button(self.center_frame,text=command_names[3],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[3]))
         command4.grid(column=0,row=3,padx=5,pady=2.5,sticky='nsew')
-        command5 = ttk.Button(self.center_frame,text='test boundaries',cursor='cross',command=lambda:self.execute_preset(filename='TEST_BOUNDARIES_cmd.txt'))
+        command5 = ttk.Button(self.center_frame,text=command_names[4],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[4]))
         command5.grid(column=1,row=1,padx=5,pady=2.5,sticky='nsew')
-        command6 = ttk.Button(self.center_frame,text='test servo range',cursor='cross',command=lambda:self.execute_preset(filename='TEST_RANGE_cmd.txt'))
+        command6 = ttk.Button(self.center_frame,text=command_names[5],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[5]))
         command6.grid(column=1,row=2,padx=5,pady=2.5,sticky='nsew')
-        command7 = ttk.Button(self.center_frame,text='Command Six',cursor='cross',command=lambda:self.execute_preset())
+        command7 = ttk.Button(self.center_frame,text=command_names[6],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[6]))
         command7.grid(column=1,row=3,padx=5,pady=2.5,sticky='nsew')
 
         self.center_frame.grid_columnconfigure((0,1),weight=1)
@@ -121,7 +141,7 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
 
         self.header_frame = Frame(self)#frame containing window swapping buttons
         self.center_frame = Frame(self)#frame containing textbox and scrollbars
-        self.footer_frame = Frame(self)#frame containing file manipulation buttons
+        self.footer_frame = Frame(self,bg='#323232')#frame containing file manipulation buttons
         self.header_frame.grid(row=0,column=0,sticky='nsew')
         self.center_frame.grid(row=1,column=0,sticky='nsew')
         self.footer_frame.grid(row=2,column=0,sticky='nsew')
@@ -225,22 +245,22 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
         #print(encoded_cmds)
         save_compiled_file(encoded_cmds)
         messagebox.showinfo(parent=self, title='Compiler',message='Compiled successfully')
+        return True
 
     def execute_text(self,port):
         try:
-            self.compile_text()
-            execute_file=open(self.compilepath,'r') #opens last successfully compiled file ----------ISSUE:
-            cmd_list=execute_file.read().split()    #--------- if the last compilation failed this will run the
-                                                    #last successful compilation which may be a different file.
-            #print(cmd_list)
-            RobotArmInterface.arduino.close()
-            RobotArmInterface.arduino = serial.Serial(port=port,baudrate=115200, timeout=RobotArmInterface.timeout) #establish arduino connection to start calibration
-            executer=execute_code(RobotArmInterface.arduino)
-            if messagebox.askokcancel(parent=self, title='Executer',message='Wait for calibration to complete'):
-                #time.sleep(1)       #need to give executer time to set up
-                #cmd_list=[int(x)for x in cmd_list] #if commands are needed as ints rather than string
-                executer.start(cmd_list=cmd_list)
-                messagebox.showinfo(parent=self, title='Executer',message='Execution complete')
+            if self.compile_text(): #if successfully compiled:
+                execute_file=open(self.compilepath,'r') #opens last successfully compiled file ----------ISSUE:
+                cmd_list=execute_file.read().split()    #--------- if the last compilation failed this will run the
+                                                        #last successful compilation which may be a different file.
+                #print(cmd_list)
+                RobotArmInterface.arduino.close()
+                RobotArmInterface.arduino = serial.Serial(port=port,baudrate=115200, timeout=RobotArmInterface.timeout) #establish arduino connection to start calibration
+                executer=execute_code(RobotArmInterface.arduino)
+                if messagebox.askokcancel(parent=self, title='Executer',message='Wait for calibration to complete'):
+                    #cmd_list=[int(x)for x in cmd_list] #if commands are needed as ints rather than string
+                    executer.start(cmd_list=cmd_list)
+                    messagebox.showinfo(parent=self, title='Executer',message='Execution complete')
         except Exception as e:
             messagebox.showerror('IOError','Unable to execute file:\n'+str(e),parent=self)
 
@@ -300,6 +320,5 @@ class ReadMe(Frame):
         self.center_frame.grid_columnconfigure(0,weight=1)
         self.center_frame.grid_rowconfigure(0,weight=1)
 
-        
 app=RobotArmInterface()
 app.mainloop()
