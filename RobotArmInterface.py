@@ -223,18 +223,21 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
                 savefile.close()
 
         #FUNDAMENTAL COMMANDS    
-        move_cmd=re.compile('^s\([0-3]\)a\((0[0-9]{2}|1([0-7][0-9]|80))\)$')#matches 'S(#)A(###)' - change to s(#,###)
-        do_cmd=re.compile('^do\(\d+\)$')                                 #matches 'DO(#)'
-        bit_cmd=re.compile('^bit\(\d+,(high|low|1|0)\)$')                #matches 'BIT(#,HIGH/LOW)' or 'BIT(#,1/0)'
-        pump_cmd=re.compile()                                               #also note angle must be less than or equal to 180 to match
-        spin_cmd=re.compile()                                               #move commands are only executed when a do command is executed
+        move_cmd=re.compile('^move\([0-3],(0\d{2}|1([0-7]\d|80))\)$')       #matches 'MOVE(#,###)' as servo (unsigned), angle (unsigned)
+        do_cmd=re.compile('^do\(\d+\)$')                                    #matches 'DO(#)' (unsigned)
+        bit_cmd=re.compile('^bit\(\d+,(high|low|1|0)\)$')                   #matches 'BIT(#,HIGH/LOW)' or 'BIT(#,1/0)' as pin (unsigned), pin_val (unsigned)
+        pump_cmd=re.compile('^pump\(\d+,-?\d+\)$')                          #matches 'PUMP(#,#)' as pump_num (unsigned), num_steps (signed)
+        spin_cmd=re.compile('^spin\(\d+\)$')                                #matches 'SPIN()' as rpm(unsigned)                                               
+        mckirrd_cmd=re.compile('^mckirrd\(\)$')                             #matches 'MCKIRRD()'
+        irrd_cmd=re.compile('^irrd\(\d+\)$')                                #matches 'IRRD(#)' as dose (unsigned)
 
         #HIGH LEVEL COMMANDS
-        offset_cmd=re.compile('^offset\(-?\d+,-?\d+,-?\d+\)$')     #matches 'OFFSET(#,#,#)' inc. support for negatives
-        moveall_cmd=re.compile('^moveall\(-?\d+,-?\d+,-?\d+\)$')   #matches 'MOVEALL(#,#,#)' inc. support for negatives
-        dispense_cmd=re.compile()
-
-        
+        offset_cmd=re.compile('^offset\(-?\d+,-?\d+,-?\d+\)$')              #matches 'OFFSET(#,#,#)' as x,y,z (signed) - need to add angle?
+        moveall_cmd=re.compile('^moveall\(-?\d+,-?\d+,-?\d+\)$')            #matches 'MOVEALL(#,#,#)' as x,y,z (signed)
+        shift_cmd=re.compile('^moveall\(-?\d+,-?\d+,-?\d+\)$')              #matches 'SHIFT(#,#,#)' as x,y,z (signed)
+        dispense_cmd=re.compile('^dispense\(\d+,\d+\)$')                    #matches 'DISPENSE(#,#)' as pump_num (unsigned), sample_vol (unsigned)
+        learnas_cmd=re.compile('^learnas\([a-z0-9]{3,}\)$')                 #matches 'LEARNAS(string[3+])'
+        takepose_cmd=re.compile('^takepose\([a-z0-9]{3,}\)$')               #matches 'TAKEPOSE(string[3+])'
         
         encoded_cmds=[]                                                     
         for command in command_list:                                         
