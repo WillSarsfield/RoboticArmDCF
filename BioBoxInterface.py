@@ -7,21 +7,29 @@ import re
 from execute_code import execute_code
 import serial
 
-class RobotArmInterface(Tk):
+class BioBoxInterface(Tk):
     #-----!!!need to choose port based on connection!!!-------
     arduinoPort = '/dev/cu.usbmodem1301' #for mac - check bottom of arduino editor and modify 
     #arduinoPort = 'COM5' #for windows - may be a different number
     #---------------------------------------------------------
     timeout=.1005
     arduino=serial.Serial()
-    def __init__(self, *args, **kwargs):    
-        #setting up arduino comms
+    def __init__(self, *args, **kwargs):   
+
+        self.compiler=Compiler(self)
+        self.executer=Executer(self) 
+
+        self.current_filename='./robot_commands/Untitled.txt' #relevant to execute_text, compile_text, open_file, save_file methods
+        self.current_compilename='./robot_commands/Untitled_cmd.txt'
+        self.compilepath=''
 
         Tk.__init__(self,*args,**kwargs)
-        self.title('Robot Arm Interface')
+        self.title('BioBox Interface')
+
+        #setting up arduino comms
         try: #attempt to establish arduino connection
-            RobotArmInterface.arduino.close()
-            RobotArmInterface.arduino = serial.Serial(port=self.arduinoPort,baudrate=115200, timeout=self.timeout)
+            BioBoxInterface.arduino.close()
+            BioBoxInterface.arduino = serial.Serial(port=self.arduinoPort,baudrate=115200, timeout=self.timeout)
         except Exception as e:
             messagebox.showerror('IOError','Unable to establish connection:\n'+str(e),parent=self)
             #self.destroy()
@@ -60,6 +68,10 @@ class RobotArmInterface(Tk):
 class PresetPage(Frame): #start page with preset command buttons for robot arm
 
     def __init__(self,parent,controller):
+
+        self.compiler = controller.compiler
+        self.executer = controller.executer
+
         self.controller=controller
         Frame.__init__(self,parent) #contains header_frame and center_frame
 
@@ -122,22 +134,16 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         self.grid_rowconfigure(1,weight=1)
 
     def execute_preset(self, filename='RESET_cmd.txt'): #reads commands from _cmd.txt file and sends them to the arduino
-        try:
-            with open(filename,'r') as command_file:
-                command_list=command_file.read().splitlines()
-                #print(command_list)
-                executer=execute_code(self.controller.arduino) #implements execute_code.py
-                executer.start(command_list)
-        except Exception as e:
-            messagebox.showerror('IOError','Unable to execute file:\n'+str(e),parent=self)
+        self.executer.execute_preset(filename=filename)
 
 class TextEditor(Frame): #code editor page for manually programming robot arm or editing presets
+
     def __init__(self,parent,controller):
         Frame.__init__(self,parent) # contains header_frame,center_frame,footer_frame
 
-        self.current_filename='./robot_commands/Untitled.txt' #relevant to execute_text, compile_text, open_file, save_file methods
-        self.current_compilename='./robot_commands/Untitled_cmd.txt'
-        self.compilepath=''
+        self.executer=controller.executer
+        self.compiler=controller.compiler
+        self.controller=controller
 
         self.header_frame = Frame(self)#frame containing window swapping buttons
         self.center_frame = Frame(self,bg='#323232')#frame containing textbox and scrollbars
@@ -177,7 +183,7 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
         clearButton.grid(column=0,row=0,sticky='e',padx=2.5,pady=5)
         compileButton = ttk.Button(self.footer_frame, text='Compile', command=lambda:self.compile_text())
         compileButton.grid(column=1,row=0,sticky='e',padx=2.5,pady=5)
-        executeButton = ttk.Button(self.footer_frame, text='Execute', command=lambda:self.execute_text(RobotArmInterface.arduinoPort))
+        executeButton = ttk.Button(self.footer_frame, text='Execute', command=lambda:self.execute_text(BioBoxInterface.arduinoPort))
         executeButton.grid(column=2,row=0,sticky='e',padx=2.5,pady=5)
 
         self.footer_frame.grid_rowconfigure(0,weight=1)
@@ -194,93 +200,15 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
         self.center_frame.text_box.delete(1.0,'end')
 
     def compile_text(self): #converts text into format ready for serial comms
-        text=self.get_text()
-        text=''.join(text.split()).lower() #formatting text: remove whitespace and convert to lowercase
-        command_list=text.split(';') #splits strings into commands separated by ';'
-
-        def get_raw(*,command,type='move'):
-            max_angle=180           #refers to the maximum range of motion the servo has in degrees
-            if type=='move':
-                paramList=re.findall(r'\d+',command)
-                servo_num,angle=int(paramList[0]),int(paramList[1]) # gets all numbers from the move command
-                encoded_val= servo_num*(max_angle+1)+angle      # maps (RxR)->R i.e. there is a unique positive encoded_val for each combination of servo&angle
-                encoded_val+=1                                  # need to reserve zero for a separate commmand 
-                # print(servo_num,angle,'encoded as',encoded_val)
-            elif type=='do':
-                waitTime=int(re.findall(r'\d+', command)[0]) # gets the wait time from the do command
-                encoded_val= -waitTime-1                        #wait command is encoded as the negative numbers (1 is subtracted as the value 0 is already used)
-                # print(waitTime,'encoded as',encoded_val)
-            return encoded_val
-        
-        def save_compiled_file(cmd_list):
-            self.current_compilename=self.current_filename.replace('.txt','_cmd.txt') #can be replaced - this is to distinguish between compiled and uncompiled files
-            savefile=open(self.current_compilename,'w')
-            self.compilepath=savefile.name
-            if type(savefile)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
-                for cmd in cmd_list:
-                    savefile.write(str(cmd))
-                    savefile.write('\n')
-                savefile.close()
-
-        #FUNDAMENTAL COMMANDS    
-        move_cmd=re.compile('^move\([0-3],(0\d{2}|1([0-7]\d|80))\)$')       #matches 'MOVE(#,###)' as servo (unsigned), angle (unsigned)
-        do_cmd=re.compile('^do\(\d+\)$')                                    #matches 'DO(#)' (unsigned)
-        bit_cmd=re.compile('^bit\(\d+,(high|low|1|0)\)$')                   #matches 'BIT(#,HIGH/LOW)' or 'BIT(#,1/0)' as pin (unsigned), pin_val (unsigned)
-        pump_cmd=re.compile('^pump\(\d+,-?\d+\)$')                          #matches 'PUMP(#,#)' as pump_num (unsigned), num_steps (signed)
-        spin_cmd=re.compile('^spin\(\d+\)$')                                #matches 'SPIN()' as rpm(unsigned)                                               
-        mckirrd_cmd=re.compile('^mckirrd\(\)$')                             #matches 'MCKIRRD()'
-        irrd_cmd=re.compile('^irrd\(\d+\)$')                                #matches 'IRRD(#)' as dose (unsigned)
-
-        #HIGH LEVEL COMMANDS
-        offset_cmd=re.compile('^offset\(-?\d+,-?\d+,-?\d+\)$')              #matches 'OFFSET(#,#,#)' as x,y,z (signed) - need to add angle?
-        moveall_cmd=re.compile('^moveall\(-?\d+,-?\d+,-?\d+\)$')            #matches 'MOVEALL(#,#,#)' as x,y,z (signed)
-        shift_cmd=re.compile('^moveall\(-?\d+,-?\d+,-?\d+\)$')              #matches 'SHIFT(#,#,#)' as x,y,z (signed)
-        dispense_cmd=re.compile('^dispense\(\d+,\d+\)$')                    #matches 'DISPENSE(#,#)' as pump_num (unsigned), sample_vol (unsigned)
-        learnas_cmd=re.compile('^learnas\([a-z0-9]{3,}\)$')                 #matches 'LEARNAS(string[3+])'
-        takepose_cmd=re.compile('^takepose\([a-z0-9]{3,}\)$')               #matches 'TAKEPOSE(string[3+])'
-        
-        encoded_cmds=[]                                                     
-        for command in command_list:                                         
-            if command=='': #caused by having a ; at the very end of the string
-                continue
-            elif move_cmd.match(command):
-                # print('move command detected:',command)
-                encoded_cmds.append(get_raw(command=command,type='move'))
-            elif do_cmd.match(command):
-                # print('wait command detected:',command)
-                encoded_cmds.append(get_raw(command=command,type='do'))
-            else:
-                if len(command)>=100:
-                    command=command[:100]+'[...]' #limit length of message string
-                messagebox.showerror(parent=self,title='Compiler',message='Unrecognised command: '+command+'\nSee \'README.txt\' for help')    #include command description here
-                return False
-
-        #print(encoded_cmds)
-        save_compiled_file(encoded_cmds)
-        messagebox.showinfo(parent=self, title='Compiler',message='Compiled successfully')
-        return True
+        return self.compiler.compile_text()
 
     def execute_text(self,port):
-        try:
-            if self.compile_text(): #if successfully compiled:
-                execute_file=open(self.compilepath,'r') #opens last successfully compiled file ----------ISSUE:
-                cmd_list=execute_file.read().split()    #--------- if the last compilation failed this will run the
-                                                        #last successful compilation which may be a different file.
-                #print(cmd_list)
-                RobotArmInterface.arduino.close()
-                RobotArmInterface.arduino = serial.Serial(port=port,baudrate=115200, timeout=RobotArmInterface.timeout) #establish arduino connection to start calibration
-                executer=execute_code(RobotArmInterface.arduino)
-                if messagebox.askokcancel(parent=self, title='Executer',message='Wait for calibration to complete'):
-                    #cmd_list=[int(x)for x in cmd_list] #if commands are needed as ints rather than string
-                    executer.start(cmd_list=cmd_list)
-                    messagebox.showinfo(parent=self, title='Executer',message='Execution complete')
-        except Exception as e:
-            messagebox.showerror('IOError','Unable to execute file:\n'+str(e),parent=self)
+        self.executer.execute_text()
 
     def save_file(self): #opens saveasfile dialog, saves text from text box to file
         try:
-            new_file=asksaveasfile(parent=self,initialdir='./robot_commands',initialfile=self.current_filename,defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
-            self.current_filename=basename(new_file.name)
+            new_file=asksaveasfile(parent=self,initialdir='./robot_commands',initialfile=self.controller.current_filename,defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
+            self.controller.current_filename=basename(new_file.name)
             if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
                 new_file.writelines(self.get_text())
                 new_file.close()
@@ -290,7 +218,7 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
     def open_file(self): #opens askopenfile dialog, sets textbox text to file contents
         try:
             new_file=askopenfile(parent=self,initialdir='./robot_commands',defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
-            self.current_filename=basename(new_file.name) #saves the name of the file that was opened, so when it is saved that name is set as default
+            self.controller.current_filename=basename(new_file.name) #saves the name of the file that was opened, so when it is saved that name is set as default
             if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
                 self.clear_text()
                 self.center_frame.text_box.insert('1.0',new_file.read())
@@ -333,5 +261,108 @@ class ReadMe(Frame):
         self.center_frame.grid_columnconfigure(0,weight=1)
         self.center_frame.grid_rowconfigure(0,weight=1)
 
-app=RobotArmInterface()
+class Compiler:
+    def __init__(self,parent):
+        self.parent=parent
+
+    def get_raw(self,command,type='move'):
+        max_angle=180           #refers to the maximum range of motion the servo has in degrees
+        if type=='move':
+            paramList=re.findall(r'\d+',command)
+            servo_num,angle=int(paramList[0]),int(paramList[1]) # gets all numbers from the move command
+            encoded_val= servo_num*(max_angle+1)+angle      # maps (RxR)->R i.e. there is a unique positive encoded_val for each combination of servo&angle
+            encoded_val+=1                                  # need to reserve zero for a separate commmand 
+            # print(servo_num,angle,'encoded as',encoded_val)
+        elif type=='do':
+            waitTime=int(re.findall(r'\d+', command)[0]) # gets the wait time from the do command
+            encoded_val= -waitTime-1                        #wait command is encoded as the negative numbers (1 is subtracted as the value 0 is already used)
+            # print(waitTime,'encoded as',encoded_val)
+        return encoded_val
+
+    def save_compiled_file(self,cmd_list):
+        self.parent.current_compilename=self.parent.current_filename.replace('.txt','_cmd.txt') #can be replaced - this is to distinguish between compiled and uncompiled files
+        savefile=open(self.parent.current_compilename,'w')
+        self.parent.compilepath=savefile.name
+        if type(savefile)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
+            for cmd in cmd_list:
+                savefile.write(str(cmd))
+                savefile.write('\n')
+            savefile.close()
+
+    def compile_text(self):
+        text=self.parent.frames[TextEditor].get_text()
+        text=''.join(text.split()).lower() #formatting text: remove whitespace and convert to lowercase
+        command_list=text.split(';') #splits strings into commands separated by ';'
+
+        #FUNDAMENTAL COMMANDS    
+        move_cmd=re.compile('^move\([0-3],(0\d{2}|1([0-7]\d|80))\)$')       #matches 'MOVE(#,###)' as servo (unsigned), angle (unsigned)
+        do_cmd=re.compile('^do\(\d+\)$')                                    #matches 'DO(#)' (unsigned)
+        bit_cmd=re.compile('^bit\(\d+,(high|low|1|0)\)$')                   #matches 'BIT(#,HIGH/LOW)' or 'BIT(#,1/0)' as pin (unsigned), pin_val (unsigned)
+        pump_cmd=re.compile('^pump\(\d+,-?\d+\)$')                          #matches 'PUMP(#,#)' as pump_num (unsigned), num_steps (signed)
+        spin_cmd=re.compile('^spin\(\d+\)$')                                #matches 'SPIN()' as rpm(unsigned)                                               
+        mckirrd_cmd=re.compile('^mckirrd\(\)$')                             #matches 'MCKIRRD()'
+        irrd_cmd=re.compile('^irrd\(\d+\)$')                                #matches 'IRRD(#)' as dose (unsigned)
+
+        #HIGH LEVEL COMMANDS
+        offset_cmd=re.compile('^offset\(-?\d+,-?\d+,-?\d+\)$')              #matches 'OFFSET(#,#,#)' as x,y,z (signed) - need to add angle?
+        moveall_cmd=re.compile('^moveall\(-?\d+,-?\d+,-?\d+\)$')            #matches 'MOVEALL(#,#,#)' as x,y,z (signed)
+        shift_cmd=re.compile('^moveall\(-?\d+,-?\d+,-?\d+\)$')              #matches 'SHIFT(#,#,#)' as x,y,z (signed)
+        dispense_cmd=re.compile('^dispense\(\d+,\d+\)$')                    #matches 'DISPENSE(#,#)' as pump_num (unsigned), sample_vol (unsigned)
+        learnas_cmd=re.compile('^learnas\([a-z0-9]{3,}\)$')                 #matches 'LEARNAS(string[3+])'
+        takepose_cmd=re.compile('^takepose\([a-z0-9]{3,}\)$')               #matches 'TAKEPOSE(string[3+])'
+        
+        encoded_cmds=[]                                                     
+        for command in command_list:                                         
+            if command=='': #caused by having a ; at the very end of the string
+                continue
+            elif move_cmd.match(command):
+                # print('move command detected:',command)
+                encoded_cmds.append(self.get_raw(command=command,type='move'))
+            elif do_cmd.match(command):
+                # print('wait command detected:',command)
+                encoded_cmds.append(self.get_raw(command=command,type='do'))
+            else:
+                if len(command)>=100:
+                    command=command[:100]+'[...]' #limit length of message string
+                messagebox.showerror(parent=self.parent,title='Compiler',message='Unrecognised command: '+command+'\nSee \'README.txt\' for help')    #include command description here
+                return False
+
+        #print(encoded_cmds)
+        self.save_compiled_file(encoded_cmds)
+        messagebox.showinfo(parent=self.parent, title='Compiler',message='Compiled successfully')
+        return True
+
+class Executer:
+    def __init__(self,parent,port=''):
+        self.parent=parent
+        self.port=port
+
+    def execute_text(self):
+        try:
+            if self.parent.compiler.compile_text(): #if successfully compiled:
+                execute_file=open(self.parent.compilepath,'r') #opens last successfully compiled file ----------ISSUE:
+                cmd_list=execute_file.read().split()    #--------- if the last compilation failed this will run the
+                                                        #last successful compilation which may be a different file.
+                #print(cmd_list)
+                BioBoxInterface.arduino.close()
+                BioBoxInterface.arduino = serial.Serial(port=self.port,baudrate=115200, timeout=BioBoxInterface.timeout) #establish arduino connection to start calibration
+                executer=execute_code(BioBoxInterface.arduino)
+                if messagebox.askokcancel(parent=self.parent, title='Executer',message='Wait for calibration to complete'):
+                    #cmd_list=[int(x)for x in cmd_list] #if commands are needed as ints rather than string
+                    executer.start(cmd_list=cmd_list)
+                    messagebox.showinfo(parent=self.parent, title='Executer',message='Execution complete')
+        except Exception as e:
+            messagebox.showerror('IOError','Unable to execute file:\n'+str(e),parent=self.parent)
+
+    def execute_preset(self,filename=''):
+        try:
+            with open(filename,'r') as command_file:
+                command_list=command_file.read().splitlines()
+                #print(command_list)
+                execute_code(self.parent.arduino).start(command_list) #implements execute_code.py
+        except Exception as e:
+            messagebox.showerror('IOError','Unable to execute file:\n'+str(e),parent=self.parent)
+
+
+app=BioBoxInterface()
 app.mainloop()
