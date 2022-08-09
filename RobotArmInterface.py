@@ -221,19 +221,29 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
                     savefile.write(str(cmd))
                     savefile.write('\n')
                 savefile.close()
-            
-        move_cmd=re.compile('^s\([0-3]\)a\((0[0-9]{2}|1([0-7][0-9]|80))\)$')#matches input of the form 'S(#)A(###)' with # representing the desired servo & angle
-        wait_cmd=re.compile('^do\([0-9]+\)$')                               #matches input of the form 'DO(#)' with # representing the wait time
-                                                                            #note angle must be three digits (i.e. use 003 not 3) & servo # must be between 0-3
-        encoded_cmds=[]                                                     #also note angle must be less than or equal to 180 to match
-                                                                            #move commands are only executed when a do command is executed
+
+        #FUNDAMENTAL COMMANDS    
+        move_cmd=re.compile('^s\([0-3]\)a\((0[0-9]{2}|1([0-7][0-9]|80))\)$')#matches 'S(#)A(###)' - change to s(#,###)
+        do_cmd=re.compile('^do\(\d+\)$')                                 #matches 'DO(#)'
+        bit_cmd=re.compile('^bit\(\d+,(high|low|1|0)\)$')                #matches 'BIT(#,HIGH/LOW)' or 'BIT(#,1/0)'
+        pump_cmd=re.compile()                                               #also note angle must be less than or equal to 180 to match
+        spin_cmd=re.compile()                                               #move commands are only executed when a do command is executed
+
+        #HIGH LEVEL COMMANDS
+        offset_cmd=re.compile('^offset\(-?\d+,-?\d+,-?\d+\)$')     #matches 'OFFSET(#,#,#)' inc. support for negatives
+        moveall_cmd=re.compile('^moveall\(-?\d+,-?\d+,-?\d+\)$')   #matches 'MOVEALL(#,#,#)' inc. support for negatives
+        dispense_cmd=re.compile()
+
+        
+        
+        encoded_cmds=[]                                                     
         for command in command_list:                                         
             if command=='': #caused by having a ; at the very end of the string
                 continue
             elif move_cmd.match(command):
                 # print('move command detected:',command)
                 encoded_cmds.append(get_raw(command=command,type='move'))
-            elif wait_cmd.match(command):
+            elif do_cmd.match(command):
                 # print('wait command detected:',command)
                 encoded_cmds.append(get_raw(command=command,type='do'))
             else:
