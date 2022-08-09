@@ -90,12 +90,12 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         ]
 
         presets_matrix = {      #names of compiled files corresponding to each button, change these to change what file the button executes
-            0:'RESET_cmd.txt',
-            1:'COLLECT_SAMPLE_cmd.txt',
-            2:'IRRADIATE_cmd.txt',
-            3:'POUR_EXAMPLE_cmd.txt',
-            4:'TEST_BOUNDARIES_cmd.txt',
-            5:'TEST_RANGE_cmd.txt',
+            0:'./robot_commands/RESET_cmd.txt',
+            1:'./robot_commands/COLLECT_SAMPLE_cmd.txt',
+            2:'./robot_commands/IRRADIATE_cmd.txt',
+            3:'./robot_commands/POUR_EXAMPLE_cmd.txt',
+            4:'./robot_commands/TEST_BOUNDARIES_cmd.txt',
+            5:'./robot_commandsTEST_RANGE_cmd.txt',
             6:''
         }
 
@@ -135,12 +135,12 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
     def __init__(self,parent,controller):
         Frame.__init__(self,parent) # contains header_frame,center_frame,footer_frame
 
-        self.current_filename='Untitled.txt' #relevant to execute_text, compile_text, open_file, save_file methods
-        self.current_compilename='Untitled_cmd.txt'
+        self.current_filename='./robot_commands/Untitled.txt' #relevant to execute_text, compile_text, open_file, save_file methods
+        self.current_compilename='./robot_commands/Untitled_cmd.txt'
         self.compilepath=''
 
         self.header_frame = Frame(self)#frame containing window swapping buttons
-        self.center_frame = Frame(self)#frame containing textbox and scrollbars
+        self.center_frame = Frame(self,bg='#323232')#frame containing textbox and scrollbars
         self.footer_frame = Frame(self,bg='#323232')#frame containing file manipulation buttons
         self.header_frame.grid(row=0,column=0,sticky='nsew')
         self.center_frame.grid(row=1,column=0,sticky='nsew')
@@ -279,7 +279,7 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
 
     def save_file(self): #opens saveasfile dialog, saves text from text box to file
         try:
-            new_file=asksaveasfile(parent=self,initialdir='./',initialfile=self.current_filename,defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
+            new_file=asksaveasfile(parent=self,initialdir='./robot_commands',initialfile=self.current_filename,defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
             self.current_filename=basename(new_file.name)
             if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
                 new_file.writelines(self.get_text())
@@ -289,7 +289,7 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
 
     def open_file(self): #opens askopenfile dialog, sets textbox text to file contents
         try:
-            new_file=askopenfile(parent=self,initialdir='./',defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
+            new_file=askopenfile(parent=self,initialdir='./robot_commands',defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
             self.current_filename=basename(new_file.name) #saves the name of the file that was opened, so when it is saved that name is set as default
             if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
                 self.clear_text()
