@@ -5,6 +5,7 @@ from os.path import basename as basename
 from pathlib import Path
 import re 
 from execute_code import execute_code
+from CommandInterpreter import CommandInterpreter
 import serial
 
 class BioBoxInterface(Tk):
@@ -264,20 +265,10 @@ class ReadMe(Frame):
 class Compiler:
     def __init__(self,parent):
         self.parent=parent
+        self.interpreter=CommandInterpreter()
 
-    def get_raw(self,command,type='move'):
-        max_angle=180           #refers to the maximum range of motion the servo has in degrees
-        if type=='move':
-            paramList=re.findall(r'\d+',command)
-            servo_num,angle=int(paramList[0]),int(paramList[1]) # gets all numbers from the move command
-            encoded_val= servo_num*(max_angle+1)+angle      # maps (RxR)->R i.e. there is a unique positive encoded_val for each combination of servo&angle
-            encoded_val+=1                                  # need to reserve zero for a separate commmand 
-            # print(servo_num,angle,'encoded as',encoded_val)
-        elif type=='do':
-            waitTime=int(re.findall(r'\d+', command)[0]) # gets the wait time from the do command
-            encoded_val= -waitTime-1                        #wait command is encoded as the negative numbers (1 is subtracted as the value 0 is already used)
-            # print(waitTime,'encoded as',encoded_val)
-        return encoded_val
+    def get_raw(self,command,type=''):
+        return self.interpreter.get_encoded_command(command=command,type=type)
 
     def save_compiled_file(self,cmd_list):
         self.parent.current_compilename=self.parent.current_filename.replace('.txt','_cmd.txt') #can be replaced - this is to distinguish between compiled and uncompiled files
@@ -320,7 +311,7 @@ class Compiler:
                     encoded_cmds.append(self.get_raw(command=command,type=name))
                     match=True
                 elif command=='': #caused by having a ; at the very end of the string
-                    continue
+                    match=True
             if not(match):
                 if len(command)>=100:
                     command=command[:100]+'[...]' #limit length of message string
@@ -328,7 +319,7 @@ class Compiler:
                 return False
             match=False
 
-        #print(encoded_cmds)
+        print(encoded_cmds)
         self.save_compiled_file(encoded_cmds)
         messagebox.showinfo(parent=self.parent, title='Compiler',message='Compiled successfully')
         return True
