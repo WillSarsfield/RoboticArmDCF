@@ -265,7 +265,7 @@ class ReadMe(Frame):
 class Compiler:
     def __init__(self,parent):
         self.parent=parent
-        self.interpreter=CommandInterpreter()
+        self.interpreter=CommandInterpreter(0,0,0) #initial offset valuesß
 
     def get_raw(self,command,type=''):
         return self.interpreter.get_encoded_command(command=command,type=type)
@@ -308,7 +308,11 @@ class Compiler:
         for command in command_list:                                         
             for name, pattern in cmd_regex.items():
                 if pattern.match(command):
-                    encoded_cmds.append(self.get_raw(command=command,type=name))
+                    encoded_cmd=self.get_raw(command=command,type=name)
+                    if type(encoded_cmd)==type(0):
+                        encoded_cmds.append(encoded_cmd)
+                    elif type(encoded_cmd)==type([]):
+                        encoded_cmds.append(encoded_cmd[i] for i in range(len(encoded_cmd)))
                     match=True
                 elif command=='': #caused by having a ; at the very end of the string
                     match=True

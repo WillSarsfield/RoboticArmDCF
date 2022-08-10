@@ -1,9 +1,16 @@
 import re
 
 class CommandInterpreter:
-    max_angle=180           #refers to the maximum range of motion the servo has in degrees
-    def __init__(self):
-        pass
+    max_angle=180           #refers to the maximum range of motion each servo has in degrees
+    num_servos=5
+
+    def __init__(self,x_ofst=0,y_ofst=0,z_ofst=0):
+        self.x_ofst=x_ofst
+        self.y_ofst=y_ofst
+        self.z_ofst=z_ofst
+        self.x_pos=0
+        self.y_pos=0
+        self.z_pos=0
 
     def get_encoded_command(self,command=None,type=''):
         paramList=re.findall(r'\d+',command)
@@ -21,6 +28,10 @@ class CommandInterpreter:
         elif type=='bit':
             if len(paramList)==1:
                 bit=paramList[0]
+                if re.match('high',command):
+                    value = 1
+                elif re.match('low',command):
+                    value = 0
             elif len(paramList)==2:
                 bit,value = int(paramList[0]),int(paramList[1])
 
@@ -28,6 +39,42 @@ class CommandInterpreter:
         elif type=='pump':
             pump_num,steps=int(paramList[0]),int(paramList[1])
         elif type=='spin':
+            speed=int(paramList[0])
+        elif type=='irrd':
+            pass
+        elif type=='mckirrd':
+            pass
+        elif type=='offset':
+            self.x_ofst,self.y_ofst,self.z_ofst=[paramList[i] for i in (0,1,2)]
+        elif type=='moveall':
+            x,y,z=[paramList[i] for i in (0,1,2)]
+            #eff_ang=paramList[3]
+            angles=self.get_angle_from_coords(x, y, z)
+            decomp_cmds=[]
+            for i in range(len(angles)):
+                decomp_cmds.append(self.get_encoded_command(command='move('+i+','+angles[i]+')',type='move'))
+            
+            decomp_cmds.append(self.get_encoded_command(command='do(0)',type='do'))
+            self.x_pos,self.y_pos,self.z_pos=x,y,z
+            encoded_val=decomp_cmds
+
+
+
+        elif type=='shift':
+            pass
+        elif type=='dispense':
+            pass
+        elif type=='learnas':
+            pass
+        elif type=='takepose':
             pass
 
         return encoded_val
+
+    def get_angle_from_coords(self,x,y,z):
+        return None
+        return angles
+
+    def get_steps_from_vol(self,vol):
+        return None
+        return steps
