@@ -48,6 +48,7 @@ class CommandInterpreter:
             self.x_ofst,self.y_ofst,self.z_ofst=[paramList[i] for i in (0,1,2)]
         elif type=='moveall':
             x,y,z=[paramList[i] for i in (0,1,2)]
+            x,y,z=x+self.x_ofst,y+self.y_ofst,z+self.z_ofst
             #eff_ang=paramList[3]
             angles=self.get_angle_from_coords(x, y, z)
             decomp_cmds=[]
@@ -58,10 +59,12 @@ class CommandInterpreter:
             self.x_pos,self.y_pos,self.z_pos=x,y,z
             encoded_val=decomp_cmds
 
-
-
         elif type=='shift':
-            pass
+            x_diff,y_diff,z_diff=[paramList[i]for i in (0,1,2)]
+            x,y,z=x_diff+self.x_pos,y_diff+self.y_pos,z_diff+self.z_pos
+            #eff_ang=paramList[3]
+            encoded_val=self.get_encoded_command(command='moveall('+x+','+y+','+z+')',type='moveall')
+
         elif type=='dispense':
             pass
         elif type=='learnas':
