@@ -19,8 +19,8 @@ class BioBoxInterface(Tk):
         self.compiler=Compiler(self)
         self.executer=Executer(self) 
 
-        self.current_filename='./robot_commands/Untitled.txt' #relevant to execute_text, compile_text, open_file, save_file methods
-        self.current_compilename='./robot_commands/Untitled_cmd.txt'
+        self.current_filename='./COMMANDS/Untitled.txt' #relevant to execute_text, compile_text, open_file, save_file methods
+        self.current_compilename='./COMMANDS/Untitled_cmd.txt'
         self.compilepath=''
 
         Tk.__init__(self,*args,**kwargs)
@@ -102,12 +102,12 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         ]
 
         presets_matrix = {      #names of compiled files corresponding to each button, change these to change what file the button executes
-            0:'./robot_commands/RESET_cmd.txt',
-            1:'./robot_commands/COLLECT_SAMPLE_cmd.txt',
-            2:'./robot_commands/IRRADIATE_cmd.txt',
-            3:'./robot_commands/POUR_EXAMPLE_cmd.txt',
-            4:'./robot_commands/TEST_BOUNDARIES_cmd.txt',
-            5:'./robot_commandsTEST_RANGE_cmd.txt',
+            0:'./COMMANDS/RESET_cmd.txt',
+            1:'./COMMANDS/COLLECT_SAMPLE_cmd.txt',
+            2:'./COMMANDS/IRRADIATE_cmd.txt',
+            3:'./COMMANDS/POUR_EXAMPLE_cmd.txt',
+            4:'./COMMANDS/TEST_BOUNDARIES_cmd.txt',
+            5:'./COMMANDSTEST_RANGE_cmd.txt',
             6:''
         }
 
@@ -207,7 +207,7 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
 
     def save_file(self): #opens saveasfile dialog, saves text from text box to file
         try:
-            new_file=asksaveasfile(parent=self,initialdir='./robot_commands',initialfile=self.controller.current_filename,defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
+            new_file=asksaveasfile(parent=self,initialdir='./COMMANDS',initialfile=self.controller.current_filename,defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
             self.controller.current_filename=basename(new_file.name)
             if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
                 new_file.writelines(self.get_text())
@@ -217,7 +217,7 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
 
     def open_file(self): #opens askopenfile dialog, sets textbox text to file contents
         try:
-            new_file=askopenfile(parent=self,initialdir='./robot_commands',defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
+            new_file=askopenfile(parent=self,initialdir='./COMMANDS',defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
             self.controller.current_filename=basename(new_file.name) #saves the name of the file that was opened, so when it is saved that name is set as default
             if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
                 self.clear_text()
@@ -294,38 +294,39 @@ class Compiler:
         text=''.join(text.split()).lower() #formatting text: remove whitespace and convert to lowercase
         command_list=text.split(';') #splits strings into commands separated by ';'
 
+        cmd_regex={}
         #FUNDAMENTAL COMMANDS    
-        move_cmd=re.compile('^move\([0-3],(0\d{2}|1([0-7]\d|80))\)$')       #matches 'MOVE(#,###)' as servo (unsigned), angle (unsigned)
-        do_cmd=re.compile('^do\(\d+\)$')                                    #matches 'DO(#)' (unsigned)
-        bit_cmd=re.compile('^bit\(\d+,(high|low|1|0)\)$')                   #matches 'BIT(#,HIGH/LOW)' or 'BIT(#,1/0)' as pin (unsigned), pin_val (unsigned)
-        pump_cmd=re.compile('^pump\(\d+,-?\d+\)$')                          #matches 'PUMP(#,#)' as pump_num (unsigned), num_steps (signed)
-        spin_cmd=re.compile('^spin\(\d+\)$')                                #matches 'SPIN()' as rpm(unsigned)                                               
-        mckirrd_cmd=re.compile('^mckirrd\(\)$')                             #matches 'MCKIRRD()'
-        irrd_cmd=re.compile('^irrd\(\d+\)$')                                #matches 'IRRD(#)' as dose (unsigned)
+        cmd_regex['move']=re.compile('^move\([0-3],(0\d{2}|1([0-7]\d|80))\)$')          #matches 'MOVE(#,###)' as servo (unsigned), angle (unsigned)
+        cmd_regex['do']=re.compile('^do\(\d+\)$')                                       #matches 'DO(#)' (unsigned)
+        cmd_regex['bit']=re.compile('^bit\(\d+,(high|low|1|0)\)$')                      #matches 'BIT(#,HIGH/LOW)' or 'BIT(#,1/0)' as pin (unsigned), pin_val (unsigned)
+        cmd_regex['pump']=re.compile('^pump\(\d+,-?\d+\)$')                             #matches 'PUMP(#,#)' as pump_num (unsigned), num_steps (signed)
+        cmd_regex['spin']=re.compile('^spin\(\d+\)$')                                   #matches 'SPIN()' as rpm(unsigned)                                               
+        cmd_regex['mckirrd']=re.compile('^mckirrd\(\)$')                                #matches 'MCKIRRD()'
+        cmd_regex['irrd']=re.compile('^irrd\(\d+\)$')                                   #matches 'IRRD(#)' as dose (unsigned)
 
         #HIGH LEVEL COMMANDS
-        offset_cmd=re.compile('^offset\(-?\d+,-?\d+,-?\d+\)$')              #matches 'OFFSET(#,#,#)' as x,y,z (signed) - need to add angle?
-        moveall_cmd=re.compile('^moveall\(-?\d+,-?\d+,-?\d+\)$')            #matches 'MOVEALL(#,#,#)' as x,y,z (signed)
-        shift_cmd=re.compile('^moveall\(-?\d+,-?\d+,-?\d+\)$')              #matches 'SHIFT(#,#,#)' as x,y,z (signed)
-        dispense_cmd=re.compile('^dispense\(\d+,\d+\)$')                    #matches 'DISPENSE(#,#)' as pump_num (unsigned), sample_vol (unsigned)
-        learnas_cmd=re.compile('^learnas\([a-z0-9]{3,}\)$')                 #matches 'LEARNAS(string[3+])'
-        takepose_cmd=re.compile('^takepose\([a-z0-9]{3,}\)$')               #matches 'TAKEPOSE(string[3+])'
+        cmd_regex['offset']=re.compile('^offset\(-?\d+,-?\d+,-?\d+\)$')                 #matches 'OFFSET(#,#,#)' as x,y,z (signed) - need to add angle?
+        cmd_regex['moveall']=re.compile('^moveall\(-?\d+,-?\d+,-?\d+\)$')               #matches 'MOVEALL(#,#,#)' as x,y,z (signed)
+        cmd_regex['shift']=re.compile('^shift\(-?\d+,-?\d+,-?\d+\)$')                   #matches 'SHIFT(#,#,#)' as x,y,z (signed)
+        cmd_regex['dispense']=re.compile('^dispense\(\d+,\d+\)$')                       #matches 'DISPENSE(#,#)' as pump_num (unsigned), sample_vol (unsigned)
+        cmd_regex['learnas']=re.compile('^learnas\([a-z0-9]{3,}\)$')                    #matches 'LEARNAS(string[3+])'
+        cmd_regex['takepose']=re.compile('^takepose\([a-z0-9]{3,}\)$')                  #matches 'TAKEPOSE(string[3+])'
         
-        encoded_cmds=[]                                                     
+        encoded_cmds=[]
+        match=False                                                     
         for command in command_list:                                         
-            if command=='': #caused by having a ; at the very end of the string
-                continue
-            elif move_cmd.match(command):
-                # print('move command detected:',command)
-                encoded_cmds.append(self.get_raw(command=command,type='move'))
-            elif do_cmd.match(command):
-                # print('wait command detected:',command)
-                encoded_cmds.append(self.get_raw(command=command,type='do'))
-            else:
+            for name, pattern in cmd_regex.items():
+                if pattern.match(command):
+                    encoded_cmds.append(self.get_raw(command=command,type=name))
+                    match=True
+                elif command=='': #caused by having a ; at the very end of the string
+                    continue
+            if not(match):
                 if len(command)>=100:
                     command=command[:100]+'[...]' #limit length of message string
                 messagebox.showerror(parent=self.parent,title='Compiler',message='Unrecognised command: '+command+'\nSee \'README.txt\' for help')    #include command description here
                 return False
+            match=False
 
         #print(encoded_cmds)
         self.save_compiled_file(encoded_cmds)
@@ -362,7 +363,6 @@ class Executer:
                 execute_code(self.parent.arduino).start(command_list) #implements execute_code.py
         except Exception as e:
             messagebox.showerror('IOError','Unable to execute file:\n'+str(e),parent=self.parent)
-
 
 app=BioBoxInterface()
 app.mainloop()
