@@ -6,9 +6,6 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define MIN_PULSE_WIDTH 400
 #define MAX_PULSE_WIDTH 2400
 #define FREQUENCY 60
-#define length1 10.5
-#define length2 9
-#define length3 5
 #define lowerX -30
 #define upperX 30
 #define lowerY -30
@@ -20,8 +17,6 @@ int motor[4] = {0,4,8,12};
 float ang[4] = {0.,0.,0.,0.};
 int startAng[4] = {0,0,0,0};
 int finishAng[4] = {0,0,0,0};
-float distance = 0;
-float angleToOrigin = 0;
 float frame = 0.;
 bool setFlag = true;
 bool valid = true;
@@ -58,9 +53,9 @@ float getMotorPulse(float angle,int motorOut){
 
 float calcMockX(){//calculates a mock X coordinate from middle servos - used for 2 dimensions
   float xCoord[3] = {0.,0.,0.};
-  xCoord[2] = length1 * cos(((ang[2])*M_PI)/180.);
-  xCoord[1] = length2 * cos(((ang[2] + 90 - ang[1])*M_PI)/180.);
-  xCoord[0] = length3 * cos((((ang[2] + 90 - ang[1]) + 90 - ang[0])*M_PI)/180.);
+  xCoord[2] = 10.5 * cos(((ang[2])*M_PI)/180.);
+  xCoord[1] = 9 * cos(((ang[2] + 90 - ang[1])*M_PI)/180.);
+  xCoord[0] = 5 * cos((((ang[2] + 90 - ang[1]) + 90 - ang[0])*M_PI)/180.);
   return (xCoord[2] + xCoord[1] + xCoord[0]);
 }
 
@@ -72,9 +67,9 @@ float calcTrueX(){//calculates X coordinate via all servos
 
 float calcY(){// calculates Y coordinate from middle servos
   float yCoord[3] = {0.,0.,0.};
-  yCoord[2] = length1 * sin(((ang[2])*M_PI)/180.);
-  yCoord[1] = length2 * sin(((ang[2] + 90 - ang[1])*M_PI)/180.);
-  yCoord[0] = length3 * sin((((ang[2] + 90 - ang[1]) + 90 - ang[0])*M_PI)/180.);
+  yCoord[2] = 10.5 * sin(((ang[2])*M_PI)/180.);
+  yCoord[1] = 9 * sin(((ang[2] + 90 - ang[1])*M_PI)/180.);
+  yCoord[0] = 5 * sin((((ang[2] + 90 - ang[1]) + 90 - ang[0])*M_PI)/180.);
   return (yCoord[2] + yCoord[1] + yCoord[0]);
 }
 
@@ -107,60 +102,39 @@ bool checkBounds(){
 }
 
 void loop(){//then executes input instruction
-  if (setFlag == true){
-    float inputX = Serial.parseInt();
-    float inputY = Serial.parseInt();
-    float absAngle = Serial.parseInt();
+  if (setFlag == true){//serial read to change new finish angle until told to execute
     while (!Serial.available()){}
     delay(10);
-    inputX = Serial.parseInt();
-    while (!Serial.available()){}
-    delay(10);
-    inputX = Serial.parseInt();
-    Serial.println("X: " + String(inputX));
-    while (!Serial.available()){}
-    delay(10);
-    inputY = Serial.parseInt();
-    while (!Serial.available()){}
-    delay(10);
-    inputY = Serial.parseInt();
-    Serial.println("Y: " + String(inputY));
-    while (!Serial.available()){}
-    delay(10);
-    absAngle = Serial.parseInt();
-    while (!Serial.available()){}
-    delay(10);
-    absAngle = Serial.parseInt();
-    Serial.println("tilt angle: " + String(absAngle));
-    float x2 = (-length3)*cos((absAngle*180)/M_PI);
-    float y2 = (-length3)*sin((absAngle*180)/M_PI);
-    distance = pow(pow(x2,2) + pow(y2,2),0.5);
-    angleToOrigin = atan((-y2)/(-x2));
-    if (inputX < 0){
-      finishAng[2] = ((acos((pow(length1,2)+pow(distance,2)-pow(length2,2))/(2*length1*distance)))*180)/M_PI + angleToOrigin + 180;
-    } else {
-      finishAng[2] = ((acos((pow(length1,2)+pow(distance,2)-pow(length2,2))/(2*length1*distance)))*180)/M_PI + angleToOrigin;
-    }
-    finishAng[1] = (((acos((pow(length1,2)+pow(length2,2)-pow(distance,2))/(2*length1*length2)))*180)/M_PI);
-    finishAng[0] = 360 - (int(finishAng[1] + finishAng[2] - absAngle)%int(360));
-    setFlag = false;
-  } else{
+    int input = Serial.readString().toInt();
+    input--;
+    if (input == -1){//input read as serial input and translated to motor - angle
+      setFlag = false;
+    } else{
+      if (input > -1 && input < 725){
+        int currentMotor = getMotor(input);
+        finishAng[currentMotor] = getAngle(currentMotor, input);
+        Serial.println("motor: " + String(currentMotor) + " angle:" + String(finishAng[currentMotor]));
+      }
+      }
+  }
+  if (setFlag == false){ //when unpaused and not looking for angle to read
     frame += 1;
-    for (int x = 0; x < 4; x += 1){
-      if (frame < 91 && valid != false){//within frames 0 to 90
-        ang[x] = map(frame, 0, 90, startAng[x], finishAng[x]);
-        if (checkBounds() != false){
-          moveMotor(ang[x], motor[x]);
-        } else {
-          Serial.println("out of bounds");
-          valid = false;
-          for (int x = 0; x < 4; x += 1){
-            ang[x] = map(frame - 1, 0, 90, startAng[x], finishAng[x]);
+      for (int x = 0; x < 4; x += 1){
+        if (frame < 91 && valid != false){//within frames 0 to 90
+          ang[x] = map(frame, 0, 90, startAng[x], finishAng[x]);
+          if (checkBounds() != false){
+            moveMotor(ang[x], motor[x]);
+          } else {
+            Serial.println("out of bounds");
+            valid = false;
+            for (int x = 0; x < 4; x += 1){
+              ang[x] = map(frame - 1, 0, 90, startAng[x], finishAng[x]);
+            }
           }
         }
-      }
+      } 
       if (frame > 91 || valid == false){//once frames exceed 90, resets frames and waits for new serial to read
-       for (int x = 0; x < 4; x += 1){ 
+        for (int x = 0; x < 4; x += 1){ 
           startAng[x] = ang[x];
           finishAng[x] = ang[x];
         }
@@ -169,13 +143,12 @@ void loop(){//then executes input instruction
         valid = true;
       }
     }
-  }
 }
 
 void moveMotor(float angle, int motorOut){//takes the motor and angle specified and physically moves the corresponding servo
   int pulse;
   pulse = getMotorPulse(angle,motorOut);
   pwm.setPWM(motorOut, 0, pulse);
-  Serial.println("motor " + String((motorOut/4)+1) + " " + angle + " x: " + String(calcTrueX()) + " y: " + String(calcY()) + " z: " + String(calcZ()));
+  Serial.println(String(map(angle, -50, 180, 0, 180)) + " x: " + String(calcTrueX()) + " y: " + String(calcY()) + " z: " + String(calcZ()));
   delay(5);
 }
