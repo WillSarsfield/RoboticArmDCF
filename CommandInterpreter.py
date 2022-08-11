@@ -66,11 +66,34 @@ class CommandInterpreter:
             encoded_val=self.get_encoded_command(command='moveall('+x+','+y+','+z+')',type='moveall')
 
         elif type=='dispense':
-            pass
+            pump_no,vol=paramList[0],paramList[1]
+            steps=self.get_steps_from_vol(vol)
+            encoded_val=self.get_encoded_command(command='pump('+pump_no+','+steps+')',type='pump')
         elif type=='learnas':
-            pass
+            pos_name = command[8:-1]
+            with open('./'+pos_name.upper()+'.txt','w') as pos_file:
+                pos_file.write(self.x_pos+','+self.y_pos+','+self.z_pos)
+                pos_file.close()
+
         elif type=='takepose':
-            pass
+            file_name = command[9:-1]
+            with open('./'+file_name.upper()+'.txt','r') as pos_file:
+                coords=''.join(pos_file.readline().split())
+                pos_file.close()
+            x,y,z=[coords.split(',')[i] for i in (0,1,2)]
+            encoded_val=self.get_encoded_command(command='moveall('+x+','+y+','+z+')',type='moveall')
+
+        elif type=='repeat':
+            args = command[7:-1].split(',',2) #splits at the first & second comma
+            encoded_vals=[]
+            encoded_command=self.get_encoded_command(command=args[-1],type=args[0]) #get encoded value(s) of desired repeated command
+            if type(encoded_cmd)==type(0):
+                encoded_vals.append(encoded_cmd)
+            elif type(encoded_cmd)==type([]):
+                encoded_vals.append(encoded_cmd[i] for i in range(len(encoded_cmd)))
+            encoded_vals*args[1] #repeats commands specified number of times
+
+
 
         return encoded_val
 

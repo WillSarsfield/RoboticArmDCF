@@ -300,20 +300,27 @@ class Compiler:
         cmd_regex['moveall']=re.compile('^moveall\(-?\d+,-?\d+,-?\d+\)$')               #matches 'MOVEALL(#,#,#)' as x,y,z (signed)
         cmd_regex['shift']=re.compile('^shift\(-?\d+,-?\d+,-?\d+\)$')                   #matches 'SHIFT(#,#,#)' as x,y,z (signed)
         cmd_regex['dispense']=re.compile('^dispense\(\d+,\d+\)$')                       #matches 'DISPENSE(#,#)' as pump_num (unsigned), sample_vol (unsigned)
-        cmd_regex['learnas']=re.compile('^learnas\([a-z0-9]{3,}\)$')                    #matches 'LEARNAS(string[3+])'
-        cmd_regex['takepose']=re.compile('^takepose\([a-z0-9]{3,}\)$')                  #matches 'TAKEPOSE(string[3+])'
-        
+        cmd_regex['learnas']=re.compile('^learnas\([a-z0-9]{3,}\)$')                    #matches 'LEARNAS([string][3+])'
+        cmd_regex['takepose']=re.compile('^takepose\([a-z0-9]{3,}\)$')                  #matches 'TAKEPOSE([string][3+])'
+        cmd_regex['repeat']=re.compile('^repeat\([0-9]+,.+\)$')                         #matches 'REPEAT(#,[string])' where string should be an accepted command
+
         encoded_cmds=[]
         match=False                                                     
         for command in command_list:                                         
             for name, pattern in cmd_regex.items():
                 if pattern.match(command):
+                    match=True
+                    if name=='repeat':
+                        match=False
+                        for sub_name,sub_pattern in cmd_regex.items():
+                            if sub_pattern.match(command[7:-1].split(',',1)[-1]): #checking inner command is valid
+                                match=True
+                                command=command[:7]+sub_name+','+command[7:] #pass through the subcommand type
                     encoded_cmd=self.get_raw(command=command,type=name)
                     if type(encoded_cmd)==type(0):
                         encoded_cmds.append(encoded_cmd)
                     elif type(encoded_cmd)==type([]):
                         encoded_cmds.append(encoded_cmd[i] for i in range(len(encoded_cmd)))
-                    match=True
                 elif command=='': #caused by having a ; at the very end of the string
                     match=True
             if not(match):

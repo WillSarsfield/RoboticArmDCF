@@ -1,1 +1,1 @@
-type(1)
+print('repeat(3,input(1,2))'[:7]+'name,'+'repeat(3,input(1,2))'[7:])
