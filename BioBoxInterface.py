@@ -280,8 +280,7 @@ class Compiler:
                 savefile.write('\n')
             savefile.close()
 
-    def compile_text(self):
-        text=self.parent.frames[TextEditor].get_text()
+    def compile_text(self,text=self.parent.frames[TextEditor].get_text()):
         text=''.join(text.split()).lower() #formatting text: remove whitespace and convert to lowercase
         command_list=text.split(';') #splits strings into commands separated by ';'
 
@@ -303,6 +302,7 @@ class Compiler:
         cmd_regex['learnas']=re.compile('^learnas\([a-z0-9]{3,}\)$')                    #matches 'LEARNAS([string][3+])'
         cmd_regex['takepose']=re.compile('^takepose\([a-z0-9]{3,}\)$')                  #matches 'TAKEPOSE([string][3+])'
         cmd_regex['repeat']=re.compile('^repeat\([0-9]+,.+\)$')                         #matches 'REPEAT(#,[string])' where string should be an accepted command
+        cmd_regex['macro']=re.compile('^macro\(.+\)$')                                  #matches 'MACRO(#,[string])' where string should be an existing macro file
 
         encoded_cmds=[]
         match=False                                                     
@@ -316,7 +316,15 @@ class Compiler:
                             if sub_pattern.match(command[7:-1].split(',',1)[-1]): #checking inner command is valid
                                 match=True
                                 command=command[:7]+sub_name+','+command[7:] #pass through the subcommand type
-                    encoded_cmd=self.get_raw(command=command,type=name)
+                    if name=='macro':
+                        match=False
+                        try:
+                            match=True
+                            with open('./COMMANDS/MACROS/'+filename.replace('.txt','_cmd.txt'),'r') as macro_file:
+                                text = macro_file.readlines()
+                                macro_file.close()
+                        except Exception as e:
+                            messagebox.showerror(parent=self.parent,title='Compiler',message='File error: '+e+'\nSee \'README.txt\' for help')
                     if type(encoded_cmd)==type(0):
                         encoded_cmds.append(encoded_cmd)
                     elif type(encoded_cmd)==type([]):
@@ -326,7 +334,7 @@ class Compiler:
             if not(match):
                 if len(command)>=100:
                     command=command[:100]+'[...]' #limit length of message string
-                messagebox.showerror(parent=self.parent,title='Compiler',message='Unrecognised command: '+command+'\nSee \'README.txt\' for help')    #include command description here
+                messagebox.showerror(parent=self.parent,title='Compiler',message='Unrecognised command: '+command+'\nSee \'README.txt\' for help')
                 return False
             match=False
 

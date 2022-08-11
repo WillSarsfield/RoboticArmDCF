@@ -93,8 +93,6 @@ class CommandInterpreter:
                 encoded_vals.append(encoded_cmd[i] for i in range(len(encoded_cmd)))
             encoded_vals*args[1] #repeats commands specified number of times
 
-
-
         return encoded_val
 
     def get_angle_from_coords(self,x,y,z):
