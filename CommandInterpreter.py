@@ -69,6 +69,7 @@ class CommandInterpreter:
             pump_no,vol=paramList[0],paramList[1]
             steps=self.get_steps_from_vol(vol)
             encoded_val=self.get_encoded_command(command='pump('+pump_no+','+steps+')',type='pump')
+            
         elif type=='learnas':
             pos_name = command[8:-1]
             with open('./'+pos_name.upper()+'.txt','w') as pos_file:

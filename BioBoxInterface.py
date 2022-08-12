@@ -77,9 +77,12 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         Frame.__init__(self,parent) #contains header_frame and center_frame
 
         self.header_frame = Frame(self)#contains window swapping buttons
-        self.center_frame = Frame(self,relief='raised',border=6,background='#323232')#contains robotic arm movement presets
+        self.center_frame = Frame(self,background='#323232')#contains robotic arm movement presets
+        self.footer_frame = Frame(self,relief='raised',border=6,background='#323232')#contains reset and save position buttons
         self.header_frame.grid(row=0,column=0,sticky='nsew')
-        self.center_frame.grid(row=1,column=0,sticky='nsew')   
+        self.center_frame.grid(row=1,column=0,sticky='nsew')
+        self.footer_frame.grid(row=2,column=0,sticky='nsew')
+
 
         label = ttk.Label(self.header_frame,text='Presets') #setting up tabs at top of page
         label.grid(column=0,row=0,columnspan=3,sticky='nsew')
@@ -93,13 +96,13 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         self.header_frame.grid_columnconfigure((0,1,2),weight=1)
 
         command_names=[         #names of each preset button, changing these renames the buttons
-            'Reset',            #0
-            'Collect Sample',   #1
-            'Irradiate',        #2
-            'Pour Example',     #3
-            'Test Boundaries',  #4
-            'Test Range',       #5
-            'Command Six'       #6
+            'Reset', #0
+            '<< x',  #1
+            '<< y',  #2
+            '<< z',  #3
+            'x >>',  #4
+            'y >>',  #5
+            'z >>'   #6
         ]
 
         presets_matrix = {      #names of compiled files corresponding to each button, change these to change what file the button executes
@@ -108,30 +111,50 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
             2:'./COMMANDS/IRRADIATE_cmd.txt',
             3:'./COMMANDS/POUR_EXAMPLE_cmd.txt',
             4:'./COMMANDS/TEST_BOUNDARIES_cmd.txt',
-            5:'./COMMANDSTEST_RANGE_cmd.txt',
+            5:'./COMMANDS/TEST_RANGE_cmd.txt',
             6:''
         }
 
         #setting up preset buttons, change the command_names text and presets_matrix filename to execute different programs
-        command1 = ttk.Button(self.center_frame,text=command_names[0],cursor='exchange',command=lambda:self.execute_preset(filename=presets_matrix[0]))
-        command1.grid(column=0,columnspan=2,row=0,padx=5,pady=2.5,sticky='nsew')
+        command1 = ttk.Button(self.footer_frame,text=command_names[0],cursor='exchange',command=lambda:self.execute_preset(filename=presets_matrix[0]))
+        command1.grid(column=0,row=0,padx=5,pady=2.5,sticky='nsew')
         command2 = ttk.Button(self.center_frame,text=command_names[1],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[1]))
-        command2.grid(column=0,row=1,padx=5,pady=2.5,sticky='nsew')
+        command2.grid(column=0,row=0,padx=5,pady=2.5,sticky='nsew')
         command3 = ttk.Button(self.center_frame,text=command_names[2],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[2]))
-        command3.grid(column=0,row=2,padx=5,pady=2.5,sticky='nsew')
+        command3.grid(column=0,row=1,padx=5,pady=2.5,sticky='nsew')
         command4 = ttk.Button(self.center_frame,text=command_names[3],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[3]))
-        command4.grid(column=0,row=3,padx=5,pady=2.5,sticky='nsew')
+        command4.grid(column=0,row=2,padx=5,pady=2.5,sticky='nsew')
         command5 = ttk.Button(self.center_frame,text=command_names[4],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[4]))
-        command5.grid(column=1,row=1,padx=5,pady=2.5,sticky='nsew')
+        command5.grid(column=2,row=0,padx=5,pady=2.5,sticky='nsew')
         command6 = ttk.Button(self.center_frame,text=command_names[5],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[5]))
-        command6.grid(column=1,row=2,padx=5,pady=2.5,sticky='nsew')
+        command6.grid(column=2,row=1,padx=5,pady=2.5,sticky='nsew')
         command7 = ttk.Button(self.center_frame,text=command_names[6],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[6]))
-        command7.grid(column=1,row=3,padx=5,pady=2.5,sticky='nsew')
+        command7.grid(column=2,row=2,padx=5,pady=2.5,sticky='nsew')
 
-        self.center_frame.grid_columnconfigure((0,1),weight=1)
-        self.center_frame.grid_rowconfigure((0,1,2,3),weight=1)
+        xentry = ttk.Entry(self.center_frame,justify='center')
+        xentry.insert(0,'0')
+        yentry = ttk.Entry(self.center_frame,justify='center')
+        yentry.insert(0,'0')
+        zentry = ttk.Entry(self.center_frame,justify='center')
+        zentry.insert(0,'0')
 
-        self.grid_columnconfigure(0,weight=1) #position of center_frame and header_frame within PresetPage
+        xentry.grid(column=1,row=0,padx=10,pady=2.5,sticky='ew')
+        yentry.grid(column=1,row=1,padx=10,pady=2.5,sticky='ew')
+        zentry.grid(column=1,row=2,padx=10,pady=2.5,sticky='ew')
+
+        self.center_frame.grid_columnconfigure((0,2),weight=1)
+        self.center_frame.grid_rowconfigure((0,1,2),weight=1)
+
+        # other neccessary functions, unlikely to need changed
+        learn_pos_btn = ttk.Button(self.footer_frame,text='Learn As..')
+        learn_pos_btn.grid(column=2,row=0,padx=5,pady=2.5,sticky='nsew')
+        move_btn = ttk.Button(self.footer_frame,text='Move')
+        move_btn.grid(column=1,row=0,padx=5,pady=2.5,sticky='nsew')
+
+        self.footer_frame.grid_columnconfigure((0,1,2),weight=1)
+        self.footer_frame.grid_rowconfigure(0,weight=1)
+
+        self.grid_columnconfigure(0,weight=1) #position of frames within PresetPage
         self.grid_rowconfigure(1,weight=1)
 
     def execute_preset(self, filename='RESET_cmd.txt'): #reads commands from _cmd.txt file and sends them to the arduino
@@ -148,7 +171,7 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
 
         self.header_frame = Frame(self)#frame containing window swapping buttons
         self.center_frame = Frame(self,bg='#323232')#frame containing textbox and scrollbars
-        self.footer_frame = Frame(self,bg='#323232')#frame containing file manipulation buttons
+        self.footer_frame = Frame(self,relief='raised',border=6,background='#323232')#frame containing file manipulation buttons
         self.header_frame.grid(row=0,column=0,sticky='nsew')
         self.center_frame.grid(row=1,column=0,sticky='nsew')
         self.footer_frame.grid(row=2,column=0,sticky='nsew')
@@ -201,7 +224,7 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
         self.center_frame.text_box.delete(1.0,'end')
 
     def compile_text(self): #converts text into format ready for serial comms
-        return self.compiler.compile_text()
+        return self.compiler.compile_text(text=self.get_text())
 
     def execute_text(self,port):
         self.executer.execute_text()
@@ -280,7 +303,7 @@ class Compiler:
                 savefile.write('\n')
             savefile.close()
 
-    def compile_text(self,text=self.parent.frames[TextEditor].get_text()):
+    def compile_text(self,text=''):
         text=''.join(text.split()).lower() #formatting text: remove whitespace and convert to lowercase
         command_list=text.split(';') #splits strings into commands separated by ';'
 
@@ -291,7 +314,7 @@ class Compiler:
         cmd_regex['bit']=re.compile('^bit\(\d+,(high|low|1|0)\)$')                      #matches 'BIT(#,HIGH/LOW)' or 'BIT(#,1/0)' as pin (unsigned), pin_val (unsigned)
         cmd_regex['pump']=re.compile('^pump\(\d+,-?\d+\)$')                             #matches 'PUMP(#,#)' as pump_num (unsigned), num_steps (signed)
         cmd_regex['spin']=re.compile('^spin\(\d+\)$')                                   #matches 'SPIN()' as rpm(unsigned)                                               
-        cmd_regex['mckirrd']=re.compile('^mckirrd\(\)$')                                #matches 'MCKIRRD()'
+        # cmd_regex['mckirrd']=re.compile('^mckirrd\(\)$')                                #matches 'MCKIRRD()'
         cmd_regex['irrd']=re.compile('^irrd\(\d+\)$')                                   #matches 'IRRD(#)' as dose (unsigned)
 
         #HIGH LEVEL COMMANDS
@@ -316,6 +339,7 @@ class Compiler:
                             if sub_pattern.match(command[7:-1].split(',',1)[-1]): #checking inner command is valid
                                 match=True
                                 command=command[:7]+sub_name+','+command[7:] #pass through the subcommand type
+                                encoded_cmd=self.compile_text(text=command[7:-1].split(',',1)[-1])
                     if name=='macro':
                         match=False
                         try:
@@ -323,14 +347,16 @@ class Compiler:
                             with open('./COMMANDS/MACROS/'+filename.replace('.txt','_cmd.txt'),'r') as macro_file:
                                 text = macro_file.readlines()
                                 macro_file.close()
+                            encoded_cmd=self.compile_text(text=text)
                         except Exception as e:
-                            messagebox.showerror(parent=self.parent,title='Compiler',message='File error: '+e+'\nSee \'README.txt\' for help')
+                            messagebox.showerror(parent=self.parent,title='Compiler',message='Macro error: '+e+'\nSee \'README.txt\' for help')
                     if type(encoded_cmd)==type(0):
                         encoded_cmds.append(encoded_cmd)
                     elif type(encoded_cmd)==type([]):
                         encoded_cmds.append(encoded_cmd[i] for i in range(len(encoded_cmd)))
                 elif command=='': #caused by having a ; at the very end of the string
                     match=True
+
             if not(match):
                 if len(command)>=100:
                     command=command[:100]+'[...]' #limit length of message string
@@ -350,7 +376,7 @@ class Executer:
 
     def execute_text(self):
         try:
-            if self.parent.compiler.compile_text(): #if successfully compiled:
+            if self.parent.compile_text(): #if successfully compiled:
                 execute_file=open(self.parent.compilepath,'r') #opens last successfully compiled file ----------ISSUE:
                 cmd_list=execute_file.read().split()    #--------- if the last compilation failed this will run the
                                                         #last successful compilation which may be a different file.
