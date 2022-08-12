@@ -117,7 +117,7 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
 
         #setting up preset buttons, change the command_names text and presets_matrix filename to execute different programs
         command1 = ttk.Button(self.footer_frame,text=command_names[0],cursor='exchange',command=lambda:self.execute_preset(filename=presets_matrix[0]))
-        command1.grid(column=0,row=0,padx=5,pady=2.5,sticky='nsew')
+        command1.grid(column=0,row=0,padx=2.5,pady=5,sticky='nsew') #this first one is actually in the footer (reset button)
         command2 = ttk.Button(self.center_frame,text=command_names[1],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[1]))
         command2.grid(column=0,row=0,padx=5,pady=2.5,sticky='nsew')
         command3 = ttk.Button(self.center_frame,text=command_names[2],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[2]))
@@ -138,18 +138,18 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         zentry = ttk.Entry(self.center_frame,justify='center')
         zentry.insert(0,'0')
 
-        xentry.grid(column=1,row=0,padx=10,pady=2.5,sticky='ew')
-        yentry.grid(column=1,row=1,padx=10,pady=2.5,sticky='ew')
-        zentry.grid(column=1,row=2,padx=10,pady=2.5,sticky='ew')
+        xentry.grid(column=1,row=0,padx=2.5,pady=2.5,sticky='ew')
+        yentry.grid(column=1,row=1,padx=2.5,pady=2.5,sticky='ew')
+        zentry.grid(column=1,row=2,padx=2.5,pady=2.5,sticky='ew')
 
         self.center_frame.grid_columnconfigure((0,2),weight=1)
         self.center_frame.grid_rowconfigure((0,1,2),weight=1)
 
         # other neccessary functions, unlikely to need changed
         learn_pos_btn = ttk.Button(self.footer_frame,text='Learn As..')
-        learn_pos_btn.grid(column=2,row=0,padx=5,pady=2.5,sticky='nsew')
+        learn_pos_btn.grid(column=2,row=0,padx=2.5,pady=5,sticky='nsew')
         move_btn = ttk.Button(self.footer_frame,text='Move')
-        move_btn.grid(column=1,row=0,padx=5,pady=2.5,sticky='nsew')
+        move_btn.grid(column=1,row=0,padx=2.5,pady=5,sticky='nsew')
 
         self.footer_frame.grid_columnconfigure((0,1,2),weight=1)
         self.footer_frame.grid_rowconfigure(0,weight=1)
@@ -200,18 +200,18 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
         self.center_frame.grid_rowconfigure(0,weight=1)
         
         saveButton = ttk.Button(self.footer_frame, text='Save File', command=lambda:self.save_file()) #file manipulation buttons within footer_frame
-        saveButton.grid(column=4,row=0,sticky='e',padx=2.5,pady=5)
+        saveButton.grid(column=4,row=0,sticky='ew',padx=2.5,pady=5)
         openButton = ttk.Button(self.footer_frame, text='Open File', command=lambda:self.open_file())
-        openButton.grid(column=3,row=0,sticky='e',padx=2.5,pady=5)
+        openButton.grid(column=3,row=0,sticky='ew',padx=2.5,pady=5)
         clearButton = ttk.Button(self.footer_frame, text='Clear', command=lambda:self.clear_text())
-        clearButton.grid(column=0,row=0,sticky='e',padx=2.5,pady=5)
+        clearButton.grid(column=0,row=0,sticky='ew',padx=2.5,pady=5)
         compileButton = ttk.Button(self.footer_frame, text='Compile', command=lambda:self.compile_text())
-        compileButton.grid(column=1,row=0,sticky='e',padx=2.5,pady=5)
+        compileButton.grid(column=1,row=0,sticky='ew',padx=2.5,pady=5)
         executeButton = ttk.Button(self.footer_frame, text='Execute', command=lambda:self.execute_text(BioBoxInterface.arduinoPort))
-        executeButton.grid(column=2,row=0,sticky='e',padx=2.5,pady=5)
+        executeButton.grid(column=2,row=0,sticky='ew',padx=2.5,pady=5)
 
         self.footer_frame.grid_rowconfigure(0,weight=1)
-        self.footer_frame.grid_columnconfigure(0,weight=1)
+        self.footer_frame.grid_columnconfigure((0,1,2,3,4),weight=1)
 
         self.grid_columnconfigure(0,weight=1)
         self.grid_rowconfigure(1,weight=1)
