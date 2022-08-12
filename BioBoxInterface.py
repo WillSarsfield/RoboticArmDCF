@@ -83,7 +83,6 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         self.center_frame.grid(row=1,column=0,sticky='nsew')
         self.footer_frame.grid(row=2,column=0,sticky='nsew')
 
-
         label = ttk.Label(self.header_frame,text='Presets') #setting up tabs at top of page
         label.grid(column=0,row=0,columnspan=3,sticky='nsew')
         button1 = ttk.Button(self.header_frame,text='Presets', command=lambda: controller.show_frame(PresetPage))
@@ -107,12 +106,12 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
 
         presets_matrix = {      #names of compiled files corresponding to each button, change these to change what file the button executes
             0:'./COMMANDS/RESET_cmd.txt',
-            1:'./COMMANDS/COLLECT_SAMPLE_cmd.txt',
-            2:'./COMMANDS/IRRADIATE_cmd.txt',
-            3:'./COMMANDS/POUR_EXAMPLE_cmd.txt',
-            4:'./COMMANDS/TEST_BOUNDARIES_cmd.txt',
-            5:'./COMMANDS/TEST_RANGE_cmd.txt',
-            6:''
+            1:'./COMMANDS/SHFTDWN_X_cmd.txt',
+            2:'./COMMANDS/SHFTUP_X_cmd.txt',
+            3:'./COMMANDS/SHFTDWN_Y_cmd.txt',
+            4:'./COMMANDS/SHFTUP_Y_cmd.txt',
+            5:'./COMMANDS/SHFTDWN_Z_cmd.txt',
+            6:'./COMMANDS/SHFTUP_Z_cmd.txt'
         }
 
         #setting up preset buttons, change the command_names text and presets_matrix filename to execute different programs
@@ -324,6 +323,8 @@ class Compiler:
         cmd_regex['dispense']=re.compile('^dispense\(\d+,\d+\)$')                       #matches 'DISPENSE(#,#)' as pump_num (unsigned), sample_vol (unsigned)
         cmd_regex['learnas']=re.compile('^learnas\([a-z0-9]{3,}\)$')                    #matches 'LEARNAS([string][3+])'
         cmd_regex['takepose']=re.compile('^takepose\([a-z0-9]{3,}\)$')                  #matches 'TAKEPOSE([string][3+])'
+        
+        #FUNCTION-LIKE COMMANDS
         cmd_regex['repeat']=re.compile('^repeat\([0-9]+,.+\)$')                         #matches 'REPEAT(#,[string])' where string should be an accepted command
         cmd_regex['macro']=re.compile('^macro\(.+\)$')                                  #matches 'MACRO(#,[string])' where string should be an existing macro file
 
@@ -333,23 +334,25 @@ class Compiler:
             for name, pattern in cmd_regex.items():
                 if pattern.match(command):
                     match=True
-                    if name=='repeat':
+                    if name=='repeat': #contains a command within itself that needs checked
                         match=False
                         for sub_name,sub_pattern in cmd_regex.items():
                             if sub_pattern.match(command[7:-1].split(',',1)[-1]): #checking inner command is valid
                                 match=True
                                 command=command[:7]+sub_name+','+command[7:] #pass through the subcommand type
                                 encoded_cmd=self.compile_text(text=command[7:-1].split(',',1)[-1])
-                    if name=='macro':
+                    if name=='macro': # contains a command(s) within itself that needs checked
                         match=False
                         try:
                             match=True
-                            with open('./COMMANDS/MACROS/'+filename.replace('.txt','_cmd.txt'),'r') as macro_file:
+                            with open('./COMMANDS/MACROS/'+filename.upper()+'.txt','r') as macro_file:
                                 text = macro_file.readlines()
                                 macro_file.close()
                             encoded_cmd=self.compile_text(text=text)
                         except Exception as e:
                             messagebox.showerror(parent=self.parent,title='Compiler',message='Macro error: '+e+'\nSee \'README.txt\' for help')
+                    else: #command is low-level and can be passed through to the interpreter
+                        pass
                     if type(encoded_cmd)==type(0):
                         encoded_cmds.append(encoded_cmd)
                     elif type(encoded_cmd)==type([]):
