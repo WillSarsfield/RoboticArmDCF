@@ -8,9 +8,11 @@ class CommandInterpreter:
         self.x_ofst=x_ofst
         self.y_ofst=y_ofst
         self.z_ofst=z_ofst
+        self.tilt=0
         self.x_pos=0
         self.y_pos=0
         self.z_pos=0
+        
 
     def get_encoded_command(self,command=None,type=''):
         paramList=re.findall(r'\d+',command)
@@ -51,21 +53,21 @@ class CommandInterpreter:
             print(command)
             x,y,z=[int(paramList[i]) for i in (0,1,2)]
             x,y,z=x+self.x_ofst,y+self.y_ofst,z+self.z_ofst
-            #eff_ang=paramList[3]
-            angles=self.get_angle_from_coords(x, y, z)
+            eff_ang=paramList[3]
+            angles=self.get_angle_from_coords(x, y, z, tilt=eff_ang)
             decomp_cmds=[]
             for i in range(len(angles)):
                 decomp_cmds.append(self.get_encoded_command(command='move(%s,%s)'%(i,angles[i]),type='move'))
             
             decomp_cmds.append(self.get_encoded_command(command='do(0)',type='do'))
-            self.x_pos,self.y_pos,self.z_pos=x,y,z
+            self.x_pos,self.y_pos,self.z_pos,self.tilt=x,y,z,eff_ang
             encoded_val=decomp_cmds
 
         elif type=='shift':
             x_diff,y_diff,z_diff=[int(paramList[i]) for i in (0,1,2)]
             x,y,z=x_diff+self.x_pos,y_diff+self.y_pos,z_diff+self.z_pos
-            #eff_ang=paramList[3]
-            encoded_val=self.get_encoded_command(command='moveall(%s,%s,%s)'%(x,y,z),type='moveall')
+            eff_ang=paramList[3]+self.tilt
+            encoded_val=self.get_encoded_command(command='moveall(%s,%s,%s,%s)'%(x,y,z,eff_ang),type='moveall')
 
         elif type=='dispense':
             pump_no,vol=paramList[0],paramList[1]
@@ -84,7 +86,7 @@ class CommandInterpreter:
                 coords=''.join(pos_file.readline().split())
                 pos_file.close()
             x,y,z=[int(coords.split(',')[i]) for i in (0,1,2)]
-            encoded_val=self.get_encoded_command(command='moveall(%s,%s,%s)'%(x,y,z),type='moveall')
+            encoded_val=self.get_encoded_command(command='moveall(%s,%s,%s,%s)'%(x,y,z,eff_ang),type='moveall')
 
         elif type=='repeat':
             args = command[7:-1].split(',',2) #splits at the first & second comma

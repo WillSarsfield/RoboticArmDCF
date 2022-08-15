@@ -99,9 +99,11 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
             '<< x',  #1
             '<< y',  #2
             '<< z',  #3
-            'x >>',  #4
-            'y >>',  #5
-            'z >>'   #6
+            '<< θ',  #4
+            'x >>',  #5
+            'y >>',  #6
+            'z >>',  #7
+            'θ >>'   #8
         ]
 
         presets_matrix = {      #names of compiled files corresponding to each button, change these to change what file the button executes
@@ -109,9 +111,11 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
             1:'./COMMANDS/SHFTDWN_X_cmd.txt',
             2:'./COMMANDS/SHFTDWN_Y_cmd.txt',
             3:'./COMMANDS/SHFTDWN_Z_cmd.txt',
-            4:'./COMMANDS/SHFTUP_X_cmd.txt',
-            5:'./COMMANDS/SHFTUP_Y_cmd.txt',
-            6:'./COMMANDS/SHFTUP_Z_cmd.txt'
+            4:'./COMMANDS/SHFTDWN_T_cmd.txt',
+            5:'./COMMANDS/SHFTUP_X_cmd.txt',
+            6:'./COMMANDS/SHFTUP_Y_cmd.txt',
+            7:'./COMMANDS/SHFTUP_Z_cmd.txt',
+            8:'./COMMANDS/SHFTUP_T_cmd.txt'
         }
         xentry_text=StringVar()
         xentry_text.set('0')
@@ -119,6 +123,8 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         yentry_text.set('0')
         zentry_text=StringVar()
         zentry_text.set('0')
+        tentry_text=StringVar()
+        tentry_text.set('90')
         #setting up preset buttons, change the command_names text and presets_matrix filename to execute different programs
         command1 = ttk.Button(self.footer_frame,text=command_names[0],cursor='exchange',command=lambda:[self.execute_preset(filename=presets_matrix[0]),xentry_text.set('0'),yentry_text.set('0'),zentry_text.set('0')])
         command1.grid(column=0,row=0,padx=2.5,pady=5,sticky='nsew') #this first one is actually in the footer (reset button)
@@ -128,26 +134,33 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         command3.grid(column=0,row=1,padx=5,pady=2.5,sticky='nse')
         command4 = ttk.Button(self.center_frame,text=command_names[3],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[3]),zentry_text.set(str(int(zentry_text.get())-1))])
         command4.grid(column=0,row=2,padx=5,pady=2.5,sticky='nse')
-        command5 = ttk.Button(self.center_frame,text=command_names[4],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[4]),xentry_text.set(str(int(xentry_text.get())+1))])
-        command5.grid(column=2,row=0,padx=5,pady=2.5,sticky='nsw')
-        command6 = ttk.Button(self.center_frame,text=command_names[5],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[5]),yentry_text.set(str(int(yentry_text.get())+1))])
-        command6.grid(column=2,row=1,padx=5,pady=2.5,sticky='nsw')
-        command7 = ttk.Button(self.center_frame,text=command_names[6],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[6]),zentry_text.set(str(int(zentry_text.get())+1))])
-        command7.grid(column=2,row=2,padx=5,pady=2.5,sticky='nsw')
+        command5 = ttk.Button(self.center_frame,text=command_names[4],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[4]),tentry_text.set(str(int(tentry_text.get())-1))])
+        command5.grid(column=0,row=3,padx=5,pady=2.5,sticky='nse')
+
+        command6 = ttk.Button(self.center_frame,text=command_names[5],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[5]),xentry_text.set(str(int(xentry_text.get())+1))])
+        command6.grid(column=2,row=0,padx=5,pady=2.5,sticky='nsw')
+        command7 = ttk.Button(self.center_frame,text=command_names[6],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[6]),yentry_text.set(str(int(yentry_text.get())+1))])
+        command7.grid(column=2,row=1,padx=5,pady=2.5,sticky='nsw')
+        command8 = ttk.Button(self.center_frame,text=command_names[7],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[7]),zentry_text.set(str(int(zentry_text.get())+1))])
+        command8.grid(column=2,row=2,padx=5,pady=2.5,sticky='nsw')
+        command9 = ttk.Button(self.center_frame,text=command_names[8],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[8]),tentry_text.set(str(int(tentry_text.get())+1))])
+        command9.grid(column=2,row=3,padx=5,pady=2.5,sticky='nsw')
 
         xentry = ttk.Entry(self.center_frame,justify='center',textvariable=xentry_text)
         yentry = ttk.Entry(self.center_frame,justify='center',textvariable=yentry_text)
         zentry = ttk.Entry(self.center_frame,justify='center',textvariable=zentry_text)
+        tentry = ttk.Entry(self.center_frame,justify='center',textvariable=tentry_text)
 
         xentry.grid(column=1,row=0,padx=2.5,pady=2.5,sticky='ew')
         yentry.grid(column=1,row=1,padx=2.5,pady=2.5,sticky='ew')
         zentry.grid(column=1,row=2,padx=2.5,pady=2.5,sticky='ew')
+        tentry.grid(column=1,row=3,padx=2.5,pady=2.5,sticky='ew')
 
         self.center_frame.grid_columnconfigure((0,2),weight=1)
-        self.center_frame.grid_rowconfigure((0,1,2),weight=1)
+        self.center_frame.grid_rowconfigure((0,1,2,3),weight=1)
 
         # other neccessary functions, unlikely to need changed
-        learn_pos_btn = ttk.Button(self.footer_frame,text='Learn As..',command=lambda:self.save_position(xentry_text.get(), yentry_text.get(), zentry_text.get()))
+        learn_pos_btn = ttk.Button(self.footer_frame,text='Learn As..',command=lambda:self.save_position(xentry_text.get(), yentry_text.get(), zentry_text.get(), tentry_text.get()))
         learn_pos_btn.grid(column=2,row=0,padx=2.5,pady=5,sticky='nsew')
         move_btn = ttk.Button(self.footer_frame,text='Move')
         move_btn.grid(column=1,row=0,padx=2.5,pady=5,sticky='nsew')
@@ -161,18 +174,18 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
     def execute_preset(self, filename='RESET_cmd.txt'): #reads commands from _cmd.txt file and sends them to the arduino
         self.executer.execute_preset(filename=filename)
 
-    def save_position(self,x,y,z):
+    def save_position(self,x,y,z,tilt):
         try:
             x,y,z=int(x),int(y),int(z)
             pos_file=asksaveasfile(parent=self,initialdir='./SAVED_POSITIONS',initialfile='POS1.txt',defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
             if type(pos_file)!=type(None): #cancelling the dialog box returns nonetype, file should only be saved if one was specified
-                pos_file.write('%s,%s,%s'%(x,y,z))
+                pos_file.write('%s,%s,%s,%s'%(x,y,z,tilt))
                 pos_file.close()            
         except Exception as e:
             messagebox.showerror('IOError','Unable to save position:\n'+str(e),parent=self)
 
-    def move_to_coords(self,x,y,z):
-        command='moveall(%s,%s,%s)'%(x,y,z)
+    def move_to_coords(self,x,y,z,tilt):
+        command='moveall(%s,%s,%s,%s)'%(x,y,z,tilt)
 
 
 class TextEditor(Frame): #code editor page for manually programming robot arm or editing presets
@@ -337,8 +350,8 @@ class Compiler:
 
         #HIGH LEVEL COMMANDS
         cmd_regex['offset']=re.compile('^offset\(-?\d+,-?\d+,-?\d+\)$')                 #matches 'OFFSET(#,#,#)' as x,y,z (signed) - need to add angle?
-        cmd_regex['moveall']=re.compile('^moveall\(-?\d+,-?\d+,-?\d+\)$')               #matches 'MOVEALL(#,#,#)' as x,y,z (signed)
-        cmd_regex['shift']=re.compile('^shift\(-?\d+,-?\d+,-?\d+\)$')                   #matches 'SHIFT(#,#,#)' as x,y,z (signed)
+        cmd_regex['moveall']=re.compile('^moveall\(-?\d+,-?\d+,-?\d+,\d+\)$')           #matches 'MOVEALL(#,#,#,#)' as x,y,z (signed), tilt(unsigned)
+        cmd_regex['shift']=re.compile('^shift\(-?\d+,-?\d+,-?\d+,-?\d+\)$')             #matches 'SHIFT(#,#,#,#)' as x,y,z,tilt (signed)
         cmd_regex['dispense']=re.compile('^dispense\(\d+,\d+\)$')                       #matches 'DISPENSE(#,#)' as pump_num (unsigned), sample_vol (unsigned)
         cmd_regex['learnas']=re.compile('^learnas\([a-z0-9]{3,}\)$')                    #matches 'LEARNAS([string][3+])'
         cmd_regex['takepose']=re.compile('^takepose\([a-z0-9]{3,}\)$')                  #matches 'TAKEPOSE([string][3+])'
