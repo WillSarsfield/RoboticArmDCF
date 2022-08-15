@@ -140,7 +140,7 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         zentry = ttk.Entry(self.center_frame,justify='center',textvariable=zentry_text)
 
         xentry.grid(column=1,row=0,padx=2.5,pady=2.5,sticky='ew')
-        yentry.grid(column=1,row=1,padx=20,pady=2.5,sticky='ew')
+        yentry.grid(column=1,row=1,padx=2.5,pady=2.5,sticky='ew')
         zentry.grid(column=1,row=2,padx=2.5,pady=2.5,sticky='ew')
 
         self.center_frame.grid_columnconfigure((0,2),weight=1)
@@ -167,12 +167,12 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
             pos_file=asksaveasfile(parent=self,initialdir='./SAVED_POSITIONS',initialfile='POS1.txt',defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
             if type(pos_file)!=type(None): #cancelling the dialog box returns nonetype, file should only be saved if one was specified
                 pos_file.write('%s,%s,%s'%(x,y,z))
-                pos_file.close()
-            else:
-                pass
-            
+                pos_file.close()            
         except Exception as e:
             messagebox.showerror('IOError','Unable to save position:\n'+str(e),parent=self)
+
+    def move_to_coords(self,x,y,z):
+        command='moveall(%s,%s,%s)'%(x,y,z)
 
 
 class TextEditor(Frame): #code editor page for manually programming robot arm or editing presets
@@ -239,7 +239,10 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
         self.center_frame.text_box.delete(1.0,'end')
 
     def compile_text(self): #converts text into format ready for serial comms
-        return self.compiler.compile_text(text=self.get_text())
+        cmds = self.compiler.compile_text(text=self.get_text())
+        if (cmds is not None):
+            pass
+
 
     def execute_text(self,port):
         self.executer.execute_text()
@@ -416,14 +419,13 @@ class Executer:
             messagebox.showerror('IOError','Unable to execute file:\n'+str(e),parent=self.parent)
 
     def execute_preset(self,filename=''):
-        pass
-        # try:
-        #     with open(filename,'r') as command_file:
-        #         command_list=command_file.read().splitlines()
-        #         #print(command_list)
-        #         execute_code(self.parent.arduino).start(command_list) #implements execute_code.py
-        # except Exception as e:
-        #     messagebox.showerror('IOError','Unable to execute file:\n'+str(e),parent=self.parent)
+        try:
+            with open(filename,'r') as command_file:
+                command_list=command_file.read().splitlines()
+                #print(command_list)
+                execute_code(self.parent.arduino).start(command_list) #implements execute_code.py
+        except Exception as e:
+            messagebox.showerror('IOError','Unable to execute file:\n'+str(e),parent=self.parent)
 
 app=BioBoxInterface()
 app.mainloop()

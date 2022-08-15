@@ -98,7 +98,7 @@ class CommandInterpreter:
 
         return encoded_val
 
-    def get_angle_from_coords(self,x,y,z):
+    def get_angle_from_coords(self,x,y,z,tilt=0):
         return None
         return angles
 
