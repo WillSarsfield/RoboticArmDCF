@@ -123,24 +123,24 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         command1 = ttk.Button(self.footer_frame,text=command_names[0],cursor='exchange',command=lambda:[self.execute_preset(filename=presets_matrix[0]),xentry_text.set('0'),yentry_text.set('0'),zentry_text.set('0')])
         command1.grid(column=0,row=0,padx=2.5,pady=5,sticky='nsew') #this first one is actually in the footer (reset button)
         command2 = ttk.Button(self.center_frame,text=command_names[1],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[1]),xentry_text.set(str(int(xentry_text.get())-1))])
-        command2.grid(column=0,row=0,padx=5,pady=2.5,sticky='nsew')
+        command2.grid(column=0,row=0,padx=5,pady=2.5,sticky='nse')
         command3 = ttk.Button(self.center_frame,text=command_names[2],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[2]),yentry_text.set(str(int(yentry_text.get())-1))])
-        command3.grid(column=0,row=1,padx=5,pady=2.5,sticky='nsew')
+        command3.grid(column=0,row=1,padx=5,pady=2.5,sticky='nse')
         command4 = ttk.Button(self.center_frame,text=command_names[3],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[3]),zentry_text.set(str(int(zentry_text.get())-1))])
-        command4.grid(column=0,row=2,padx=5,pady=2.5,sticky='nsew')
+        command4.grid(column=0,row=2,padx=5,pady=2.5,sticky='nse')
         command5 = ttk.Button(self.center_frame,text=command_names[4],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[4]),xentry_text.set(str(int(xentry_text.get())+1))])
-        command5.grid(column=2,row=0,padx=5,pady=2.5,sticky='nsew')
+        command5.grid(column=2,row=0,padx=5,pady=2.5,sticky='nsw')
         command6 = ttk.Button(self.center_frame,text=command_names[5],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[5]),yentry_text.set(str(int(yentry_text.get())+1))])
-        command6.grid(column=2,row=1,padx=5,pady=2.5,sticky='nsew')
+        command6.grid(column=2,row=1,padx=5,pady=2.5,sticky='nsw')
         command7 = ttk.Button(self.center_frame,text=command_names[6],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[6]),zentry_text.set(str(int(zentry_text.get())+1))])
-        command7.grid(column=2,row=2,padx=5,pady=2.5,sticky='nsew')
+        command7.grid(column=2,row=2,padx=5,pady=2.5,sticky='nsw')
 
         xentry = ttk.Entry(self.center_frame,justify='center',textvariable=xentry_text)
         yentry = ttk.Entry(self.center_frame,justify='center',textvariable=yentry_text)
         zentry = ttk.Entry(self.center_frame,justify='center',textvariable=zentry_text)
 
         xentry.grid(column=1,row=0,padx=2.5,pady=2.5,sticky='ew')
-        yentry.grid(column=1,row=1,padx=2.5,pady=2.5,sticky='ew')
+        yentry.grid(column=1,row=1,padx=20,pady=2.5,sticky='ew')
         zentry.grid(column=1,row=2,padx=2.5,pady=2.5,sticky='ew')
 
         self.center_frame.grid_columnconfigure((0,2),weight=1)
@@ -163,16 +163,16 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
 
     def save_position(self,x,y,z):
         try:
+            x,y,z=int(x),int(y),int(z)
             pos_file=asksaveasfile(parent=self,initialdir='./SAVED_POSITIONS',initialfile='POS1.txt',defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
-            if (x.isdigit() and y.isdigit() and z.isdigit()):
-                if type(pos_file)!=type(None): #cancelling the dialog box returns nonetype, file should only be saved if one was specified
-                    pos_file.write('%s,%s,%s'%(x,y,z))
-                    pos_file.close()
+            if type(pos_file)!=type(None): #cancelling the dialog box returns nonetype, file should only be saved if one was specified
+                pos_file.write('%s,%s,%s'%(x,y,z))
+                pos_file.close()
             else:
                 pass
             
         except Exception as e:
-            messagebox.showerror('IOError','Unable to save position:\n'+str(e),parent=self.parent)
+            messagebox.showerror('IOError','Unable to save position:\n'+str(e),parent=self)
 
 
 class TextEditor(Frame): #code editor page for manually programming robot arm or editing presets
