@@ -140,9 +140,6 @@ void loop(){//then executes input instruction
     float y2y1 = (-length3)*sin((absAngle*M_PI)/180.) + inputY;
     float d = pow(pow(x2x1,2) + pow(y2y1,2), 0.5);
     float a = (atan((-y2y1)/(-x2x1))*180.)/M_PI;
-    if (inputX < 0){
-      a = a;
-    }
     Serial.println("d: " + String(d)  + " a: " + String(a) + " x2: " + String(x2x1) + " y2: " + String(y2y1));
     delay(100);
     while (!Serial.available()){}
@@ -153,7 +150,7 @@ void loop(){//then executes input instruction
     }else{
       finishAng[2] = (((acos((pow(length1,2)+pow(d,2)-pow(length2,2))/(2*length1*d))*180.)/M_PI) + a);
     }
-    finishAng[1] = (((acos((pow(length1,2)+pow(length2,2)-pow(d,2))/(2*length1*length2))*180.)/M_PI) + 180.);
+    finishAng[1] = (((acos((pow(length1,2)+pow(length2,2)-pow(d,2))/(2*length1*d))*180.)/M_PI) + 180.);
     finishAng[0] = 360 - fmod(finishAng[2] + finishAng[1] - absAngle, 360.);
     Serial.println("servo 3: " + String(finishAng[0]) + " servo 2: " + String(finishAng[1]) + " servo 1: " + String(finishAng[2]) + " servo 0: " + String(finishAng[3]));
     delay(100);

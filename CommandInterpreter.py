@@ -1,4 +1,5 @@
 import re
+import math
 
 class CommandInterpreter:
     max_angle=180           #refers to the maximum range of motion each servo has in degrees
@@ -99,8 +100,36 @@ class CommandInterpreter:
         return encoded_val
 
     def get_angle_from_coords(self,x,y,z,tilt=0):
-        return None
-        return angles
+        angle = []
+        length = [10.5,9,5]
+        angle.append(180 - ((math.atan(z/x)*180)/math.pi))
+        if angle[0] > 180:
+            angle[0] -= 180
+        if (x<0 and z<0) or (x>0 and z<0):
+            x = math.sqrt(x**2 + z**2)
+        else:
+            x = -math.sqrt(x**2 + z**2)
+        x2 = (-length[2]) * math.cos((tilt*math.pi)/180) + x
+        y2 = (-length[2]) * math.sin((tilt*math.pi)/180) + x
+        d = math.sqrt(x2**2 + y2**2)
+        a = ((math.atan(-y2/-x2)*180)/math.pi)
+        if x2 <= 0:
+            angle.append((((math.acos((length[0]**2 + d**2 - length[1]**2)/(2*length[0]/d))*180)/math.pi) + a) + 180)
+        else:
+            angle.append(((math.acos((length[0]**2 + d**2 - length[1]**2)/(2*length[0]/d))*180)/math.pi) + a)
+        angle.append(((math.acos((length[0]**2 + length[1]**2 - d**2)/(2*length[0]/d))*180)/math.pi) + 180)
+        angle.append(360 - math.fmod(angle[1] + angle[2] - tilt, 360))
+        angle[1] = 180 - angle[1]
+        angle[2] -= 270
+        if angle[3] < 180:
+            angle[3] += 90
+        else:
+            angle[3] -= 270
+        if angle[2] > 180 or angle[2] < 0:
+            angle[2] = math.fmod(angle[2],180)
+        if angle[3] > 180 or angle[3] < 0:
+            angle[3] = math.fmod(angle[3],180)
+        return angle
 
     def get_steps_from_vol(self,vol):
         return None
