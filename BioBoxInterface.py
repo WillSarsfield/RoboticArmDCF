@@ -330,7 +330,8 @@ class Compiler:
 
         encoded_cmds=[]
         match=False                                                     
-        for command in command_list:                                         
+        for command in command_list:
+            encoded_cmd = ''                                         
             for name, pattern in cmd_regex.items():
                 if pattern.match(command):
                     match=True
@@ -344,19 +345,21 @@ class Compiler:
                     if name=='macro': # contains a command(s) within itself that needs checked
                         match=False
                         try:
-                            match=True
                             with open('./COMMANDS/MACROS/'+filename.upper()+'.txt','r') as macro_file:
                                 text = macro_file.readlines()
                                 macro_file.close()
                             encoded_cmd=self.compile_text(text=text)
+                            match=True
                         except Exception as e:
                             messagebox.showerror(parent=self.parent,title='Compiler',message='Macro error: '+e+'\nSee \'README.txt\' for help')
                     else: #command is low-level and can be passed through to the interpreter
-                        pass
+                        encoded_cmd = self.get_raw(command,type=name)
+
                     if type(encoded_cmd)==type(0):
                         encoded_cmds.append(encoded_cmd)
                     elif type(encoded_cmd)==type([]):
                         encoded_cmds.append(encoded_cmd[i] for i in range(len(encoded_cmd)))
+
                 elif command=='': #caused by having a ; at the very end of the string
                     match=True
 
