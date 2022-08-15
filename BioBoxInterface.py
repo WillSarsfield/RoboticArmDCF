@@ -77,9 +77,11 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         Frame.__init__(self,parent) #contains header_frame and center_frame
 
         self.header_frame = Frame(self)#contains window swapping buttons
-        self.center_frame = Frame(self,relief='raised',border=6,background='#323232')#contains robotic arm movement presets
+        self.center_frame = Frame(self,background='#323232')#contains robotic arm movement presets
+        self.footer_frame = Frame(self,relief='raised',border=6,background='#323232')#contains reset and save position buttons
         self.header_frame.grid(row=0,column=0,sticky='nsew')
-        self.center_frame.grid(row=1,column=0,sticky='nsew')   
+        self.center_frame.grid(row=1,column=0,sticky='nsew')
+        self.footer_frame.grid(row=2,column=0,sticky='nsew')
 
         label = ttk.Label(self.header_frame,text='Presets') #setting up tabs at top of page
         label.grid(column=0,row=0,columnspan=3,sticky='nsew')
@@ -93,49 +95,85 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         self.header_frame.grid_columnconfigure((0,1,2),weight=1)
 
         command_names=[         #names of each preset button, changing these renames the buttons
-            'Reset',            #0
-            'Collect Sample',   #1
-            'Irradiate',        #2
-            'Pour Example',     #3
-            'Test Boundaries',  #4
-            'Test Range',       #5
-            'Command Six'       #6
+            'Reset', #0
+            '<< x',  #1
+            '<< y',  #2
+            '<< z',  #3
+            'x >>',  #4
+            'y >>',  #5
+            'z >>'   #6
         ]
 
         presets_matrix = {      #names of compiled files corresponding to each button, change these to change what file the button executes
             0:'./COMMANDS/RESET_cmd.txt',
-            1:'./COMMANDS/COLLECT_SAMPLE_cmd.txt',
-            2:'./COMMANDS/IRRADIATE_cmd.txt',
-            3:'./COMMANDS/POUR_EXAMPLE_cmd.txt',
-            4:'./COMMANDS/TEST_BOUNDARIES_cmd.txt',
-            5:'./COMMANDSTEST_RANGE_cmd.txt',
-            6:''
+            1:'./COMMANDS/SHFTDWN_X_cmd.txt',
+            2:'./COMMANDS/SHFTDWN_Y_cmd.txt',
+            3:'./COMMANDS/SHFTDWN_Z_cmd.txt',
+            4:'./COMMANDS/SHFTUP_X_cmd.txt',
+            5:'./COMMANDS/SHFTUP_Y_cmd.txt',
+            6:'./COMMANDS/SHFTUP_Z_cmd.txt'
         }
-
+        xentry_text=StringVar()
+        xentry_text.set('0')
+        yentry_text=StringVar()
+        yentry_text.set('0')
+        zentry_text=StringVar()
+        zentry_text.set('0')
         #setting up preset buttons, change the command_names text and presets_matrix filename to execute different programs
-        command1 = ttk.Button(self.center_frame,text=command_names[0],cursor='exchange',command=lambda:self.execute_preset(filename=presets_matrix[0]))
-        command1.grid(column=0,columnspan=2,row=0,padx=5,pady=2.5,sticky='nsew')
-        command2 = ttk.Button(self.center_frame,text=command_names[1],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[1]))
-        command2.grid(column=0,row=1,padx=5,pady=2.5,sticky='nsew')
-        command3 = ttk.Button(self.center_frame,text=command_names[2],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[2]))
-        command3.grid(column=0,row=2,padx=5,pady=2.5,sticky='nsew')
-        command4 = ttk.Button(self.center_frame,text=command_names[3],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[3]))
-        command4.grid(column=0,row=3,padx=5,pady=2.5,sticky='nsew')
-        command5 = ttk.Button(self.center_frame,text=command_names[4],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[4]))
-        command5.grid(column=1,row=1,padx=5,pady=2.5,sticky='nsew')
-        command6 = ttk.Button(self.center_frame,text=command_names[5],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[5]))
-        command6.grid(column=1,row=2,padx=5,pady=2.5,sticky='nsew')
-        command7 = ttk.Button(self.center_frame,text=command_names[6],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[6]))
-        command7.grid(column=1,row=3,padx=5,pady=2.5,sticky='nsew')
+        command1 = ttk.Button(self.footer_frame,text=command_names[0],cursor='exchange',command=lambda:[self.execute_preset(filename=presets_matrix[0]),xentry_text.set('0'),yentry_text.set('0'),zentry_text.set('0')])
+        command1.grid(column=0,row=0,padx=2.5,pady=5,sticky='nsew') #this first one is actually in the footer (reset button)
+        command2 = ttk.Button(self.center_frame,text=command_names[1],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[1]),xentry_text.set(str(int(xentry_text.get())-1))])
+        command2.grid(column=0,row=0,padx=5,pady=2.5,sticky='nse')
+        command3 = ttk.Button(self.center_frame,text=command_names[2],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[2]),yentry_text.set(str(int(yentry_text.get())-1))])
+        command3.grid(column=0,row=1,padx=5,pady=2.5,sticky='nse')
+        command4 = ttk.Button(self.center_frame,text=command_names[3],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[3]),zentry_text.set(str(int(zentry_text.get())-1))])
+        command4.grid(column=0,row=2,padx=5,pady=2.5,sticky='nse')
+        command5 = ttk.Button(self.center_frame,text=command_names[4],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[4]),xentry_text.set(str(int(xentry_text.get())+1))])
+        command5.grid(column=2,row=0,padx=5,pady=2.5,sticky='nsw')
+        command6 = ttk.Button(self.center_frame,text=command_names[5],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[5]),yentry_text.set(str(int(yentry_text.get())+1))])
+        command6.grid(column=2,row=1,padx=5,pady=2.5,sticky='nsw')
+        command7 = ttk.Button(self.center_frame,text=command_names[6],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[6]),zentry_text.set(str(int(zentry_text.get())+1))])
+        command7.grid(column=2,row=2,padx=5,pady=2.5,sticky='nsw')
 
-        self.center_frame.grid_columnconfigure((0,1),weight=1)
-        self.center_frame.grid_rowconfigure((0,1,2,3),weight=1)
+        xentry = ttk.Entry(self.center_frame,justify='center',textvariable=xentry_text)
+        yentry = ttk.Entry(self.center_frame,justify='center',textvariable=yentry_text)
+        zentry = ttk.Entry(self.center_frame,justify='center',textvariable=zentry_text)
 
-        self.grid_columnconfigure(0,weight=1) #position of center_frame and header_frame within PresetPage
+        xentry.grid(column=1,row=0,padx=2.5,pady=2.5,sticky='ew')
+        yentry.grid(column=1,row=1,padx=2.5,pady=2.5,sticky='ew')
+        zentry.grid(column=1,row=2,padx=2.5,pady=2.5,sticky='ew')
+
+        self.center_frame.grid_columnconfigure((0,2),weight=1)
+        self.center_frame.grid_rowconfigure((0,1,2),weight=1)
+
+        # other neccessary functions, unlikely to need changed
+        learn_pos_btn = ttk.Button(self.footer_frame,text='Learn As..',command=lambda:self.save_position(xentry_text.get(), yentry_text.get(), zentry_text.get()))
+        learn_pos_btn.grid(column=2,row=0,padx=2.5,pady=5,sticky='nsew')
+        move_btn = ttk.Button(self.footer_frame,text='Move')
+        move_btn.grid(column=1,row=0,padx=2.5,pady=5,sticky='nsew')
+
+        self.footer_frame.grid_columnconfigure((0,1,2),weight=1)
+        self.footer_frame.grid_rowconfigure(0,weight=1)
+
+        self.grid_columnconfigure(0,weight=1) #position of frames within PresetPage
         self.grid_rowconfigure(1,weight=1)
 
     def execute_preset(self, filename='RESET_cmd.txt'): #reads commands from _cmd.txt file and sends them to the arduino
         self.executer.execute_preset(filename=filename)
+
+    def save_position(self,x,y,z):
+        try:
+            x,y,z=int(x),int(y),int(z)
+            pos_file=asksaveasfile(parent=self,initialdir='./SAVED_POSITIONS',initialfile='POS1.txt',defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
+            if type(pos_file)!=type(None): #cancelling the dialog box returns nonetype, file should only be saved if one was specified
+                pos_file.write('%s,%s,%s'%(x,y,z))
+                pos_file.close()            
+        except Exception as e:
+            messagebox.showerror('IOError','Unable to save position:\n'+str(e),parent=self)
+
+    def move_to_coords(self,x,y,z):
+        command='moveall(%s,%s,%s)'%(x,y,z)
+
 
 class TextEditor(Frame): #code editor page for manually programming robot arm or editing presets
 
@@ -148,7 +186,7 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
 
         self.header_frame = Frame(self)#frame containing window swapping buttons
         self.center_frame = Frame(self,bg='#323232')#frame containing textbox and scrollbars
-        self.footer_frame = Frame(self,bg='#323232')#frame containing file manipulation buttons
+        self.footer_frame = Frame(self,relief='raised',border=6,background='#323232')#frame containing file manipulation buttons
         self.header_frame.grid(row=0,column=0,sticky='nsew')
         self.center_frame.grid(row=1,column=0,sticky='nsew')
         self.footer_frame.grid(row=2,column=0,sticky='nsew')
@@ -177,18 +215,18 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
         self.center_frame.grid_rowconfigure(0,weight=1)
         
         saveButton = ttk.Button(self.footer_frame, text='Save File', command=lambda:self.save_file()) #file manipulation buttons within footer_frame
-        saveButton.grid(column=4,row=0,sticky='e',padx=2.5,pady=5)
+        saveButton.grid(column=4,row=0,sticky='ew',padx=2.5,pady=5)
         openButton = ttk.Button(self.footer_frame, text='Open File', command=lambda:self.open_file())
-        openButton.grid(column=3,row=0,sticky='e',padx=2.5,pady=5)
+        openButton.grid(column=3,row=0,sticky='ew',padx=2.5,pady=5)
         clearButton = ttk.Button(self.footer_frame, text='Clear', command=lambda:self.clear_text())
-        clearButton.grid(column=0,row=0,sticky='e',padx=2.5,pady=5)
+        clearButton.grid(column=0,row=0,sticky='ew',padx=2.5,pady=5)
         compileButton = ttk.Button(self.footer_frame, text='Compile', command=lambda:self.compile_text())
-        compileButton.grid(column=1,row=0,sticky='e',padx=2.5,pady=5)
+        compileButton.grid(column=1,row=0,sticky='ew',padx=2.5,pady=5)
         executeButton = ttk.Button(self.footer_frame, text='Execute', command=lambda:self.execute_text(BioBoxInterface.arduinoPort))
-        executeButton.grid(column=2,row=0,sticky='e',padx=2.5,pady=5)
+        executeButton.grid(column=2,row=0,sticky='ew',padx=2.5,pady=5)
 
         self.footer_frame.grid_rowconfigure(0,weight=1)
-        self.footer_frame.grid_columnconfigure(0,weight=1)
+        self.footer_frame.grid_columnconfigure((0,1,2,3,4),weight=1)
 
         self.grid_columnconfigure(0,weight=1)
         self.grid_rowconfigure(1,weight=1)
@@ -201,7 +239,10 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
         self.center_frame.text_box.delete(1.0,'end')
 
     def compile_text(self): #converts text into format ready for serial comms
-        return self.compiler.compile_text()
+        cmds = self.compiler.compile_text(text=self.get_text())
+        if (cmds is not None):
+            pass
+
 
     def execute_text(self,port):
         self.executer.execute_text()
@@ -280,8 +321,7 @@ class Compiler:
                 savefile.write('\n')
             savefile.close()
 
-    def compile_text(self):
-        text=self.parent.frames[TextEditor].get_text()
+    def compile_text(self,text=''):
         text=''.join(text.split()).lower() #formatting text: remove whitespace and convert to lowercase
         command_list=text.split(';') #splits strings into commands separated by ';'
 
@@ -292,7 +332,7 @@ class Compiler:
         cmd_regex['bit']=re.compile('^bit\(\d+,(high|low|1|0)\)$')                      #matches 'BIT(#,HIGH/LOW)' or 'BIT(#,1/0)' as pin (unsigned), pin_val (unsigned)
         cmd_regex['pump']=re.compile('^pump\(\d+,-?\d+\)$')                             #matches 'PUMP(#,#)' as pump_num (unsigned), num_steps (signed)
         cmd_regex['spin']=re.compile('^spin\(\d+\)$')                                   #matches 'SPIN()' as rpm(unsigned)                                               
-        cmd_regex['mckirrd']=re.compile('^mckirrd\(\)$')                                #matches 'MCKIRRD()'
+        # cmd_regex['mckirrd']=re.compile('^mckirrd\(\)$')                                #matches 'MCKIRRD()'
         cmd_regex['irrd']=re.compile('^irrd\(\d+\)$')                                   #matches 'IRRD(#)' as dose (unsigned)
 
         #HIGH LEVEL COMMANDS
@@ -300,26 +340,54 @@ class Compiler:
         cmd_regex['moveall']=re.compile('^moveall\(-?\d+,-?\d+,-?\d+\)$')               #matches 'MOVEALL(#,#,#)' as x,y,z (signed)
         cmd_regex['shift']=re.compile('^shift\(-?\d+,-?\d+,-?\d+\)$')                   #matches 'SHIFT(#,#,#)' as x,y,z (signed)
         cmd_regex['dispense']=re.compile('^dispense\(\d+,\d+\)$')                       #matches 'DISPENSE(#,#)' as pump_num (unsigned), sample_vol (unsigned)
-        cmd_regex['learnas']=re.compile('^learnas\([a-z0-9]{3,}\)$')                    #matches 'LEARNAS(string[3+])'
-        cmd_regex['takepose']=re.compile('^takepose\([a-z0-9]{3,}\)$')                  #matches 'TAKEPOSE(string[3+])'
+        cmd_regex['learnas']=re.compile('^learnas\([a-z0-9]{3,}\)$')                    #matches 'LEARNAS([string][3+])'
+        cmd_regex['takepose']=re.compile('^takepose\([a-z0-9]{3,}\)$')                  #matches 'TAKEPOSE([string][3+])'
         
+        #FUNCTION-LIKE COMMANDS
+        cmd_regex['repeat']=re.compile('^repeat\([0-9]+,.+\)$')                         #matches 'REPEAT(#,[string])' where string should be an accepted command
+        cmd_regex['macro']=re.compile('^macro\(.+\)$')                                  #matches 'MACRO(#,[string])' where string should be an existing macro file
+
         encoded_cmds=[]
         match=False                                                     
-        for command in command_list:                                         
+        for command in command_list:
+            encoded_cmd = ''                                         
             for name, pattern in cmd_regex.items():
                 if pattern.match(command):
-                    encoded_cmd=self.get_raw(command=command,type=name)
+                    match=True
+                    if name=='repeat': #contains a command within itself that needs checked
+                        match=False
+                        for sub_name,sub_pattern in cmd_regex.items():
+                            if sub_pattern.match(command[7:-1].split(',',1)[-1]): #checking inner command is valid
+                                match=True
+                                iter_count= command[7:-1].split(',',1)[0]
+                                command=command[:7]+sub_name+','+command[7:] #pass through the subcommand type
+                                encoded_cmd=self.compile_text(text=command[7:-1].split(',',1)[-1])
+                                encoded_cmd*iter_count
+                    if name=='macro': # contains a command(s) within itself that needs checked
+                        match=False
+                        try:
+                            with open('./COMMANDS/MACROS/'+filename.upper()+'.txt','r') as macro_file:
+                                text = macro_file.readlines()
+                                macro_file.close()
+                            encoded_cmd=self.compile_text(text=text)
+                            match=True
+                        except Exception as e:
+                            messagebox.showerror(parent=self.parent,title='Compiler',message='Macro error: '+e+'\nSee \'README.txt\' for help')
+                    else: #command is low-level and can be passed through to the interpreter
+                        encoded_cmd = self.get_raw(command,type=name)
+
                     if type(encoded_cmd)==type(0):
                         encoded_cmds.append(encoded_cmd)
                     elif type(encoded_cmd)==type([]):
                         encoded_cmds.append(encoded_cmd[i] for i in range(len(encoded_cmd)))
-                    match=True
+
                 elif command=='': #caused by having a ; at the very end of the string
                     match=True
+
             if not(match):
                 if len(command)>=100:
                     command=command[:100]+'[...]' #limit length of message string
-                messagebox.showerror(parent=self.parent,title='Compiler',message='Unrecognised command: '+command+'\nSee \'README.txt\' for help')    #include command description here
+                messagebox.showerror(parent=self.parent,title='Compiler',message='Unrecognised command: '+command+'\nSee \'README.txt\' for help')
                 return False
             match=False
 
@@ -335,7 +403,7 @@ class Executer:
 
     def execute_text(self):
         try:
-            if self.parent.compiler.compile_text(): #if successfully compiled:
+            if self.parent.compile_text(): #if successfully compiled:
                 execute_file=open(self.parent.compilepath,'r') #opens last successfully compiled file ----------ISSUE:
                 cmd_list=execute_file.read().split()    #--------- if the last compilation failed this will run the
                                                         #last successful compilation which may be a different file.
