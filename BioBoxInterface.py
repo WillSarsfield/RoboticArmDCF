@@ -107,35 +107,37 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         presets_matrix = {      #names of compiled files corresponding to each button, change these to change what file the button executes
             0:'./COMMANDS/RESET_cmd.txt',
             1:'./COMMANDS/SHFTDWN_X_cmd.txt',
-            2:'./COMMANDS/SHFTUP_X_cmd.txt',
-            3:'./COMMANDS/SHFTDWN_Y_cmd.txt',
-            4:'./COMMANDS/SHFTUP_Y_cmd.txt',
-            5:'./COMMANDS/SHFTDWN_Z_cmd.txt',
+            2:'./COMMANDS/SHFTDWN_Y_cmd.txt',
+            3:'./COMMANDS/SHFTDWN_Z_cmd.txt',
+            4:'./COMMANDS/SHFTUP_X_cmd.txt',
+            5:'./COMMANDS/SHFTUP_Y_cmd.txt',
             6:'./COMMANDS/SHFTUP_Z_cmd.txt'
         }
-
+        xentry_text=StringVar()
+        xentry_text.set('0')
+        yentry_text=StringVar()
+        yentry_text.set('0')
+        zentry_text=StringVar()
+        zentry_text.set('0')
         #setting up preset buttons, change the command_names text and presets_matrix filename to execute different programs
         command1 = ttk.Button(self.footer_frame,text=command_names[0],cursor='exchange',command=lambda:self.execute_preset(filename=presets_matrix[0]))
         command1.grid(column=0,row=0,padx=2.5,pady=5,sticky='nsew') #this first one is actually in the footer (reset button)
-        command2 = ttk.Button(self.center_frame,text=command_names[1],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[1]))
+        command2 = ttk.Button(self.center_frame,text=command_names[1],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[1]),xentry_text.set(str(int(xentry_text.get())-1))])
         command2.grid(column=0,row=0,padx=5,pady=2.5,sticky='nsew')
-        command3 = ttk.Button(self.center_frame,text=command_names[2],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[2]))
+        command3 = ttk.Button(self.center_frame,text=command_names[2],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[2]),yentry_text.set(str(int(yentry_text.get())-1))])
         command3.grid(column=0,row=1,padx=5,pady=2.5,sticky='nsew')
-        command4 = ttk.Button(self.center_frame,text=command_names[3],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[3]))
+        command4 = ttk.Button(self.center_frame,text=command_names[3],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[3]),zentry_text.set(str(int(zentry_text.get())-1))])
         command4.grid(column=0,row=2,padx=5,pady=2.5,sticky='nsew')
-        command5 = ttk.Button(self.center_frame,text=command_names[4],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[4]))
+        command5 = ttk.Button(self.center_frame,text=command_names[4],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[4]),xentry_text.set(str(int(xentry_text.get())+1))])
         command5.grid(column=2,row=0,padx=5,pady=2.5,sticky='nsew')
-        command6 = ttk.Button(self.center_frame,text=command_names[5],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[5]))
+        command6 = ttk.Button(self.center_frame,text=command_names[5],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[5]),yentry_text.set(str(int(yentry_text.get())+1))])
         command6.grid(column=2,row=1,padx=5,pady=2.5,sticky='nsew')
-        command7 = ttk.Button(self.center_frame,text=command_names[6],cursor='cross',command=lambda:self.execute_preset(filename=presets_matrix[6]))
+        command7 = ttk.Button(self.center_frame,text=command_names[6],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[6]),zentry_text.set(str(int(zentry_text.get())+1))])
         command7.grid(column=2,row=2,padx=5,pady=2.5,sticky='nsew')
 
-        xentry = ttk.Entry(self.center_frame,justify='center')
-        xentry.insert(0,'0')
-        yentry = ttk.Entry(self.center_frame,justify='center')
-        yentry.insert(0,'0')
-        zentry = ttk.Entry(self.center_frame,justify='center')
-        zentry.insert(0,'0')
+        xentry = ttk.Entry(self.center_frame,justify='center',textvariable=xentry_text)
+        yentry = ttk.Entry(self.center_frame,justify='center',textvariable=yentry_text)
+        zentry = ttk.Entry(self.center_frame,justify='center',textvariable=zentry_text)
 
         xentry.grid(column=1,row=0,padx=2.5,pady=2.5,sticky='ew')
         yentry.grid(column=1,row=1,padx=2.5,pady=2.5,sticky='ew')
@@ -340,8 +342,10 @@ class Compiler:
                         for sub_name,sub_pattern in cmd_regex.items():
                             if sub_pattern.match(command[7:-1].split(',',1)[-1]): #checking inner command is valid
                                 match=True
+                                iter_count= command[7:-1].split(',',1)[0]
                                 command=command[:7]+sub_name+','+command[7:] #pass through the subcommand type
                                 encoded_cmd=self.compile_text(text=command[7:-1].split(',',1)[-1])
+                                encoded_cmd*iter_count
                     if name=='macro': # contains a command(s) within itself that needs checked
                         match=False
                         try:
@@ -398,13 +402,14 @@ class Executer:
             messagebox.showerror('IOError','Unable to execute file:\n'+str(e),parent=self.parent)
 
     def execute_preset(self,filename=''):
-        try:
-            with open(filename,'r') as command_file:
-                command_list=command_file.read().splitlines()
-                #print(command_list)
-                execute_code(self.parent.arduino).start(command_list) #implements execute_code.py
-        except Exception as e:
-            messagebox.showerror('IOError','Unable to execute file:\n'+str(e),parent=self.parent)
+        pass
+        # try:
+        #     with open(filename,'r') as command_file:
+        #         command_list=command_file.read().splitlines()
+        #         #print(command_list)
+        #         execute_code(self.parent.arduino).start(command_list) #implements execute_code.py
+        # except Exception as e:
+        #     messagebox.showerror('IOError','Unable to execute file:\n'+str(e),parent=self.parent)
 
 app=BioBoxInterface()
 app.mainloop()
