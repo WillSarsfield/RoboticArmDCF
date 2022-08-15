@@ -74,13 +74,13 @@ class CommandInterpreter:
             
         elif type=='learnas':
             pos_name = command[8:-1]
-            with open('./'+pos_name.upper()+'.txt','w') as pos_file:
+            with open('./SAVED_POSITIONS'+pos_name.upper()+'.txt','w') as pos_file:
                 pos_file.write(self.x_pos+','+self.y_pos+','+self.z_pos)
                 pos_file.close()
 
         elif type=='takepose':
             file_name = command[9:-1]
-            with open('./'+file_name.upper()+'.txt','r') as pos_file:
+            with open('./SAVED_POSITIONS'+file_name.upper()+'.txt','r') as pos_file:
                 coords=''.join(pos_file.readline().split())
                 pos_file.close()
             x,y,z=[int(coords.split(',')[i]) for i in (0,1,2)]

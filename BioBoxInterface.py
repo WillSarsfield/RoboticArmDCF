@@ -120,7 +120,7 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         zentry_text=StringVar()
         zentry_text.set('0')
         #setting up preset buttons, change the command_names text and presets_matrix filename to execute different programs
-        command1 = ttk.Button(self.footer_frame,text=command_names[0],cursor='exchange',command=lambda:self.execute_preset(filename=presets_matrix[0]))
+        command1 = ttk.Button(self.footer_frame,text=command_names[0],cursor='exchange',command=lambda:[self.execute_preset(filename=presets_matrix[0]),xentry_text.set('0'),yentry_text.set('0'),zentry_text.set('0')])
         command1.grid(column=0,row=0,padx=2.5,pady=5,sticky='nsew') #this first one is actually in the footer (reset button)
         command2 = ttk.Button(self.center_frame,text=command_names[1],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[1]),xentry_text.set(str(int(xentry_text.get())-1))])
         command2.grid(column=0,row=0,padx=5,pady=2.5,sticky='nsew')
@@ -147,7 +147,7 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         self.center_frame.grid_rowconfigure((0,1,2),weight=1)
 
         # other neccessary functions, unlikely to need changed
-        learn_pos_btn = ttk.Button(self.footer_frame,text='Learn As..')
+        learn_pos_btn = ttk.Button(self.footer_frame,text='Learn As..',command=lambda:self.save_position(xentry_text.get(), yentry_text.get(), zentry_text.get()))
         learn_pos_btn.grid(column=2,row=0,padx=2.5,pady=5,sticky='nsew')
         move_btn = ttk.Button(self.footer_frame,text='Move')
         move_btn.grid(column=1,row=0,padx=2.5,pady=5,sticky='nsew')
@@ -160,6 +160,20 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
 
     def execute_preset(self, filename='RESET_cmd.txt'): #reads commands from _cmd.txt file and sends them to the arduino
         self.executer.execute_preset(filename=filename)
+
+    def save_position(self,x,y,z):
+        try:
+            pos_file=asksaveasfile(parent=self,initialdir='./SAVED_POSITIONS',initialfile='POS1.txt',defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
+            if (x.isdigit() and y.isdigit() and z.isdigit()):
+                if type(pos_file)!=type(None): #cancelling the dialog box returns nonetype, file should only be saved if one was specified
+                    pos_file.write('%s,%s,%s'%(x,y,z))
+                    pos_file.close()
+            else:
+                pass
+            
+        except Exception as e:
+            messagebox.showerror('IOError','Unable to save position:\n'+str(e),parent=self.parent)
+
 
 class TextEditor(Frame): #code editor page for manually programming robot arm or editing presets
 
