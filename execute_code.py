@@ -1,7 +1,7 @@
 import serial
 import time
 
-class execute_code():
+class execute_code:
     timeout=.1005
     min_delay=4050
     def __init__(self,arduino):
