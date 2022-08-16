@@ -269,6 +269,7 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
     def open_file(self): #opens askopenfile dialog, sets textbox text to file contents
         try:
             new_file=askopenfile(parent=self,initialdir='./COMMANDS',defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
+            print(new_file.name)
             self.controller.current_filename=basename(new_file.name) #saves the name of the file that was opened, so when it is saved that name is set as default
             if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
                 self.clear_text()
@@ -322,13 +323,13 @@ class Compiler:
 
     def save_compiled_file(self,cmd_list,filepath):
         compilename=filepath.replace('.txt','_cmd.txt') #can be replaced - this is to distinguish between compiled and uncompiled files
-        savefile=open(filepath,'w')
+        savefile=open(compilename,'w')
         if type(savefile)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
             for cmd in cmd_list:
                 savefile.write(str(cmd))
                 savefile.write('\n')
             savefile.close()
-        return compilename
+        return filepath
 
     def is_valid(self,command_list):
         cmd_regex={}

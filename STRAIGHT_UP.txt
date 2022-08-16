@@ -1,1 +1,0 @@
-<generator object Compiler.compile_text.<locals>.<genexpr> at 0x0000022F6A5B6D60>
