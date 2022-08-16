@@ -249,8 +249,8 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
         self.center_frame.text_box.delete(1.0,'end')
 
     def compile_text(self): #converts text into format ready for serial comms
-        cmds = self.compiler.compile_text(text=self.get_text())
-        self.controller.current_filename = self.compiler.save_compiled_file(cmd_list=cmds, filepath=self.controller.current_filename)
+        cmd_text = self.compiler.compile_text(text=self.get_text())
+        self.controller.current_filename = self.compiler.save_compiled_file(cmd_text, self.controller.current_filename)
 
 
     def execute_text(self,port):
@@ -321,13 +321,11 @@ class Compiler:
     def get_raw(self,command,cmd_type=''):
         return self.interpreter.get_encoded_command(command=command,cmd_type=cmd_type)
 
-    def save_compiled_file(self,cmd_list,filepath):
+    def save_compiled_file(self,cmd_text,filepath):
         compilename=filepath.replace('.txt','_cmd.txt') #can be replaced - this is to distinguish between compiled and uncompiled files
         savefile=open(compilename,'w')
         if type(savefile)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
-            for cmd in cmd_list:
-                savefile.write(str(cmd))
-                savefile.write('\n')
+            savefile.write(cmd_text)
             savefile.close()
         return filepath
 
@@ -387,15 +385,16 @@ class Compiler:
     def compile_text(self,text=''):
         text=''.join(text.split()).lower() #formatting text: remove whitespace and convert to lowercase
         command_list=text.split(';') #splits strings into commands separated by ';'
-        encoded_cmds=[]
+        encoded_cmds=""
         if self.is_valid(command_list):
             for command in command_list:
                 cmd_type=command.split('(',1)[0]
+                print(cmd_type)
                 enc_cmd = self.get_raw(command,cmd_type=cmd_type)
                 if type(enc_cmd)==int:
-                    encoded_cmds.append(enc_cmd)
+                    encoded_cmds += str(enc_cmd)
                 elif type(enc_cmd)==list:
-                    encoded_cmds.append(cmd for cmd in enc_cmd)
+                    encoded_cmds += str(cmd for cmd in enc_cmd)
         return encoded_cmds
         
 
@@ -410,7 +409,7 @@ class Executer:
             text = compiled_file.read()
             compiled_file.close()
         cmd_list = self.parent.compiler.compile_text(text=text) #if successfully compiled:
-        self.parent.current_filename = self.parent.compiler.save_compiled_file(cmd_list,filepath=filename)
+        self.parent.current_filename = self.parent.compiler.save_compiled_file(cmd_list, filename)
 
         executer=execute_code(BioBoxInterface.arduino)
         if messagebox.askokcancel(parent=self.parent, title='Executer',message='Compile complete: Execute file %s?'%(filename)):

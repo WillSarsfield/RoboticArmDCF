@@ -26,8 +26,8 @@ class CommandInterpreter:
             servo_num,angle=int(paramList[0]),int(paramList[1]) # gets all numbers from the move command
             encoded_val= servo_num*(self.max_angle + 1)+angle      # maps (RxR)->R i.e. there is a unique positive encoded_val for each combination of servo&angle
             encoded_val+=1                                  # need to reserve zero for a separate commmand 
-            # print(servo_num,angle,'encoded as',encoded_val)
-        elif type=='do':
+            print(servo_num,angle,'encoded as',encoded_val)
+        elif cmd_type=='do':
             waitTime=int(paramList[0]) # gets the wait time from the do command
             encoded_val= -waitTime-1                        #wait command is encoded as the negative numbers (1 is subtracted as the value 0 is already used)
             # print(waitTime,'encoded as',encoded_val)
@@ -60,7 +60,7 @@ class CommandInterpreter:
             angles=self.get_angle_from_coords(x, y, z, tilt=eff_ang)
             decomp_cmds=[]
             for i in range(len(angles)):
-                decomp_cmds.append(self.get_encoded_command(command='move(%s,%s)'%(i,angles[i]),cmd_type='move'))
+                decomp_cmds.append(self.get_encoded_command(command='move(%s,%s)'%(i,angles[3-i]),cmd_type='move'))
             
             decomp_cmds.append(self.get_encoded_command(command='do(0)',cmd_type='do'))
             self.x_pos,self.y_pos,self.z_pos,self.tilt=x,y,z,eff_ang
@@ -100,7 +100,7 @@ class CommandInterpreter:
             elif type(encoded_cmd)==type([]):
                 encoded_val.append(int(encoded_cmd[i]) for i in range(len(encoded_cmd)))
             encoded_val*args[1] #repeats commands specified number of times
-
+        print(encoded_val)
         return encoded_val
 
     def get_angle_from_coords(self,x,y,z,tilt=0):
