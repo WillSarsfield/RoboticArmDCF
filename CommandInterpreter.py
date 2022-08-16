@@ -25,7 +25,7 @@ class CommandInterpreter:
             servo_num,angle=int(paramList[0]),int(paramList[1]) # gets all numbers from the move command
             encoded_val= servo_num*(self.max_angle + 1)+angle      # maps (RxR)->R i.e. there is a unique positive encoded_val for each combination of servo&angle
             encoded_val+=1                                  # need to reserve zero for a separate commmand 
-            # print(servo_num,angle,'encoded as',encoded_val)
+            print(servo_num,angle,'encoded as',encoded_val)
         elif type=='do':
             waitTime=int(paramList[0]) # gets the wait time from the do command
             encoded_val= -waitTime-1                        #wait command is encoded as the negative numbers (1 is subtracted as the value 0 is already used)
@@ -59,7 +59,7 @@ class CommandInterpreter:
             angles=self.get_angle_from_coords(x, y, z, tilt=eff_ang)
             decomp_cmds=[]
             for i in range(len(angles)):
-                decomp_cmds.append(self.get_encoded_command(command='move(%s,%s)'%(i,angles[i]),type='move'))
+                decomp_cmds.append(self.get_encoded_command(command='move(%s,%s)'%(i,angles[3-i]),type='move'))
             
             decomp_cmds.append(self.get_encoded_command(command='do(0)',type='do'))
             self.x_pos,self.y_pos,self.z_pos,self.tilt=x,y,z,eff_ang
@@ -68,7 +68,7 @@ class CommandInterpreter:
         elif type=='shift':
             x_diff,y_diff,z_diff=[int(paramList[i]) for i in (0,1,2)]
             x,y,z=x_diff+self.x_pos,y_diff+self.y_pos,z_diff+self.z_pos
-            eff_ang=int(paramList[3])+self.tilt
+            eff_ang=int(paramList[3])+int(self.tilt)
             encoded_val=self.get_encoded_command(command='moveall(%s,%s,%s,%s)'%(x,y,z,eff_ang),type='moveall')
 
         elif type=='dispense':
@@ -106,23 +106,26 @@ class CommandInterpreter:
         tilt = int(tilt)
         angle = []
         length = [10.5, 9, 5]
-        angle.append(180 - ((math.atan(z/x)*180)/math.pi))
-        if angle[0] > 180:
-            angle[0] -= 180
-        if (x<0 and z<0) or (x>0 and z<0):
-            x = math.sqrt(x**2 + z**2)
+        if x == 0 and z != 0:
+            angle.append(90)
+        elif z == 0:
+            angle.append(0)
         else:
+            angle.append(180 - ((math.atan(z/x)*180)/math.pi))
+        if x<0 or z<0:
             x = -math.sqrt(x**2 + z**2)
+        else:
+            x = math.sqrt(x**2 + z**2)
         print(type(length[2]))
         x2 = -(length[2]) * (math.cos((tilt*math.pi)/180)) + x
-        y2 = -(length[2]) * (math.sin((tilt*math.pi)/180)) + x
+        y2 = -(length[2]) * (math.sin((tilt*math.pi)/180)) + y
         d = math.sqrt(x2**2 + y2**2)
         a = ((math.atan(-y2/-x2)*180)/math.pi)
         if x2 <= 0:
-            angle.append((((math.acos((length[0]**2 + d**2 - length[1]**2)/(2*length[0]*d))*180)/math.pi) + a) + 180)
+            angle.append((((math.acos(((length[0]**2) + (d**2) - (length[1]**2))/(2*length[0]*d))*180)/math.pi) + a) + 180)
         else:
-            angle.append(((math.acos((length[0]**2 + d**2 - length[1]**2)/(2*length[0]*d))*180)/math.pi) + a)
-        angle.append(((math.acos((length[0]**2 + length[1]**2 - d**2)/(2*length[0]*length[1]))*180)/math.pi) + 180)
+            angle.append(((math.acos(((length[0]**2) + (d**2) - (length[1]**2))/(2*length[0]*d))*180)/math.pi) + a)
+        angle.append(((math.acos(((length[0]**2) + (length[1]**2) - (d**2))/(2*length[0]*length[1]))*180)/math.pi) + 180)
         angle.append(360 - math.fmod(angle[1] + angle[2] - tilt, 360))
         angle[1] = 180 - angle[1]
         angle[2] -= 270

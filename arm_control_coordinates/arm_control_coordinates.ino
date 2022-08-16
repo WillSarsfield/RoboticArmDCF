@@ -80,7 +80,7 @@ float calcY(){// calculates Y coordinate from middle servos
 float calcZ(){//calculates Z coordinate from bottom servo
   float zCoord = 0.;
   zCoord = calcMockX() * sin(((ang[3])*M_PI)/180.);
-  return (zCoord);
+  return (-zCoord);
 }
 
 int getAngle(int motor, int input){//takes serial input and the motor calculated and returns the corresponding angle
@@ -127,14 +127,17 @@ void loop(){//then executes input instruction
     delay(5);
     float absAngle = Serial.readString().toFloat();
     Serial.println("tilt: " + String(absAngle));
-    finishAng[3] = 180 - ((atan(inputZ/inputX)*180)/M_PI);
-    if (finishAng[3] > 180){
-      finishAng[3] = finishAng[3] - 180;
+    if (inputX == 0 && inputZ != 0){
+      finishAng[3] = 90;
+    }else if (inputZ == 0){
+      finishAng[3] = 0;
+    } else {
+      finishAng[3] = fmod(((atan(inputZ/inputX)*180)/M_PI), 180);
     }
-    if ((inputX < 0 && inputZ < 0) || (inputX > 0 && inputZ < 0)){
-      inputX = pow(pow(inputX,2) + pow(inputZ,2),0.5);
+    if (inputX < 0 || inputZ < 0){
+      inputX = -(pow(pow(inputX,2) + pow(inputZ,2),0.5));
     } else{
-      inputX = -pow(pow(inputX,2) + pow(inputZ,2),0.5);
+      inputX = pow(pow(inputX,2) + pow(inputZ,2),0.5);
     }
     float x2x1 = (-length3)*cos((absAngle*M_PI)/180.) + inputX;
     float y2y1 = (-length3)*sin((absAngle*M_PI)/180.) + inputY;
