@@ -69,7 +69,7 @@ class CommandInterpreter:
         elif cmd_type=='shift':
             x_diff,y_diff,z_diff=[int(paramList[i]) for i in (0,1,2)]
             x,y,z=x_diff+self.x_pos,y_diff+self.y_pos,z_diff+self.z_pos
-            eff_ang=int(paramList[3])+self.tilt
+            eff_ang=int(paramList[3])+int(self.tilt)
             encoded_val=self.get_encoded_command(command='moveall(%s,%s,%s,%s)'%(x,y,z,eff_ang),cmd_type='moveall')
 
         elif cmd_type=='dispense':

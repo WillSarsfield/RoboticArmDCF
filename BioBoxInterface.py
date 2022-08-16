@@ -404,19 +404,19 @@ class Executer:
         self.port=port
 
     def execute_with_compile(self,filename):
-        try:
-            with open(filename,'r') as compiled_file:
-                text = program_file.readlines()
-                program_file.close()
-            cmd_list = self.parent.compiler.compile_text(text=text) #if successfully compiled:
-            self.parent.current_filename = self.parent.compiler.save_compiled_file(compiled_cmds,filepath=filename)
+        # try:
+        with open(filename,'r') as compiled_file:
+            text = compiled_file.read()
+            compiled_file.close()
+        cmd_list = self.parent.compiler.compile_text(text=text) #if successfully compiled:
+        self.parent.current_filename = self.parent.compiler.save_compiled_file(cmd_list,filepath=filename)
 
-            executer=execute_code(BioBoxInterface.arduino)
-            if messagebox.askokcancel(parent=self.parent, title='Executer',message='Compile complete: Execute file %s?'%(filename)):
-                executer.start(cmd_list=cmd_list)
-                messagebox.showinfo(parent=self.parent, title='Executer',message='Execution complete: %s'%(filename))
-        except Exception as e:
-            messagebox.showerror('IOError','Unable to execute file %s:\n%s'%(filename,str(e)),parent=self.parent)
+        executer=execute_code(BioBoxInterface.arduino)
+        if messagebox.askokcancel(parent=self.parent, title='Executer',message='Compile complete: Execute file %s?'%(filename)):
+            executer.start(cmd_list=cmd_list)
+            messagebox.showinfo(parent=self.parent, title='Executer',message='Execution complete: %s'%(filename))
+        # except Exception as e:
+        #     messagebox.showerror('IOError','Unable to execute file %s:\n%s'%(filename,str(e)),parent=self.parent)
 
     def execute_without_compile(self,filename):
         try:
