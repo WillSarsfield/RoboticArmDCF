@@ -128,6 +128,7 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         #setting up preset buttons, change the command_names text and presets_matrix filename to execute different programs
         command1 = ttk.Button(self.footer_frame,text=command_names[0],cursor='exchange',command=lambda:[self.execute_preset(filename=presets_matrix[0]),xentry_text.set('0'),yentry_text.set('0'),zentry_text.set('0')])
         command1.grid(column=0,row=0,padx=2.5,pady=5,sticky='nsew') #this first one is actually in the footer (reset button)
+
         command2 = ttk.Button(self.center_frame,text=command_names[1],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[1]),xentry_text.set(str(int(xentry_text.get())-1))])
         command2.grid(column=0,row=0,padx=5,pady=2.5,sticky='nse')
         command3 = ttk.Button(self.center_frame,text=command_names[2],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[2]),yentry_text.set(str(int(yentry_text.get())-1))])
@@ -146,15 +147,21 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         command9 = ttk.Button(self.center_frame,text=command_names[8],cursor='cross',command=lambda:[self.execute_preset(filename=presets_matrix[8]),tentry_text.set(str(int(tentry_text.get())+1))])
         command9.grid(column=2,row=3,padx=5,pady=2.5,sticky='nsw')
 
-        xentry = ttk.Entry(self.center_frame,justify='center',textvariable=xentry_text)
-        yentry = ttk.Entry(self.center_frame,justify='center',textvariable=yentry_text)
-        zentry = ttk.Entry(self.center_frame,justify='center',textvariable=zentry_text)
-        tentry = ttk.Entry(self.center_frame,justify='center',textvariable=tentry_text)
 
-        xentry.grid(column=1,row=0,padx=2.5,pady=2.5,sticky='ew')
-        yentry.grid(column=1,row=1,padx=2.5,pady=2.5,sticky='ew')
-        zentry.grid(column=1,row=2,padx=2.5,pady=2.5,sticky='ew')
-        tentry.grid(column=1,row=3,padx=2.5,pady=2.5,sticky='ew')
+        xentry = ttk.Entry()
+        yentry = ttk.Entry()
+        zentry = ttk.Entry()
+        tentry = ttk.Entry()
+
+        entry_list = {
+            xentry:xentry_text,
+            yentry:yentry_text,
+            zentry:zentry_text,
+            tentry:tentry_text
+        }
+        for index, (entry, entry_text) in enumerate(entry_list.items()):
+            entry = ttk.Entry(self.center_frame,justify='center',textvariable=entry_text)
+            entry.grid(column=1,row=index,padx=2.5,pady=2.5,sticky='ew')
 
         self.center_frame.grid_columnconfigure((0,2),weight=1)
         self.center_frame.grid_rowconfigure((0,1,2,3),weight=1)
@@ -416,7 +423,7 @@ class Executer:
 
     def execute_text(self):
         try:
-            if self.parent.compile_text(): #if successfully compiled:
+            if self.parent.compiler.compile_text(): #if successfully compiled:
                 execute_file=open(self.parent.compilepath,'r') #opens last successfully compiled file ----------ISSUE:
                 cmd_list=execute_file.read().split()    #--------- if the last compilation failed this will run the
                                                         #last successful compilation which may be a different file.
