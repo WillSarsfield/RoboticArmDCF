@@ -17,7 +17,8 @@ class CommandInterpreter:
         
 
     def get_encoded_command(self,command=None,cmd_type=''):
-        paramList=re.findall(r'\d+',command)
+        signed_int = re.compile('-?\d+')
+        paramList=re.findall(signed_int,command)
         encoded_val=None
         # ...-ve        |0      | +ve...
         # do cmd        | move cmd              | bit cmd | pump cmd | spin cmd             |

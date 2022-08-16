@@ -319,7 +319,7 @@ class Compiler:
     def get_raw(self,command,cmd_type=''):
         return self.interpreter.get_encoded_command(command=command,cmd_type=cmd_type)
 
-    def save_compiled_file(self,cmd_list,filepath='./Untitled.txt'):
+    def save_compiled_file(self,cmd_list,filepath):
         compilename=filepath.replace('.txt','_cmd.txt') #can be replaced - this is to distinguish between compiled and uncompiled files
         savefile=open(filepath,'w')
         if type(savefile)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
