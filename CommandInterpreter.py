@@ -60,7 +60,7 @@ class CommandInterpreter:
             angles=self.get_angle_from_coords(x, y, z, tilt=eff_ang)
             decomp_cmds=[]
             for i in range(len(angles)):
-                decomp_cmds.append(self.get_encoded_command(command='move(%s,%s)'%(i,angles[i]),type='move'))
+                decomp_cmds.append(self.get_encoded_command(command='move(%s,%s)'%(i,angles[i]),cmd_type='move'))
             
             decomp_cmds.append(self.get_encoded_command(command='do(0)',cmd_type='do'))
             self.x_pos,self.y_pos,self.z_pos,self.tilt=x,y,z,eff_ang
@@ -70,7 +70,7 @@ class CommandInterpreter:
             x_diff,y_diff,z_diff=[int(paramList[i]) for i in (0,1,2)]
             x,y,z=x_diff+self.x_pos,y_diff+self.y_pos,z_diff+self.z_pos
             eff_ang=int(paramList[3])+self.tilt
-            encoded_val=self.get_encoded_command(command='moveall(%s,%s,%s,%s)'%(x,y,z,eff_ang),type='moveall')
+            encoded_val=self.get_encoded_command(command='moveall(%s,%s,%s,%s)'%(x,y,z,eff_ang),cmd_type='moveall')
 
         elif cmd_type=='dispense':
             pump_no,vol=paramList[0],paramList[1]
