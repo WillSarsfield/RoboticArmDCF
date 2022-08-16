@@ -249,8 +249,8 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
         self.center_frame.text_box.delete(1.0,'end')
 
     def compile_text(self): #converts text into format ready for serial comms
-        cmd_text = self.compiler.compile_text(text=self.get_text())
-        self.controller.current_filename = self.compiler.save_compiled_file(cmd_text, self.controller.current_filename)
+        cmds = self.compiler.compile_text(text=self.get_text())
+        self.controller.current_filename = self.compiler.save_compiled_file(cmd_list=cmds, filepath=self.controller.current_filename)
 
 
     def execute_text(self,port):
@@ -259,7 +259,7 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
     def save_file(self): #opens saveasfile dialog, saves text from text box to file
         try:
             new_file=asksaveasfile(parent=self,initialdir='./COMMANDS',initialfile=self.controller.current_filename,defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
-            self.controller.current_filename=basename(new_file.name)
+            self.controller.current_filename=new_file.name
             if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
                 new_file.writelines(self.get_text())
                 new_file.close()
@@ -269,8 +269,7 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
     def open_file(self): #opens askopenfile dialog, sets textbox text to file contents
         try:
             new_file=askopenfile(parent=self,initialdir='./COMMANDS',defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
-            print(new_file.name)
-            self.controller.current_filename=basename(new_file.name) #saves the name of the file that was opened, so when it is saved that name is set as default
+            self.controller.current_filename=new_file.name #saves the name of the file that was opened, so when it is saved that name is set as default
             if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
                 self.clear_text()
                 self.center_frame.text_box.insert('1.0',new_file.read())
@@ -321,11 +320,15 @@ class Compiler:
     def get_raw(self,command,cmd_type=''):
         return self.interpreter.get_encoded_command(command=command,cmd_type=cmd_type)
 
-    def save_compiled_file(self,cmd_text,filepath):
+    def save_compiled_file(self,cmd_list,filepath):
+        print(filepath)
         compilename=filepath.replace('.txt','_cmd.txt') #can be replaced - this is to distinguish between compiled and uncompiled files
+        print(compilename)
         savefile=open(compilename,'w')
         if type(savefile)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
-            savefile.write(cmd_text)
+            for cmd in cmd_list:
+                savefile.write(str(cmd))
+                savefile.write('\n')
             savefile.close()
         return filepath
 
@@ -385,16 +388,15 @@ class Compiler:
     def compile_text(self,text=''):
         text=''.join(text.split()).lower() #formatting text: remove whitespace and convert to lowercase
         command_list=text.split(';') #splits strings into commands separated by ';'
-        encoded_cmds=""
+        encoded_cmds=[]
         if self.is_valid(command_list):
             for command in command_list:
                 cmd_type=command.split('(',1)[0]
-                print(cmd_type)
                 enc_cmd = self.get_raw(command,cmd_type=cmd_type)
                 if type(enc_cmd)==int:
-                    encoded_cmds += str(enc_cmd)
+                    encoded_cmds.append(enc_cmd)
                 elif type(enc_cmd)==list:
-                    encoded_cmds += str(cmd for cmd in enc_cmd)
+                    encoded_cmds.append(cmd for cmd in enc_cmd)
         return encoded_cmds
         
 
@@ -409,7 +411,7 @@ class Executer:
             text = compiled_file.read()
             compiled_file.close()
         cmd_list = self.parent.compiler.compile_text(text=text) #if successfully compiled:
-        self.parent.current_filename = self.parent.compiler.save_compiled_file(cmd_list, filename)
+        self.parent.current_filename = self.parent.compiler.save_compiled_file(cmd_list,filepath=filename)
 
         executer=execute_code(BioBoxInterface.arduino)
         if messagebox.askokcancel(parent=self.parent, title='Executer',message='Compile complete: Execute file %s?'%(filename)):

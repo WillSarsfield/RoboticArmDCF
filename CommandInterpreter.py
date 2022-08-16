@@ -26,7 +26,7 @@ class CommandInterpreter:
             servo_num,angle=int(paramList[0]),int(paramList[1]) # gets all numbers from the move command
             encoded_val= servo_num*(self.max_angle + 1)+angle      # maps (RxR)->R i.e. there is a unique positive encoded_val for each combination of servo&angle
             encoded_val+=1                                  # need to reserve zero for a separate commmand 
-            print(servo_num,angle,'encoded as',encoded_val)
+            # print(servo_num,angle,'encoded as',encoded_val)
         elif cmd_type=='do':
             waitTime=int(paramList[0]) # gets the wait time from the do command
             encoded_val= -waitTime-1                        #wait command is encoded as the negative numbers (1 is subtracted as the value 0 is already used)
@@ -53,7 +53,6 @@ class CommandInterpreter:
         elif cmd_type=='offset':
             self.x_ofst,self.y_ofst,self.z_ofst=[int(paramList[i]) for i in (0,1,2)]
         elif cmd_type=='moveall':
-            print(command)
             x,y,z=[int(paramList[i]) for i in (0,1,2)]
             x,y,z=x+self.x_ofst,y+self.y_ofst,z+self.z_ofst
             eff_ang=paramList[3]
@@ -100,7 +99,7 @@ class CommandInterpreter:
             elif type(encoded_cmd)==type([]):
                 encoded_val.append(int(encoded_cmd[i]) for i in range(len(encoded_cmd)))
             encoded_val*args[1] #repeats commands specified number of times
-        print(encoded_val)
+        # print(encoded_val)
         return encoded_val
 
     def get_angle_from_coords(self,x,y,z,tilt=0):
@@ -117,7 +116,6 @@ class CommandInterpreter:
             x = -math.sqrt(x**2 + z**2)
         else:
             x = math.sqrt(x**2 + z**2)
-        print(type(length[2]))
         x2 = -(length[2]) * (math.cos((tilt*math.pi)/180)) + x
         y2 = -(length[2]) * (math.sin((tilt*math.pi)/180)) + y
         d = math.sqrt(x2**2 + y2**2)
