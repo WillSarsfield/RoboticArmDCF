@@ -123,25 +123,25 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         tentry_text.set('90')
 
         #setting up preset buttons, change the command_names text and presets_matrix filename to execute different programs
-        command1 = ttk.Button(self.footer_frame,text=command_names[0],cursor='exchange',command=lambda:[self.execute_without_compile(filename=presets_matrix[0]),xentry_text.set('0'),yentry_text.set('0'),zentry_text.set('0'),tentry_text.set('90')])
+        command1 = ttk.Button(self.footer_frame,text=command_names[0],cursor='exchange',command=lambda:[self.execute_without_compile(presets_matrix[0]),xentry_text.set('0'),yentry_text.set('0'),zentry_text.set('0'),tentry_text.set('90')])
         command1.grid(column=0,row=0,padx=2.5,pady=5,sticky='nsew') #this first one is actually in the footer (reset button)
 
-        command2 = ttk.Button(self.center_frame,text=command_names[1],cursor='cross',command=lambda:[self.execute_without_compile(filename=presets_matrix[1]),xentry_text.set(str(int(xentry_text.get())-1))])
+        command2 = ttk.Button(self.center_frame,text=command_names[1],cursor='cross',command=lambda:[self.execute_without_compile(presets_matrix[1]),xentry_text.set(str(int(xentry_text.get())-1))])
         command2.grid(column=0,row=0,padx=5,pady=2.5,sticky='nse')
-        command3 = ttk.Button(self.center_frame,text=command_names[2],cursor='cross',command=lambda:[self.execute_without_compile(filename=presets_matrix[2]),yentry_text.set(str(int(yentry_text.get())-1))])
+        command3 = ttk.Button(self.center_frame,text=command_names[2],cursor='cross',command=lambda:[self.execute_without_compile(presets_matrix[2]),yentry_text.set(str(int(yentry_text.get())-1))])
         command3.grid(column=0,row=1,padx=5,pady=2.5,sticky='nse')
-        command4 = ttk.Button(self.center_frame,text=command_names[3],cursor='cross',command=lambda:[self.execute_without_compile(filename=presets_matrix[3]),zentry_text.set(str(int(zentry_text.get())-1))])
+        command4 = ttk.Button(self.center_frame,text=command_names[3],cursor='cross',command=lambda:[self.execute_without_compile(presets_matrix[3]),zentry_text.set(str(int(zentry_text.get())-1))])
         command4.grid(column=0,row=2,padx=5,pady=2.5,sticky='nse')
-        command5 = ttk.Button(self.center_frame,text=command_names[4],cursor='cross',command=lambda:[self.execute_without_compile(filename=presets_matrix[4]),tentry_text.set(str(int(tentry_text.get())-1))])
+        command5 = ttk.Button(self.center_frame,text=command_names[4],cursor='cross',command=lambda:[self.execute_without_compile(presets_matrix[4]),tentry_text.set(str(int(tentry_text.get())-1))])
         command5.grid(column=0,row=3,padx=5,pady=2.5,sticky='nse')
 
-        command6 = ttk.Button(self.center_frame,text=command_names[5],cursor='cross',command=lambda:[self.execute_without_compile(filename=presets_matrix[5]),xentry_text.set(str(int(xentry_text.get())+1))])
+        command6 = ttk.Button(self.center_frame,text=command_names[5],cursor='cross',command=lambda:[self.execute_without_compile(presets_matrix[5]),xentry_text.set(str(int(xentry_text.get())+1))])
         command6.grid(column=2,row=0,padx=5,pady=2.5,sticky='nsw')
-        command7 = ttk.Button(self.center_frame,text=command_names[6],cursor='cross',command=lambda:[self.execute_without_compile(filename=presets_matrix[6]),yentry_text.set(str(int(yentry_text.get())+1))])
+        command7 = ttk.Button(self.center_frame,text=command_names[6],cursor='cross',command=lambda:[self.execute_without_compile(presets_matrix[6]),yentry_text.set(str(int(yentry_text.get())+1))])
         command7.grid(column=2,row=1,padx=5,pady=2.5,sticky='nsw')
-        command8 = ttk.Button(self.center_frame,text=command_names[7],cursor='cross',command=lambda:[self.execute_without_compile(filename=presets_matrix[7]),zentry_text.set(str(int(zentry_text.get())+1))])
+        command8 = ttk.Button(self.center_frame,text=command_names[7],cursor='cross',command=lambda:[self.execute_without_compile(presets_matrix[7]),zentry_text.set(str(int(zentry_text.get())+1))])
         command8.grid(column=2,row=2,padx=5,pady=2.5,sticky='nsw')
-        command9 = ttk.Button(self.center_frame,text=command_names[8],cursor='cross',command=lambda:[self.execute_without_compile(filename=presets_matrix[8]),tentry_text.set(str(int(tentry_text.get())+1))])
+        command9 = ttk.Button(self.center_frame,text=command_names[8],cursor='cross',command=lambda:[self.execute_without_compile(presets_matrix[8]),tentry_text.set(str(int(tentry_text.get())+1))])
         command9.grid(column=2,row=3,padx=5,pady=2.5,sticky='nsw')
 
         xentry,yentry,zentry,tentry=[ttk.Entry() for i in range(4)] #setting up text entry boxes
@@ -168,7 +168,7 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         self.grid_rowconfigure(1,weight=1)
 
     def execute_without_compile(self, filename='RESET_cmd.txt'): #reads commands from _cmd.txt file and sends them to the arduino
-        self.executer.execute_without_compile(filename=filename)
+        self.executer.execute_without_compile(filename)
 
     def save_position(self,x,y,z,tilt):
         try:
@@ -231,7 +231,7 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
         clearButton.grid(column=0,row=0,sticky='ew',padx=2.5,pady=5)
         compileButton = ttk.Button(self.footer_frame, text='Compile', command=lambda:self.compile_text())
         compileButton.grid(column=1,row=0,sticky='ew',padx=2.5,pady=5)
-        executeButton = ttk.Button(self.footer_frame, text='Execute', command=lambda:self.execute_text(BioBoxInterface.arduinoPort))
+        executeButton = ttk.Button(self.footer_frame, text='Execute', command=lambda:self.execute_text(controller.arduinoPort))
         executeButton.grid(column=2,row=0,sticky='ew',padx=2.5,pady=5)
 
         self.footer_frame.grid_rowconfigure(0,weight=1)
@@ -249,11 +249,11 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
 
     def compile_text(self): #converts text into format ready for serial comms
         cmds = self.compiler.compile_text(text=self.get_text())
-        self.compiler.save_compiled_file(cmd_list=cmds, filepath=controller.current_filename)
+        self.controller.current_filename = self.compiler.save_compiled_file(cmd_list=cmds, filepath=self.controller.current_filename)
 
 
     def execute_text(self,port):
-        self.executer.execute_with_compile()
+        self.executer.execute_with_compile(self.controller.current_filename)
 
     def save_file(self): #opens saveasfile dialog, saves text from text box to file
         try:
@@ -327,6 +327,7 @@ class Compiler:
                 savefile.write(str(cmd))
                 savefile.write('\n')
             savefile.close()
+        return compilename
 
     def is_valid(self,command_list):
         cmd_regex={}
@@ -401,24 +402,22 @@ class Executer:
         self.parent=parent
         self.port=port
 
-    def execute_with_compile(self):
+    def execute_with_compile(self,filename):
         try:
-            if self.parent.compiler.compile_text(): #if successfully compiled:
-                execute_file=open(self.parent.compilepath,'r') #opens last successfully compiled file ----------ISSUE:
-                cmd_list=execute_file.read().split()    #--------- if the last compilation failed this will run the
-                                                        #last successful compilation which may be a different file.
-                #print(cmd_list)
-                BioBoxInterface.arduino.close()
-                BioBoxInterface.arduino = serial.Serial(port=self.port,baudrate=115200, timeout=BioBoxInterface.timeout) #establish arduino connection to start calibration
-                executer=execute_code(BioBoxInterface.arduino)
-                if messagebox.askokcancel(parent=self.parent, title='Executer',message='Wait for calibration to complete'):
-                    #cmd_list=[int(x)for x in cmd_list] #if commands are needed as ints rather than string
-                    executer.start(cmd_list=cmd_list)
-                    messagebox.showinfo(parent=self.parent, title='Executer',message='Execution complete')
-        except Exception as e:
-            messagebox.showerror('IOError','Unable to execute file:\n'+str(e),parent=self.parent)
+            with open(filename,'r') as compiled_file:
+                text = program_file.readlines()
+                program_file.close()
+            cmd_list = self.parent.compiler.compile_text(text=text) #if successfully compiled:
+            self.parent.current_filename = self.parent.compiler.save_compiled_file(compiled_cmds,filepath=filename)
 
-    def execute_without_compile(self,filename=''):
+            executer=execute_code(BioBoxInterface.arduino)
+            if messagebox.askokcancel(parent=self.parent, title='Executer',message='Compile complete: Execute file %s?'%(filename)):
+                executer.start(cmd_list=cmd_list)
+                messagebox.showinfo(parent=self.parent, title='Executer',message='Execution complete: %s'%(filename))
+        except Exception as e:
+            messagebox.showerror('IOError','Unable to execute file %s:\n%s'%(filename,str(e)),parent=self.parent)
+
+    def execute_without_compile(self,filename):
         try:
             with open(filename,'r') as command_file:
                 command_list=command_file.read().splitlines()
