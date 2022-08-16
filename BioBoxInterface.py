@@ -249,8 +249,8 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
         self.center_frame.text_box.delete(1.0,'end')
 
     def compile_text(self): #converts text into format ready for serial comms
-        cmds = self.compiler.compile_text(text=self.get_text())
-        self.controller.current_filename = self.compiler.save_compiled_file(cmd_list=cmds, filepath=self.controller.current_filename)
+        cmd_text = self.compiler.compile_text(text=self.get_text())
+        self.controller.current_filename = self.compiler.save_compiled_file(cmd_text=cmd_text, filepath=self.controller.current_filename)
 
 
     def execute_text(self,port):
@@ -315,20 +315,17 @@ class ReadMe(Frame):
 class Compiler:
     def __init__(self,parent):
         self.parent=parent
-        self.interpreter=CommandInterpreter(0,0,0) #initial offset valuesß
+        self.interpreter=CommandInterpreter(0,0,0) #initial offset values
 
     def get_raw(self,command,cmd_type=''):
-        return self.interpreter.get_encoded_command(command=command,cmd_type=cmd_type)
+        encoded_cmds = self.interpreter.get_encoded_command(command=command,cmd_type=cmd_type)
+        return encoded_cmds
 
-    def save_compiled_file(self,cmd_list,filepath):
-        print(filepath)
+    def save_compiled_file(self,cmd_text,filepath):
         compilename=filepath.replace('.txt','_cmd.txt') #can be replaced - this is to distinguish between compiled and uncompiled files
-        print(compilename)
         savefile=open(compilename,'w')
         if type(savefile)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
-            for cmd in cmd_list:
-                savefile.write(str(cmd))
-                savefile.write('\n')
+            savefile.write(cmd_text)
             savefile.close()
         return filepath
 
@@ -388,15 +385,17 @@ class Compiler:
     def compile_text(self,text=''):
         text=''.join(text.split()).lower() #formatting text: remove whitespace and convert to lowercase
         command_list=text.split(';') #splits strings into commands separated by ';'
-        encoded_cmds=[]
+        encoded_cmds=''
         if self.is_valid(command_list):
             for command in command_list:
                 cmd_type=command.split('(',1)[0]
                 enc_cmd = self.get_raw(command,cmd_type=cmd_type)
                 if type(enc_cmd)==int:
-                    encoded_cmds.append(enc_cmd)
+                    encoded_cmds+=str(enc_cmd)
                 elif type(enc_cmd)==list:
-                    encoded_cmds.append(cmd for cmd in enc_cmd)
+                    for cmd in enc_cmd:
+                        encoded_cmds += str(cmd)+'\n'
+                    
         return encoded_cmds
         
 
