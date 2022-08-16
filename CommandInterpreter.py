@@ -2,7 +2,7 @@ import re
 import math
 
 class CommandInterpreter:
-    max_angle=180           #refers to the maximum range of motion each servo has in degrees
+    #refers to the maximum range of motion each servo has in degrees
     num_servos=5
 
     def __init__(self,x_ofst=0,y_ofst=0,z_ofst=0):
@@ -13,6 +13,7 @@ class CommandInterpreter:
         self.x_pos=0
         self.y_pos=0
         self.z_pos=0
+        self.max_angle=180
         
 
     def get_encoded_command(self,command=None,type=''):
@@ -22,7 +23,7 @@ class CommandInterpreter:
         # do cmd        | move cmd              | bit cmd | pump cmd | spin cmd             |
         if type=='move':
             servo_num,angle=int(paramList[0]),int(paramList[1]) # gets all numbers from the move command
-            encoded_val= servo_num*(max_angle+1)+angle      # maps (RxR)->R i.e. there is a unique positive encoded_val for each combination of servo&angle
+            encoded_val= servo_num*(self.max_angle + 1)+angle      # maps (RxR)->R i.e. there is a unique positive encoded_val for each combination of servo&angle
             encoded_val+=1                                  # need to reserve zero for a separate commmand 
             # print(servo_num,angle,'encoded as',encoded_val)
         elif type=='do':
@@ -67,7 +68,7 @@ class CommandInterpreter:
         elif type=='shift':
             x_diff,y_diff,z_diff=[int(paramList[i]) for i in (0,1,2)]
             x,y,z=x_diff+self.x_pos,y_diff+self.y_pos,z_diff+self.z_pos
-            eff_ang=paramList[3]+self.tilt
+            eff_ang=int(paramList[3])+self.tilt
             encoded_val=self.get_encoded_command(command='moveall(%s,%s,%s,%s)'%(x,y,z,eff_ang),type='moveall')
 
         elif type=='dispense':
@@ -102,8 +103,9 @@ class CommandInterpreter:
         return encoded_val
 
     def get_angle_from_coords(self,x,y,z,tilt=0):
+        tilt = int(tilt)
         angle = []
-        length = [10.5,9,5]
+        length = [10.5, 9, 5]
         angle.append(180 - ((math.atan(z/x)*180)/math.pi))
         if angle[0] > 180:
             angle[0] -= 180
@@ -111,15 +113,16 @@ class CommandInterpreter:
             x = math.sqrt(x**2 + z**2)
         else:
             x = -math.sqrt(x**2 + z**2)
-        x2 = (-length[2]) * math.cos((tilt*math.pi)/180) + x
-        y2 = (-length[2]) * math.sin((tilt*math.pi)/180) + x
+        print(type(length[2]))
+        x2 = -(length[2]) * (math.cos((tilt*math.pi)/180)) + x
+        y2 = -(length[2]) * (math.sin((tilt*math.pi)/180)) + x
         d = math.sqrt(x2**2 + y2**2)
         a = ((math.atan(-y2/-x2)*180)/math.pi)
         if x2 <= 0:
-            angle.append((((math.acos((length[0]**2 + d**2 - length[1]**2)/(2*length[0]/d))*180)/math.pi) + a) + 180)
+            angle.append((((math.acos((length[0]**2 + d**2 - length[1]**2)/(2*length[0]*d))*180)/math.pi) + a) + 180)
         else:
-            angle.append(((math.acos((length[0]**2 + d**2 - length[1]**2)/(2*length[0]/d))*180)/math.pi) + a)
-        angle.append(((math.acos((length[0]**2 + length[1]**2 - d**2)/(2*length[0]/d))*180)/math.pi) + 180)
+            angle.append(((math.acos((length[0]**2 + d**2 - length[1]**2)/(2*length[0]*d))*180)/math.pi) + a)
+        angle.append(((math.acos((length[0]**2 + length[1]**2 - d**2)/(2*length[0]*length[1]))*180)/math.pi) + 180)
         angle.append(360 - math.fmod(angle[1] + angle[2] - tilt, 360))
         angle[1] = 180 - angle[1]
         angle[2] -= 270

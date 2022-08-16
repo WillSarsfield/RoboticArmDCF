@@ -10,8 +10,8 @@ import serial
 
 class BioBoxInterface(Tk):
     #-----!!!need to choose port based on connection!!!-------
-    arduinoPort = '/dev/cu.usbmodem1301' #for mac - check bottom of arduino editor and modify 
-    #arduinoPort = 'COM5' #for windows - may be a different number
+    #arduinoPort = '/dev/cu.usbmodem1301' #for mac - check bottom of arduino editor and modify 
+    arduinoPort = 'COM5' #for windows - may be a different number
     #---------------------------------------------------------
     timeout=.1005
     arduino=serial.Serial()
