@@ -418,7 +418,7 @@ class Executer:
                 compiled_file.close()
             cmd_text = self.parent.compiler.compile_text(text=text) #if successfully compiled:
             self.parent.current_filename = self.parent.compiler.save_compiled_file(cmd_text,filepath=filename)
-            with open(filename,'r') as compiled_file:
+            with open(filename.replace('.txt','_cmd.txt'),'r') as compiled_file:
                 comp_cmds=compiled_file.read()
                 compiled_file.close()
             comp_cmds.split('\n')
