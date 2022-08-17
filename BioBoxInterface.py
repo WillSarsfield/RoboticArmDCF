@@ -1,12 +1,12 @@
 from tkinter import *
 from tkinter import ttk,messagebox,font
 from tkinter.filedialog import askopenfile, asksaveasfile
-from os.path import basename as basename
+from os.path import relpath as relpath
 from pathlib import Path
-import re 
+import re
+import serial 
 from execute_code import execute_code
 from CommandInterpreter import CommandInterpreter
-import serial
 import time
 
 class BioBoxInterface(Tk):
@@ -175,8 +175,8 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         with open(filename,'r') as preset_file: #need to recompile every time if using SHIFT or another relative command
             text = preset_file.read()
             preset_file.close()
-        cmd_lst=self.compiler.compile_text(text=text)
-        self.compiler.save_compiled_file(cmd_lst,filename)
+        cmd_text=self.compiler.compile_text(text=text)
+        self.compiler.save_compiled_file(cmd_text,filename)
         self.executer.execute_without_compile(filename.replace('.txt','_cmd.txt'))
 
     def save_position(self,x,y,z,tilt):
@@ -191,6 +191,10 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
 
     def move_to_coords(self,x,y,z,tilt):
         command='moveall(%s,%s,%s,%s);'%(x,y,z,tilt)
+        filename='./COMMANDS/MOVEPRESET.txt'
+        cmd_text=self.compiler.compile_text(text=command)
+        self.compiler.save_compiled_file(cmd_text,filename)
+        self.executer.execute_without_compile(filename.replace('.txt','_cmd.txt'))
 
 
 
@@ -267,7 +271,7 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
 
     def save_file(self): #opens saveasfile dialog, saves text from text box to file
         try:
-            new_file=asksaveasfile(parent=self,initialdir='./COMMANDS',initialfile=self.controller.current_filename,defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
+            new_file=asksaveasfile(parent=self,initialdir='./COMMANDS',initialfile=relpath(self.controller.current_filename,start='./COMMANDS'),defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
             self.controller.current_filename=new_file.name
             if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
                 new_file.writelines(self.get_text())
@@ -425,7 +429,7 @@ class Executer:
                 comp_cmds=compiled_file.read()
                 compiled_file.close()
             comp_cmds=comp_cmds.split('\n')
-            executer=execute_code(self.parent.arduino)
+            executer=execute_code(self.connection)
             if messagebox.askokcancel(parent=self.parent, title='Executer',message='Compile complete: Execute file %s?'%(filename)):
                 executer.start(cmd_list=comp_cmds)
                 messagebox.showinfo(parent=self.parent, title='Executer',message='Execution complete: %s'%(filename))
