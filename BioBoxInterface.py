@@ -421,7 +421,7 @@ class Executer:
             with open(filename.replace('.txt','_cmd.txt'),'r') as compiled_file:
                 comp_cmds=compiled_file.read()
                 compiled_file.close()
-            comp_cmds.split('\n')
+            comp_cmds=comp_cmds.split('\n')
             executer=execute_code(BioBoxInterface.arduino)
             if messagebox.askokcancel(parent=self.parent, title='Executer',message='Compile complete: Execute file %s?'%(filename)):
                 executer.start(cmd_list=comp_cmds)
