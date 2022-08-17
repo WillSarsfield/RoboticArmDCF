@@ -424,7 +424,7 @@ class Executer:
             comp_cmds.split('\n')
             executer=execute_code(BioBoxInterface.arduino)
             if messagebox.askokcancel(parent=self.parent, title='Executer',message='Compile complete: Execute file %s?'%(filename)):
-                executer.start(cmd_list=cmd_list)
+                executer.start(cmd_list=comp_cmds)
                 messagebox.showinfo(parent=self.parent, title='Executer',message='Execution complete: %s'%(filename))
         except Exception as e:
             messagebox.showerror('IOError','Unable to execute file %s:\n%s'%(filename,str(e)),parent=self.parent)
