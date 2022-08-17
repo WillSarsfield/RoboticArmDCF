@@ -9,7 +9,7 @@ class CommandInterpreter:
         self.x_ofst=x_ofst
         self.y_ofst=y_ofst
         self.z_ofst=z_ofst
-        self.tilt=0
+        self.tilt=90
         self.x_pos=0
         self.y_pos=0
         self.z_pos=0
@@ -52,6 +52,7 @@ class CommandInterpreter:
         #     pass
         elif cmd_type=='offset':
             self.x_ofst,self.y_ofst,self.z_ofst=[int(paramList[i]) for i in (0,1,2)]
+
         elif cmd_type=='moveall':
             x,y,z=[int(paramList[i]) for i in (0,1,2)]
             x,y,z=x+self.x_ofst,y+self.y_ofst,z+self.z_ofst
@@ -99,6 +100,18 @@ class CommandInterpreter:
             elif type(encoded_cmd)==type([]):
                 encoded_val.append(int(encoded_cmd[i]) for i in range(len(encoded_cmd)))
             encoded_val*args[1] #repeats commands specified number of times
+
+        elif cmd_type=='macro':
+            filename=command[6:-1]
+            with open('./COMMANDS/MACROS/'+filename.upper()+'.txt','r') as macro_file:
+                text = macro_file.read()
+                macro_file.close()
+            text=''.join(text.split()).lower()
+            command_list=text.split(';')
+            for command in command_list:
+                cmd_type=command.split('(',1)[0]
+                encoded_val.append(self.get_encoded_command(command=command,cmd_type=cmd_type))
+
         # print(encoded_val)
         return encoded_val
 
