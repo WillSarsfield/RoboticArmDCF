@@ -134,9 +134,16 @@ void loop(){//then executes input instruction
     } else {
       finishAng[3] = fmod(((atan(inputZ/inputX)*180)/M_PI), 180);
     }
-    if (inputX < 0 || inputZ < 0){
+    if (finishAng[3] < 0){
+      finishAng[3] += 180;
+    }
+    if (inputX > 0 && inputZ < 0){
       inputX = -(pow(pow(inputX,2) + pow(inputZ,2),0.5));
-    } else{
+    } else if (inputX < 0 && inputZ > 0){
+      inputX = (pow(pow(inputX,2) + pow(inputZ,2),0.5));
+    } else if (inputX < 0 && inputZ < 0){
+      inputX = -(pow(pow(inputX,2) + pow(inputZ,2),0.5));
+    }else{
       inputX = pow(pow(inputX,2) + pow(inputZ,2),0.5);
     }
     float x2x1 = (-length3)*cos((absAngle*M_PI)/180.) + inputX;

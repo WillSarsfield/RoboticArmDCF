@@ -8,6 +8,7 @@ class execute_code:
         self.arduino=arduino
 
     def start(self,cmd_list=None):
+        print(cmd_list)
         for cmd in cmd_list:
             print(cmd)
             if cmd=='':
@@ -17,7 +18,7 @@ class execute_code:
                 time.sleep((-(int(cmd)+1)+self.min_delay)/1000)
                 print("DO")
             else:
-                self.arduino.write(bytes(str(cmd),'utf-8'))
+                self.arduino.write(bytes(cmd,'utf-8'))
                 print("MOVE")
             time.sleep(self.timeout)
 

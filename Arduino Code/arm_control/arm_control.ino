@@ -33,7 +33,7 @@ void setup() {
 }
 
 void calibrate(){//sets the physical motors to the correct start position when called
-  for (int x  = 180; x >= 0; x -= 1){
+  for (int x  = 90; x >= 0; x -= 1){
     for (int y = 0; y < 4; y += 1){
       ang[y] = x ;
       moveMotor(x ,motor[y]);
@@ -82,12 +82,12 @@ float calcZ(){//calculates Z coordinate from bottom servo
   return (zCoord);
 }
 
-float getAngle(int motor, float input){//takes serial input and the motor calculated and returns the corresponding angle
-  int angle = (input-(motor*181.));
+float getAngle(int motor, int input){//takes serial input and the motor calculated and returns the corresponding angle
+  float angle = (input-(motor*181.));
   return angle;
 }
 
-int getMotor(float input){//takes serial input and returns the corresponding motor
+int getMotor(int input){//takes serial input and returns the corresponding motor
   int motor = floor(input/181.);
   return motor;
 }
@@ -106,12 +106,11 @@ bool checkBounds(){
 
 void loop(){//then executes input instruction
   if (setFlag == true){
-    delay(5);
     while (Serial.available() == false){}
-    delay(5);
+    delay(5); 
     float input = Serial.readString().toFloat();
-    input -= 1;
-    if (input < (-1.)){
+    input -= 1.;
+    if (input <= (-1.)){
       setFlag = false;
     } else{
       int motor = getMotor(input);
@@ -150,6 +149,6 @@ void moveMotor(float angle, int motorOut){//takes the motor and angle specified 
   int pulse;
   pulse = getMotorPulse(angle,motorOut);
   pwm.setPWM(motorOut, 0, pulse);
-  Serial.println("motor " + String((motorOut/4)+1) + " " + angle + " x: " + String(calcTrueX()) + " y: " + String(calcY()) + " z: " + String(calcZ()));
+  //Serial.println("motor " + String((motorOut/4)+1) + " " + angle + " x: " + String(calcTrueX()) + " y: " + String(calcY()) + " z: " + String(calcZ()));
   delay(5);
 }

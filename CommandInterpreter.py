@@ -125,7 +125,13 @@ class CommandInterpreter:
             angle.append(0)
         else:
             angle.append(180 - ((math.atan(z/x)*180)/math.pi))
-        if x<0 or z<0:
+        if angle[0] < 0:
+            angle[0] += 180
+        if x>0 and z<0:
+            x = -math.sqrt(x**2 + z**2)
+        elif x<0 and z>0:
+            x = math.sqrt(x**2 + z**2)
+        elif x<0 and z<0:
             x = -math.sqrt(x**2 + z**2)
         else:
             x = math.sqrt(x**2 + z**2)

@@ -7,6 +7,7 @@ import re
 from execute_code import execute_code
 from CommandInterpreter import CommandInterpreter
 import serial
+import time
 
 class BioBoxInterface(Tk):
 
@@ -27,6 +28,7 @@ class BioBoxInterface(Tk):
         try: #attempt to establish arduino connection
             self.arduino.close()
             self.arduino = serial.Serial(port=self.arduinoPort,baudrate=115200, timeout=self.timeout)
+            time.sleep(2)
         except Exception as e:
             messagebox.showerror('IOError','Unable to establish connection:\n'+str(e),parent=self)
             #self.destroy()
@@ -408,10 +410,9 @@ class Compiler:
         
 
 class Executer:
-    def __init__(self,parent,conection=None):
+    def __init__(self,parent,connection=None):
         self.connection=connection
         self.parent=parent
-        self.port=port
 
     def execute_with_compile(self,filename):
         try:
@@ -424,7 +425,7 @@ class Executer:
                 comp_cmds=compiled_file.read()
                 compiled_file.close()
             comp_cmds=comp_cmds.split('\n')
-            executer=execute_code(self.connection)
+            executer=execute_code(self.parent.arduino)
             if messagebox.askokcancel(parent=self.parent, title='Executer',message='Compile complete: Execute file %s?'%(filename)):
                 executer.start(cmd_list=comp_cmds)
                 messagebox.showinfo(parent=self.parent, title='Executer',message='Execution complete: %s'%(filename))
