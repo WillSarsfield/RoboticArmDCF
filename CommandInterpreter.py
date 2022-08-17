@@ -3,17 +3,23 @@ import math
 
 class CommandInterpreter:
     #refers to the maximum range of motion each servo has in degrees
-    num_servos=5
 
     def __init__(self,x_ofst=0,y_ofst=0,z_ofst=0):
         self.x_ofst=x_ofst
         self.y_ofst=y_ofst
         self.z_ofst=z_ofst
-        self.tilt=90
+
+        self.tilt=90 #initial values for robot
         self.x_pos=0
         self.y_pos=0
         self.z_pos=0
-        self.max_angle=180
+
+        self.max_angle=180 #variables for encoding commands
+        self.num_servos=5
+        self.pump_enc_ofst = self.num_servos*(self.max_angle+1)
+        self.max_steps=2000 #need to think about this to allow for negative steps
+        self.num_pumps=3
+        self.bit_enc_ofst = self.num_pumps*(self.max_steps+1)+self.pump_enc_ofst
         
 
     def get_encoded_command(self,command=None,cmd_type=''):
@@ -31,6 +37,7 @@ class CommandInterpreter:
             waitTime=int(paramList[0]) # gets the wait time from the do command
             encoded_val= -waitTime-1                        #wait command is encoded as the negative numbers (1 is subtracted as the value 0 is already used)
             # print(waitTime,'encoded as',encoded_val)
+            
         elif cmd_type=='bit':
             if len(paramList)==1:
                 bit=paramList[0]
