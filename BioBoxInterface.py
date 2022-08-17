@@ -408,10 +408,9 @@ class Compiler:
         
 
 class Executer:
-    def __init__(self,parent,conection=None):
+    def __init__(self,parent,connection=None):
         self.connection=connection
         self.parent=parent
-        self.port=port
 
     def execute_with_compile(self,filename):
         try:
