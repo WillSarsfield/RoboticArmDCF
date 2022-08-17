@@ -110,7 +110,8 @@ void loop(){//then executes input instruction
     while (Serial.available() == false){}
     delay(5);
     float input = Serial.readString().toFloat();
-    if (input == -1){
+    input -= 1;
+    if (input < (-1.)){
       setFlag = false;
     } else{
       int motor = getMotor(input);
