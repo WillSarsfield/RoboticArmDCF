@@ -44,11 +44,13 @@ void calibrate(){//sets the physical motors to the correct start position when c
 float getMotorPulse(float angle,int motorOut){
   int pulse;
    if (motorOut == 0){
-    pulse = map(angle, 0, 180, MIN_PULSE_WIDTH+150, MAX_PULSE_WIDTH+100);//maps angle to pulse width, different for top motor
-  }else if (motorOut==2){
-    pulse = map(angle, 0, 180, MIN_PULSE_WIDTH+50, MAX_PULSE_WIDTH+150);//maps angle to pulse width
-  }else{
-    pulse = map(angle, 0, 180, MIN_PULSE_WIDTH+50, MAX_PULSE_WIDTH+150);//maps angle to pulse width
+    pulse = map(angle, 0, 180, MIN_PULSE_WIDTH+100, MAX_PULSE_WIDTH-150);//maps angle to pulse width, different for top motor
+  }else if (motorOut==4){
+    pulse = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH-100);//maps angle to pulse width
+  }else if (motorOut==8){
+    pulse = map(angle, 0, 180, MIN_PULSE_WIDTH+50, MAX_PULSE_WIDTH-100);//maps angle to pulse width
+  }else if (motorOut==12){
+    pulse = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH-100);//maps angle to pulse width
   }
   pulse = int(float(pulse) / 1000000 * FREQUENCY * 4096);//changes pulse width to out pulse sent to servo
   return pulse;

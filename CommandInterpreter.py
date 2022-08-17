@@ -123,25 +123,30 @@ class CommandInterpreter:
         return encoded_val
 
     def get_angle_from_coords(self,x,y,z,tilt=0):
+        print(x,y,z,tilt)
         tilt = int(tilt)
         angle = []
         length = [10.5, 9, 5]
         if x == 0 and z != 0:
             angle.append(90)
+            if z<=0:
+                x = -(math.sqrt(x**2 + z**2))
+            elif z>=0:
+                x = math.sqrt(x**2 + z**2)
         elif z == 0:
             angle.append(0)
         else:
-            angle.append(180 - ((math.atan(z/x)*180)/math.pi))
-        if angle[0] < 0:
-            angle[0] += 180
-        if x>0 and z<0:
-            x = -math.sqrt(x**2 + z**2)
-        elif x<0 and z>0:
-            x = math.sqrt(x**2 + z**2)
-        elif x<0 and z<0:
-            x = -math.sqrt(x**2 + z**2)
-        else:
-            x = math.sqrt(x**2 + z**2)
+            angle.append(math.fmod((math.atan(z/x)*180)/math.pi,180))
+            if angle[0] < 0:
+                angle[0] += 180
+            if x>=0 and z<=0:
+                x = -(math.sqrt(x**2 + z**2))
+            elif x<=0 and z>=0:
+                x = math.sqrt(x**2 + z**2)
+            elif x<=0 and z<=0:
+                x = -(math.sqrt(x**2 + z**2))
+            elif x >= 0 and z >= 0:
+                x = math.sqrt(x**2 + z**2)
         x2 = -(length[2]) * (math.cos((tilt*math.pi)/180)) + x
         y2 = -(length[2]) * (math.sin((tilt*math.pi)/180)) + y
         d = math.sqrt(x2**2 + y2**2)
@@ -158,10 +163,9 @@ class CommandInterpreter:
             angle[3] += 90
         else:
             angle[3] -= 270
-        if angle[2] > 180 or angle[2] < 0:
-            angle[2] = math.fmod(angle[2],180)
-        if angle[3] > 180 or angle[3] < 0:
-            angle[3] = math.fmod(angle[3],180)
+        for i in range(4):
+            if angle[i] > 180 or angle[i] < 0:
+                return None   
         return angle
 
     def get_steps_from_vol(self,vol):

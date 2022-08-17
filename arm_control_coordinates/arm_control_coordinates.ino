@@ -4,7 +4,7 @@
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
-#define MIN_PULSE_WIDTH 300
+#define MIN_PULSE_WIDTH 400
 #define MAX_PULSE_WIDTH 2400
 #define FREQUENCY 60
 #define length1 10.5
@@ -129,22 +129,27 @@ void loop(){//then executes input instruction
     Serial.println("tilt: " + String(absAngle));
     if (inputX == 0 && inputZ != 0){
       finishAng[3] = 90;
+      if (inputZ >= 0){
+        inputX = (pow(pow(inputX,2) + pow(inputZ,2),0.5));
+      } else if (inputZ <= 0){
+        inputX = -(pow(pow(inputX,2) + pow(inputZ,2),0.5));
+      }
     }else if (inputZ == 0){
       finishAng[3] = 0;
     } else {
       finishAng[3] = fmod(((atan(inputZ/inputX)*180)/M_PI), 180);
-    }
-    if (finishAng[3] < 0){
-      finishAng[3] += 180;
-    }
-    if (inputX > 0 && inputZ < 0){
-      inputX = -(pow(pow(inputX,2) + pow(inputZ,2),0.5));
-    } else if (inputX < 0 && inputZ > 0){
-      inputX = (pow(pow(inputX,2) + pow(inputZ,2),0.5));
-    } else if (inputX < 0 && inputZ < 0){
-      inputX = -(pow(pow(inputX,2) + pow(inputZ,2),0.5));
-    }else{
-      inputX = pow(pow(inputX,2) + pow(inputZ,2),0.5);
+      if (finishAng[3] < 0){
+        finishAng[3] += 180;
+      }
+      if (inputX >= 0 && inputZ <= 0){
+        inputX = -(pow(pow(inputX,2) + pow(inputZ,2),0.5));
+      } else if (inputX <= 0 && inputZ >= 0){
+        inputX = (pow(pow(inputX,2) + pow(inputZ,2),0.5));
+      } else if (inputX <= 0 && inputZ <= 0){
+        inputX = -(pow(pow(inputX,2) + pow(inputZ,2),0.5));
+      }else if (inputX >= 0 && inputZ >= 0){
+        inputX = pow(pow(inputX,2) + pow(inputZ,2),0.5);
+      }
     }
     float x2x1 = (-length3)*cos((absAngle*M_PI)/180.) + inputX;
     float y2y1 = (-length3)*sin((absAngle*M_PI)/180.) + inputY;
