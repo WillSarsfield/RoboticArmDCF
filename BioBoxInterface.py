@@ -416,9 +416,12 @@ class Executer:
             with open(filename,'r') as compiled_file:
                 text = compiled_file.read()
                 compiled_file.close()
-            cmd_list = self.parent.compiler.compile_text(text=text) #if successfully compiled:
-            self.parent.current_filename = self.parent.compiler.save_compiled_file(cmd_list,filepath=filename)
-
+            cmd_text = self.parent.compiler.compile_text(text=text) #if successfully compiled:
+            self.parent.current_filename = self.parent.compiler.save_compiled_file(cmd_text,filepath=filename)
+            with open(filename,'r') as compiled_file:
+                comp_cmds=compiled_file.read()
+                compiled_file.close()
+            comp_cmds.split('\n')
             executer=execute_code(BioBoxInterface.arduino)
             if messagebox.askokcancel(parent=self.parent, title='Executer',message='Compile complete: Execute file %s?'%(filename)):
                 executer.start(cmd_list=cmd_list)
