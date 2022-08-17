@@ -173,8 +173,8 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         with open(filename,'r') as preset_file: #need to recompile every time if using SHIFT or another relative command
             text = preset_file.read()
             preset_file.close()
-        cmd_lst=self.compiler.compile_text(text=text)
-        self.compiler.save_compiled_file(cmd_lst,filename)
+        cmd_text=self.compiler.compile_text(text=text)
+        self.compiler.save_compiled_file(cmd_text,filename)
         self.executer.execute_without_compile(filename.replace('.txt','_cmd.txt'))
 
     def save_position(self,x,y,z,tilt):
@@ -189,6 +189,10 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
 
     def move_to_coords(self,x,y,z,tilt):
         command='moveall(%s,%s,%s,%s);'%(x,y,z,tilt)
+        filename='./COMMANDS/MOVEPRESET.txt'
+        cmd_text=self.compiler.compile_text(text=command)
+        self.compiler.save_compiled_file(cmd_text,filename)
+        self.executer.execute_without_compile(filename.replace('.txt','_cmd.txt'))
 
 
 
