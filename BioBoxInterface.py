@@ -18,9 +18,6 @@ class BioBoxInterface(Tk):
         self.arduinoPort = 'COM5' #for windows - may be a different number
         #---------------------------------------------------------
 
-        self.compiler=Compiler(self)
-        self.executer=Executer(self,port=self.arduinoPort) 
-
         self.current_filename='./COMMANDS/Untitled.txt' #relevant to execute_text, compile_text, open_file, save_file methods
 
         Tk.__init__(self,*args,**kwargs)
@@ -28,11 +25,15 @@ class BioBoxInterface(Tk):
 
         #setting up arduino comms
         try: #attempt to establish arduino connection
-            BioBoxInterface.arduino.close()
-            BioBoxInterface.arduino = serial.Serial(port=self.arduinoPort,baudrate=115200, timeout=self.timeout)
+            self.arduino.close()
+            self.arduino = serial.Serial(port=self.arduinoPort,baudrate=115200, timeout=self.timeout)
         except Exception as e:
             messagebox.showerror('IOError','Unable to establish connection:\n'+str(e),parent=self)
             #self.destroy()
+
+        self.compiler=Compiler(self)
+        self.executer=Executer(self,connection = self.arduino)     
+
         self.custom_style = 'awdark'            #tkinter theme downloadable from https://sourceforge.net/projects/tcl-awthemes
         self.geometry('460x300')#window start size
         self.minsize(460,300)
@@ -407,7 +408,8 @@ class Compiler:
         
 
 class Executer:
-    def __init__(self,parent,port=''):
+    def __init__(self,parent,conection=None):
+        self.connection=connection
         self.parent=parent
         self.port=port
 
@@ -422,7 +424,7 @@ class Executer:
                 comp_cmds=compiled_file.read()
                 compiled_file.close()
             comp_cmds=comp_cmds.split('\n')
-            executer=execute_code(BioBoxInterface.arduino)
+            executer=execute_code(self.connection)
             if messagebox.askokcancel(parent=self.parent, title='Executer',message='Compile complete: Execute file %s?'%(filename)):
                 executer.start(cmd_list=comp_cmds)
                 messagebox.showinfo(parent=self.parent, title='Executer',message='Execution complete: %s'%(filename))
