@@ -16,7 +16,7 @@ class BioBoxInterface(Tk):
     def __init__(self, *args, **kwargs):
         #-----!!!need to choose port based on connection!!!-------
         #self.arduinoPort = '/dev/cu.usbmodem1301' #for mac - check bottom of arduino editor and modify 
-        self.arduinoPort = 'COM5' #for windows - may be a different number
+        self.arduinoPort = 'COM7' #for windows - may be a different number
         #---------------------------------------------------------
 
         self.current_filename='./COMMANDS/Untitled.txt' #relevant to execute_text, compile_text, open_file, save_file methods
@@ -41,6 +41,7 @@ class BioBoxInterface(Tk):
         self.minsize(460,300)
         self.maxsize(600,1000)
         self.configure(background='#323232')
+        self.iconbitmap('./Arm_Icon.ico')
         self.tk.call('lappend', 'auto_path', './awthemes-10.4.0') #link tkinter style to awthemes folder
         self.tk.call('package', 'require', self.custom_style)
         self.style = ttk.Style(self)
@@ -345,7 +346,7 @@ class Compiler:
     def is_valid(self,command_list):
         cmd_regex={}
         #FUNDAMENTAL COMMANDS    
-        cmd_regex['move']=re.compile('^move\([0-3],(0\d{2}|1([0-7]\d|80))\)$')          #matches 'MOVE(#,###)' as servo (unsigned), angle (unsigned)
+        cmd_regex['move']=re.compile('^move\([0-3],(0\d{2}(\.\d{0,2})?|1([0-7]\d\.?\d+|80))\)$')          #matches 'MOVE(#,###)' as servo (unsigned), angle (unsigned)
         cmd_regex['do']=re.compile('^do\(\d+\)$')                                       #matches 'DO(#)' (unsigned)
         cmd_regex['bit']=re.compile('^bit\(\d+,(high|low|1|0)\)$')                      #matches 'BIT(#,HIGH/LOW)' or 'BIT(#,1/0)' as pin (unsigned), pin_val (unsigned)
         cmd_regex['pump']=re.compile('^pump\(\d+,-?\d+\)$')                             #matches 'PUMP(#,#)' as pump_num (unsigned), num_steps (signed)
@@ -355,8 +356,8 @@ class Compiler:
 
         #HIGH LEVEL COMMANDS
         cmd_regex['offset']=re.compile('^offset\(-?\d+,-?\d+,-?\d+\)$')                 #matches 'OFFSET(#,#,#)' as x,y,z (signed) - need to add angle?
-        cmd_regex['moveall']=re.compile('^moveall\(-?\d+,-?\d+,-?\d+,\d+\)$')           #matches 'MOVEALL(#,#,#,#)' as x,y,z (signed), tilt(unsigned)
-        cmd_regex['shift']=re.compile('^shift\(-?\d+,-?\d+,-?\d+,-?\d+\)$')             #matches 'SHIFT(#,#,#,#)' as x,y,z,tilt (signed)
+        cmd_regex['moveall']=re.compile('^moveall\((-?\d+\.?\d{0,2}),(-?\d+\.?\d{0,2}),(-?\d+\.?\d{0,2}),(-?\d+\.?\d{0,2})\)$')           #matches 'MOVEALL(#,#,#,#)' as x,y,z (signed), tilt(unsigned)
+        cmd_regex['shift']=re.compile('^shift\((-?\d+\.?\d{0,2}),(-?\d+\.?\d{0,2}),(-?\d+\.?\d{0,2}),(-?\d+\.?\d{0,2})\)$')             #matches 'SHIFT(#,#,#,#)' as x,y,z,tilt (signed)
         cmd_regex['dispense']=re.compile('^dispense\(\d+,\d+\)$')                       #matches 'DISPENSE(#,#)' as pump_num (unsigned), sample_vol (unsigned)
         cmd_regex['learnas']=re.compile('^learnas\([a-z0-9]{3,}\)$')                    #matches 'LEARNAS([string][3+])'
         cmd_regex['takepose']=re.compile('^takepose\([a-z0-9]{3,}\)$')                  #matches 'TAKEPOSE([string][3+])'

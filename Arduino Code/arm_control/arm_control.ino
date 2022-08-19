@@ -4,8 +4,11 @@
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
 #define MIN_PULSE_WIDTH 400
-#define MAX_PULSE_WIDTH 2400
+#define MAX_PULSE_WIDTH 2300
 #define FREQUENCY 60
+#define NUMBER_OF_MOTORS 4
+#define NUMBER_OF_PUMPS 4
+#define NUMBER_OF_SWITCHES 2
 #define length1 10.5
 #define length2 9
 #define length3 5
@@ -44,13 +47,13 @@ void calibrate(){//sets the physical motors to the correct start position when c
 float getMotorPulse(float angle,int motorOut){
   int pulse;
    if (motorOut == 0){
-    pulse = map(angle, 0, 180, MIN_PULSE_WIDTH+100, MAX_PULSE_WIDTH-150);//maps angle to pulse width, different for top motor
+    pulse = map(angle, 0, 180, MIN_PULSE_WIDTH+100, MAX_PULSE_WIDTH-50);//maps angle to pulse width, different for top motor
   }else if (motorOut==4){
-    pulse = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH-100);//maps angle to pulse width
+    pulse = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);//maps angle to pulse width
   }else if (motorOut==8){
-    pulse = map(angle, 0, 180, MIN_PULSE_WIDTH+50, MAX_PULSE_WIDTH-100);//maps angle to pulse width
+    pulse = map(angle, 0, 180, MIN_PULSE_WIDTH+50, MAX_PULSE_WIDTH);//maps angle to pulse width
   }else if (motorOut==12){
-    pulse = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH-100);//maps angle to pulse width
+    pulse = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);//maps angle to pulse width
   }
   pulse = int(float(pulse) / 1000000 * FREQUENCY * 4096);//changes pulse width to out pulse sent to servo
   return pulse;
@@ -84,14 +87,34 @@ float calcZ(){//calculates Z coordinate from bottom servo
   return (zCoord);
 }
 
-float getAngle(int motor, int input){//takes serial input and the motor calculated and returns the corresponding angle
+float getAngle(int motor, float input){//takes serial input and the motor calculated and returns the corresponding angle
   float angle = (input-(motor*181.));
   return angle;
 }
 
-int getMotor(int input){//takes serial input and returns the corresponding motor
+int getMotor(float input){//takes serial input and returns the corresponding motor
   int motor = floor(input/181.);
   return motor;
+}
+
+int getPump(int input){
+  int pumpNumber = floor((input-(((NUMBER_OF_MOTORS)*181)+1))/3001.);
+  return pumpNumber;
+}
+
+int getSteps(int pump, float input){//takes serial input and the motor calculated and returns the corresponding angle
+  int steps = ((input-((NUMBER_OF_MOTORS)*181)+1)-(pump*3001.)) - 3001;
+  return angle;
+}
+
+int getSwitch(int input){
+  int switchNumber = floor(input-(((((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1)+1)/2));
+  return switchNumber;
+}
+
+int getSwitchPulse(int switchNumber, float input){//takes serial input and the motor calculated and returns the corresponding angle
+  int pulse = ((input-((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1)+1-(switchNumber*2)) - 2;
+  return angle;
 }
 
 bool checkBounds(){
@@ -114,10 +137,16 @@ void loop(){//then executes input instruction
     input -= 1.;
     if (input <= (-1.)){
       setFlag = false;
-    } else{
+    } else if (input >=0 && input <= ((NUMBER_OF_MOTORS)*181){
       int motor = getMotor(input);
       float angle = getAngle(motor,input);
       finishAng[motor] = angle;
+    } else if (input >= (NUMBER_OF_MOTORS)*181+1 && (input <= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1)){
+      int pump = getPump(input);
+      int steps = getSteps(pump,input);
+    } else if (input >= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1)+1) && (input <= (((((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1)+1)+NUMBER_OF_SWITCHES*2)){
+      int switchNumber = getSwitch(input);
+      int switchPulse = getSwitchPulse(switchNumber, input);
     }
   } else{
     frame += 1;

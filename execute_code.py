@@ -13,9 +13,9 @@ class execute_code:
             print(cmd)
             if cmd=='':
                 continue
-            elif int(cmd)<0:
+            elif float(cmd)<0:
                 self.arduino.write(bytes('0','utf-8'))
-                time.sleep((-(int(cmd)+1)+self.min_delay)/1000)
+                time.sleep((-(float(cmd)+1)+self.min_delay)/1000)
                 print("DO")
             else:
                 self.arduino.write(bytes(cmd,'utf-8'))

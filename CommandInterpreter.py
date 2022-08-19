@@ -3,27 +3,31 @@ import math
 
 class CommandInterpreter:
     #refers to the maximum range of motion each servo has in degrees
-    num_servos=5
 
-    def __init__(self,x_ofst=0,y_ofst=0,z_ofst=0):
+    def __init__(self,x_ofst=0.0,y_ofst=0.0,z_ofst=0.0):
         self.x_ofst=x_ofst
         self.y_ofst=y_ofst
         self.z_ofst=z_ofst
-        self.tilt=90
-        self.x_pos=0
-        self.y_pos=0
-        self.z_pos=0
+        self.tilt=90.0
+        self.x_pos=0.0
+        self.y_pos=0.0
+        self.z_pos=0.0
         self.max_angle=180
+        self.num_servos=5
+        self.pump_ofst = self.num_servos*(self.max_angle+1)
+        self.num_pumps = 3
+        self.max_steps = 3000
+        self.bit_ofst = self.num_pumps*(self.max_steps+1)+self.pump_ofst
         
 
     def get_encoded_command(self,command=None,cmd_type=''):
-        signed_int = re.compile('-?\d+')
-        paramList=re.findall(signed_int,command)
+        signed_float = re.compile('(-?\d+\.?\d{0,2})')
+        paramList=re.findall(signed_float,command)
         encoded_val=None
         # ...-ve        |0      | +ve...
         # do cmd        | move cmd              | bit cmd | pump cmd | spin cmd             |
         if cmd_type=='move':
-            servo_num,angle=int(paramList[0]),int(paramList[1]) # gets all numbers from the move command
+            servo_num,angle=int(paramList[0]),float(paramList[1]) # gets all numbers from the move command
             encoded_val= servo_num*(self.max_angle + 1)+angle      # maps (RxR)->R i.e. there is a unique positive encoded_val for each combination of servo&angle
             encoded_val+=1                                  # need to reserve zero for a separate commmand 
             # print(servo_num,angle,'encoded as',encoded_val)
@@ -32,18 +36,13 @@ class CommandInterpreter:
             encoded_val= -waitTime-1                        #wait command is encoded as the negative numbers (1 is subtracted as the value 0 is already used)
             # print(waitTime,'encoded as',encoded_val)
         elif cmd_type=='bit':
-            if len(paramList)==1:
-                bit=paramList[0]
-                if re.match('high',command):
-                    value = 1
-                elif re.match('low',command):
-                    value = 0
-            elif len(paramList)==2:
-                bit,value = int(paramList[0]),int(paramList[1])
+            bit,value = int(paramList[0]),int(paramList[1])
+            encoded_val = self.bit_ofst + bit*2 + value
 
             #convert bit and value here
         elif cmd_type=='pump':
             pump_num,steps=int(paramList[0]),int(paramList[1])
+            encoded_val = self.pump_ofst + pump_num*(self.max_steps+1) + steps
         elif cmd_type=='spin':
             speed=int(paramList[0])
         elif cmd_type=='irrd':
@@ -54,8 +53,10 @@ class CommandInterpreter:
             self.x_ofst,self.y_ofst,self.z_ofst=[int(paramList[i]) for i in (0,1,2)]
 
         elif cmd_type=='moveall':
-            x,y,z=[int(paramList[i]) for i in (0,1,2)]
+            print(paramList)
+            x,y,z=[float(paramList[i]) for i in (0,1,2)]
             x,y,z=x+self.x_ofst,y+self.y_ofst,z+self.z_ofst
+            print(paramList)
             eff_ang=paramList[3]
             angles=self.get_angle_from_coords(x, y, z, tilt=eff_ang)
             decomp_cmds=[]
@@ -67,9 +68,9 @@ class CommandInterpreter:
             encoded_val=decomp_cmds
 
         elif cmd_type=='shift':
-            x_diff,y_diff,z_diff=[int(paramList[i]) for i in (0,1,2)]
+            x_diff,y_diff,z_diff=[float(paramList[i]) for i in (0,1,2)]
             x,y,z=x_diff+self.x_pos,y_diff+self.y_pos,z_diff+self.z_pos
-            eff_ang=int(paramList[3])+int(self.tilt)
+            eff_ang=float(paramList[3])+float(self.tilt)
             encoded_val=self.get_encoded_command(command='moveall(%s,%s,%s,%s)'%(x,y,z,eff_ang),cmd_type='moveall')
 
         elif cmd_type=='dispense':
@@ -115,11 +116,10 @@ class CommandInterpreter:
         # print(encoded_val)
         return encoded_val
 
-    def get_angle_from_coords(self,x,y,z,tilt=0):
-        print(x,y,z,tilt)
-        tilt = int(tilt)
+    def get_angle_from_coords(self,x,y,z,tilt=0.0):
         angle = []
-        length = [10.5, 9, 5]
+        tilt = float(tilt)
+        length = [10.5, 9.0, 5.0]
         if x == 0 and z != 0:
             angle.append(90)
             if z<=0:
@@ -140,10 +140,14 @@ class CommandInterpreter:
                 x = -(math.sqrt(x**2 + z**2))
             elif x >= 0 and z >= 0:
                 x = math.sqrt(x**2 + z**2)
-        x2 = -(length[2]) * (math.cos((tilt*math.pi)/180)) + x
-        y2 = -(length[2]) * (math.sin((tilt*math.pi)/180)) + y
-        d = math.sqrt(x2**2 + y2**2)
-        a = ((math.atan(-y2/-x2)*180)/math.pi)
+        print(type(length[2]),type(tilt),type(x))
+        x2 = (-(length[2]) * (math.cos((tilt*math.pi)/180))) + x
+        y2 = (-(length[2]) * (math.sin((tilt*math.pi)/180))) + y
+        d = math.sqrt((x2**2) + (y2**2))
+        if x2 == 0:
+            a = -90
+        else:
+            a = ((math.atan(-y2/-x2)*180)/math.pi)
         if x2 <= 0:
             angle.append((((math.acos(((length[0]**2) + (d**2) - (length[1]**2))/(2*length[0]*d))*180)/math.pi) + a) + 180)
         else:
