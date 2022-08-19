@@ -1,3 +1,4 @@
+from ast import Sub
 import re
 import math
 
@@ -23,7 +24,7 @@ class CommandInterpreter:
     def get_encoded_command(self,command=None,cmd_type=''):
         signed_float = re.compile('(-?\d+\.?\d{0,2})')
         paramList=re.findall(signed_float,command)
-        encoded_val=None
+        encoded_val=[]
         # ...-ve        |0      | +ve...
         # do cmd        | move cmd              | bit cmd | pump cmd | spin cmd             |
         if cmd_type=='move':
@@ -81,27 +82,32 @@ class CommandInterpreter:
             
         elif cmd_type=='learnas':
             pos_name = command[8:-1]
-            with open('./SAVED_POSITIONS'+pos_name.upper()+'.txt','w') as pos_file:
+            with open('./SAVED_POSITIONS/'+pos_name.upper()+'.txt','w') as pos_file:
                 pos_file.write(self.x_pos+','+self.y_pos+','+self.z_pos)
                 pos_file.close()
 
         elif cmd_type=='takepose':
             file_name = command[9:-1]
-            with open('./SAVED_POSITIONS'+file_name.upper()+'.txt','r') as pos_file:
+            with open('./SAVED_POSITIONS/'+file_name.upper()+'.txt','r') as pos_file:
                 coords=''.join(pos_file.readline().split())
                 pos_file.close()
-            x,y,z=[int(coords.split(',')[i]) for i in (0,1,2)]
+            x,y,z,eff_ang=[float(coords.split(',')[i]) for i in (0,1,2,3)]
             encoded_val=self.get_encoded_command(command='moveall(%s,%s,%s,%s)'%(x,y,z,eff_ang),cmd_type='moveall')
 
         elif cmd_type=='repeat':
-            args = command[7:-1].split(',',2) #splits at the first & second comma
+            args = command[7:-1].split(',',1) #splits at the first & second comma
+            sub_type=args[-1].split('(',1)[0]
+            print('subcmd',args,sub_type)
             encoded_val=[]
-            encoded_command=self.get_encoded_command(command=args[-1],cmd_type=args[0]) #get encoded value(s) of desired repeated command
+            encoded_cmd=self.get_encoded_command(command=args[-1],cmd_type=sub_type) #get encoded value(s) of desired repeated command
             if type(encoded_cmd)==type(0):
                 encoded_val.append(encoded_cmd)
             elif type(encoded_cmd)==type([]):
-                encoded_val.append(int(encoded_cmd[i]) for i in range(len(encoded_cmd)))
-            encoded_val*args[1] #repeats commands specified number of times
+                encoded_val.extend(encoded_cmd)
+            print(encoded_val)
+            print(type(args[0]),args[0])
+            encoded_val=encoded_val*int(args[0]) #repeats commands specified number of times
+            print(encoded_val)
 
         elif cmd_type=='macro':
             filename=command[6:-1]
@@ -112,7 +118,12 @@ class CommandInterpreter:
             command_list=text.split(';')
             for command in command_list:
                 cmd_type=command.split('(',1)[0]
-                encoded_val.append(self.get_encoded_command(command=command,cmd_type=cmd_type))
+                sub_cmd_list = self.get_encoded_command(command=command,cmd_type=cmd_type)
+                for i, cmd in enumerate(sub_cmd_list):
+                    encoded_val.append(cmd)
+        else:
+            print(command,cmd_type)
+            print('no commands recognised')
 
         # print(encoded_val)
         return encoded_val
@@ -120,7 +131,7 @@ class CommandInterpreter:
     def get_angle_from_coords(self,x,y,z,tilt=0.0):
         angle = []
         tilt = float(tilt)
-        length = [10.5, 9.0, 5.0]
+        length = [10.5, 9.0, 6.6]
         if x == 0 and z != 0:
             angle.append(90)
             if z<=0:

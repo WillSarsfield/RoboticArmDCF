@@ -17,7 +17,7 @@ class BioBoxInterface(Tk):
     def __init__(self, *args, **kwargs):
         #-----!!!need to choose port based on connection!!!-------
         #self.arduinoPort = '/dev/cu.usbmodem1301' #for mac - check bottom of arduino editor and modify 
-        self.arduinoPort = 'COM7' #for windows - may be a different number
+        self.arduinoPort = 'COM5' #for windows - may be a different number
         #---------------------------------------------------------
 
         self.current_filename='./COMMANDS/Untitled.txt' #relevant to execute_text, compile_text, open_file, save_file methods
@@ -183,7 +183,7 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
 
     def save_position(self,x,y,z,tilt):
         try:
-            x,y,z=int(x),int(y),int(z)
+            x,y,z,tilt=float(x),float(y),float(z),float(tilt)
             pos_file=asksaveasfile(parent=self,initialdir='./SAVED_POSITIONS',initialfile='POS1.txt',defaultextension='.txt',filetypes=[('All Files','*.*'),('Text Documents','*.txt')])
             if type(pos_file)!=type(None): #cancelling the dialog box returns nonetype, file should only be saved if one was specified
                 pos_file.write('%s,%s,%s,%s'%(x,y,z,tilt))
@@ -373,8 +373,8 @@ class Compiler:
         cmd_regex['moveall']=re.compile('^moveall\((-?\d+\.?\d{0,2}),(-?\d+\.?\d{0,2}),(-?\d+\.?\d{0,2}),(-?\d+\.?\d{0,2})\)$')           #matches 'MOVEALL(#,#,#,#)' as x,y,z (signed), tilt(unsigned)
         cmd_regex['shift']=re.compile('^shift\((-?\d+\.?\d{0,2}),(-?\d+\.?\d{0,2}),(-?\d+\.?\d{0,2}),(-?\d+\.?\d{0,2})\)$')             #matches 'SHIFT(#,#,#,#)' as x,y,z,tilt (signed)
         cmd_regex['dispense']=re.compile('^dispense\(\d+,\d+\)$')                       #matches 'DISPENSE(#,#)' as pump_num (unsigned), sample_vol (unsigned)
-        cmd_regex['learnas']=re.compile('^learnas\([a-z0-9]{3,}\)$')                    #matches 'LEARNAS([string][3+])'
-        cmd_regex['takepose']=re.compile('^takepose\([a-z0-9]{3,}\)$')                  #matches 'TAKEPOSE([string][3+])'
+        cmd_regex['learnas']=re.compile('^learnas\(.{3,}\)$')                    #matches 'LEARNAS([string][3+])'
+        cmd_regex['takepose']=re.compile('^takepose\(.{3,}\)$')                  #matches 'TAKEPOSE([string][3+])'
         
         #FUNCTION-LIKE COMMANDS
         cmd_regex['repeat']=re.compile('^repeat\([0-9]+,.+\)$')                         #matches 'REPEAT(#,[string])' where string should be an accepted command

@@ -1,0 +1,3 @@
+takepose(FULL_X);
+takepose(POINT_DOWN);
+takepose(UP_AND_OUT);

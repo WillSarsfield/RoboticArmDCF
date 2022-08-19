@@ -11,7 +11,7 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define NUMBER_OF_SWITCHES 2
 #define length1 10.5
 #define length2 9
-#define length3 5
+#define length3 6.6
 #define lowerX -30
 #define upperX 30
 #define lowerY -30
@@ -39,6 +39,7 @@ void calibrate(){//sets the physical motors to the correct start position when c
   for (int x  = 180; x >= 0; x -= 2){
     for (int y = 0; y < 4; y += 1){
       ang[y] = x ;
+      delay(5);
       moveMotor(x ,motor[y]);
     }
   }
@@ -180,8 +181,8 @@ void loop(){//then executes input instruction
 void moveMotor(float angle, int motorOut){//takes the motor and angle specified and physically moves the corresponding servo
   float pulse;
   pulse = getMotorPulse(angle,motorOut);
-  Serial.println(pulse);
+  //Serial.println(pulse);
   pwm.setPWM(motorOut, 0, pulse);
-  Serial.println("motor " + String((motorOut/4)+1) + " " + angle + " x: " + String(calcTrueX()) + " y: " + String(calcY()) + " z: " + String(calcZ()));
+  //Serial.println("motor " + String((motorOut/4)+1) + " " + angle + " x: " + String(calcTrueX()) + " y: " + String(calcY()) + " z: " + String(calcZ()));
   delayMicroseconds(10);
 }

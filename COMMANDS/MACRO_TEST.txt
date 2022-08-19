@@ -1,0 +1,1 @@
+MACRO(TEST_MACRO);
