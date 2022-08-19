@@ -35,6 +35,7 @@ class CommandInterpreter:
             waitTime=int(paramList[0]) # gets the wait time from the do command
             encoded_val= -waitTime-1                        #wait command is encoded as the negative numbers (1 is subtracted as the value 0 is already used)
             # print(waitTime,'encoded as',encoded_val)
+            
         elif cmd_type=='bit':
             bit,value = int(paramList[0]),int(paramList[1])
             encoded_val = self.bit_ofst + bit*2 + value
