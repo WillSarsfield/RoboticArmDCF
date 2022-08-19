@@ -36,7 +36,7 @@ void setup() {
 }
 
 void calibrate(){//sets the physical motors to the correct start position when called
-  for (int x  = 90; x >= 0; x -= 1){
+  for (int x  = 180; x >= 0; x -= 2){
     for (int y = 0; y < 4; y += 1){
       ang[y] = x ;
       moveMotor(x ,motor[y]);
@@ -45,7 +45,7 @@ void calibrate(){//sets the physical motors to the correct start position when c
 }
 
 float getMotorPulse(float angle,int motorOut){
-  int pulse;
+  float pulse;
    if (motorOut == 0){
     pulse = map(angle, 0, 180, MIN_PULSE_WIDTH+100, MAX_PULSE_WIDTH-50);//maps angle to pulse width, different for top motor
   }else if (motorOut==4){
@@ -55,7 +55,7 @@ float getMotorPulse(float angle,int motorOut){
   }else if (motorOut==12){
     pulse = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);//maps angle to pulse width
   }
-  pulse = int(float(pulse) / 1000000 * FREQUENCY * 4096);//changes pulse width to out pulse sent to servo
+  pulse = pulse / 1000000 * FREQUENCY * 4096;//changes pulse width to out pulse sent to servo
   return pulse;
 }
 
@@ -104,7 +104,7 @@ int getPump(int input){
 
 int getSteps(int pump, float input){//takes serial input and the motor calculated and returns the corresponding angle
   int steps = ((input-((NUMBER_OF_MOTORS)*181)+1)-(pump*3001.)) - 3001;
-  return angle;
+  return steps;
 }
 
 int getSwitch(int input){
@@ -114,7 +114,7 @@ int getSwitch(int input){
 
 int getSwitchPulse(int switchNumber, float input){//takes serial input and the motor calculated and returns the corresponding angle
   int pulse = ((input-((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1)+1-(switchNumber*2)) - 2;
-  return angle;
+  return pulse;
 }
 
 bool checkBounds(){
@@ -137,49 +137,51 @@ void loop(){//then executes input instruction
     input -= 1.;
     if (input <= (-1.)){
       setFlag = false;
-    } else if (input >=0 && input <= ((NUMBER_OF_MOTORS)*181){
+    } else if (input >=0 && input <= ((NUMBER_OF_MOTORS)*181)){
       int motor = getMotor(input);
       float angle = getAngle(motor,input);
       finishAng[motor] = angle;
-    } else if (input >= (NUMBER_OF_MOTORS)*181+1 && (input <= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1)){
+    } else if ((input >= (NUMBER_OF_MOTORS)*181+1) && (input <= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1))){
       int pump = getPump(input);
       int steps = getSteps(pump,input);
-    } else if (input >= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1)+1) && (input <= (((((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1)+1)+NUMBER_OF_SWITCHES*2)){
+    } else if (((input >= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1)+1)) && (input <= (((((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1)+1)+NUMBER_OF_SWITCHES*2))){
       int switchNumber = getSwitch(input);
       int switchPulse = getSwitchPulse(switchNumber, input);
     }
   } else{
-    frame += 1;
-    for (int x = 0; x < 4; x += 1){
-      if (frame < 91 && valid != false){//within frames 0 to 90
-        ang[x] = map(frame, 0, 90, startAng[x], finishAng[x]);
+    frame += 0.25;
+    for (int x = 0; x < 4; x += 1){    
+      if (frame < 61 && valid != false){//within frames 0 to 90
+        ang[x] = map(frame, 0, 60, startAng[x], finishAng[x]);
         if (checkBounds() != false){
           moveMotor(ang[x], motor[x]);
         } else {
           Serial.println("out of bounds");
           valid = false;
-          for (int x = 0; x < 4; x += 1){
-            ang[x] = map(frame - 1, 0, 90, startAng[x], finishAng[x]);
+          for (int y = 0; y < 4; y += 1){
+            ang[y] = map(frame - 1, 0, 60, startAng[y], finishAng[y]);
           }
         }
       }
-      if (frame > 91 || valid == false){//once frames exceed 90, resets frames and waits for new serial to read
-       for (int x = 0; x < 4; x += 1){ 
+    }
+    
+      if (frame > 61 || valid == false){//once frames exceed 90, resets frames and waits for new serial to read
+        for (int x = 0; x < 4; x += 1){   
           startAng[x] = ang[x];
           finishAng[x] = ang[x];
-        }
-        frame = 0;
-        setFlag = true;
-        valid = true;
-      }
+          frame = 0;
+          setFlag = true;
+          valid = true;
+       }
     }
   }
 }
 
 void moveMotor(float angle, int motorOut){//takes the motor and angle specified and physically moves the corresponding servo
-  int pulse;
+  float pulse;
   pulse = getMotorPulse(angle,motorOut);
+  Serial.println(pulse);
   pwm.setPWM(motorOut, 0, pulse);
-  //Serial.println("motor " + String((motorOut/4)+1) + " " + angle + " x: " + String(calcTrueX()) + " y: " + String(calcY()) + " z: " + String(calcZ()));
-  delay(5);
+  Serial.println("motor " + String((motorOut/4)+1) + " " + angle + " x: " + String(calcTrueX()) + " y: " + String(calcY()) + " z: " + String(calcZ()));
+  delayMicroseconds(10);
 }
