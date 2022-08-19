@@ -8,6 +8,7 @@ import serial
 from execute_code import execute_code
 from CommandInterpreter import CommandInterpreter
 import time
+import pandas as pd
 
 class BioBoxInterface(Tk):
 
@@ -242,7 +243,7 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
         saveButton.grid(column=4,row=0,sticky='ew',padx=2.5,pady=5)
         openButton = ttk.Button(self.footer_frame, text='Open File', command=lambda:self.open_file())
         openButton.grid(column=3,row=0,sticky='ew',padx=2.5,pady=5)
-        clearButton = ttk.Button(self.footer_frame, text='Clear', command=lambda:self.clear_text())
+        clearButton = ttk.Button(self.footer_frame, text='Create Plan', command=lambda:self.create_plan())
         clearButton.grid(column=0,row=0,sticky='ew',padx=2.5,pady=5)
         compileButton = ttk.Button(self.footer_frame, text='Compile', command=lambda:self.compile_text())
         compileButton.grid(column=1,row=0,sticky='ew',padx=2.5,pady=5)
@@ -290,6 +291,19 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
                 new_file.close()
         except Exception as e:
             messagebox.showerror('IOError','Unable to open file:\n'+str(e),parent=self)
+
+    def create_plan(self):
+        expr_plan_df= pd.read_excel(r'./dataset.xlsx')
+        #print(expr_plan_df)
+        accepted_input = re.compile('^(\d+ ){3}$')
+        for col in expr_plan_df:
+            for item in expr_plan_df[col]:
+                print(item,end=' ')
+                if not(re.match(accepted_input, str(item))):
+                    print(item,'not accepted')
+            print('')
+        print('----------')
+        #data_file.to_csv(r'./dataset.csv',index=None)
 
 class ReadMe(Frame):
     def __init__(self,parent,controller):
