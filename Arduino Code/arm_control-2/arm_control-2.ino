@@ -109,17 +109,17 @@ int getPump(int input){
 }
 
 int getSteps(int pump, float input){//takes serial input and the motor calculated and returns the corresponding angle
-  int steps = ((input-((NUMBER_OF_MOTORS)*181)+1)-(pump*3001.)) - 1500.;
+  int steps = ((input-((NUMBER_OF_MOTORS)*181))-(pump*3001.)) - 1501.;
   return steps;
 }
 
 int getSwitch(int input){
-  int switchNumber = floor(input-(((((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1)+1)/2));
+  int switchNumber = floor((input - (NUMBER_OF_MOTORS*181) - (NUMBER_OF_PUMPS * 3001)-1)/2);
   return switchNumber;
 }
 
 int getSwitchPulse(int switchNumber, float input){//takes serial input and the motor calculated and returns the corresponding angle
-  int pulse = ((input-((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1)+1-(switchNumber*2)) - 2;
+  int pulse = ((int(input - (NUMBER_OF_MOTORS*181) - (NUMBER_OF_PUMPS * 3001)+1))%2);
   return pulse;
 }
 
@@ -141,17 +141,18 @@ void loop(){//then executes input instruction
     delay(5); 
     float input = Serial.readString().toFloat();
     input -= 1.;
+    Serial.println(input);
     if (input <= (-1.)){
       setFlag = false;
     } else if (input >=0 && input <= ((NUMBER_OF_MOTORS)*181)){
       int motor = getMotor(input);
       float angle = getAngle(motor,input);
       finishAng[motor] = angle;
-    } else if ((input >= (NUMBER_OF_MOTORS)*181+1) && (input <= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1))){
+    } else if ((input >= ((NUMBER_OF_MOTORS)*181)+1) && (input <= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)))){
       int pump = getPump(input);
       int steps = getSteps(pump,input);
       Serial.println("pump " + String(pump) + " " + String(steps));
-    } else if (((input >= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1)+1)) && (input <= (((((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1)+1)+NUMBER_OF_SWITCHES*2))){
+    } else if (((input >= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181))+1)) && (input <= (((((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1))+NUMBER_OF_SWITCHES*2)+1)){
       int switchNumber = getSwitch(input);
       int switchPulse = getSwitchPulse(switchNumber, input);
       Serial.println("switch " + String(switchNumber) + " " + String(switchPulse));
