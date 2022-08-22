@@ -132,22 +132,22 @@ class PresetPage(Frame): #start page with preset command buttons for robot arm
         command1 = ttk.Button(self.footer_frame,text=command_names[0],cursor='exchange',command=lambda:[self.execute_preset(presets_matrix[0]),xentry_text.set('0'),yentry_text.set('0'),zentry_text.set('0'),tentry_text.set('90')])
         command1.grid(column=0,row=0,padx=2.5,pady=5,sticky='nsew') #this first one is actually in the footer (reset button)
 
-        command2 = ttk.Button(self.center_frame,text=command_names[1],cursor='cross',command=lambda:[self.execute_preset(presets_matrix[1]),xentry_text.set(str(int(xentry_text.get())-1))])
+        command2 = ttk.Button(self.center_frame,text=command_names[1],cursor='cross',command=lambda:[self.execute_preset(presets_matrix[1]),xentry_text.set(str(float(xentry_text.get())-1))])
         command2.grid(column=0,row=0,padx=5,pady=2.5,sticky='nse')
-        command3 = ttk.Button(self.center_frame,text=command_names[2],cursor='cross',command=lambda:[self.execute_preset(presets_matrix[2]),yentry_text.set(str(int(yentry_text.get())-1))])
+        command3 = ttk.Button(self.center_frame,text=command_names[2],cursor='cross',command=lambda:[self.execute_preset(presets_matrix[2]),yentry_text.set(str(float(yentry_text.get())-1))])
         command3.grid(column=0,row=1,padx=5,pady=2.5,sticky='nse')
-        command4 = ttk.Button(self.center_frame,text=command_names[3],cursor='cross',command=lambda:[self.execute_preset(presets_matrix[3]),zentry_text.set(str(int(zentry_text.get())-1))])
+        command4 = ttk.Button(self.center_frame,text=command_names[3],cursor='cross',command=lambda:[self.execute_preset(presets_matrix[3]),zentry_text.set(str(float(zentry_text.get())-1))])
         command4.grid(column=0,row=2,padx=5,pady=2.5,sticky='nse')
-        command5 = ttk.Button(self.center_frame,text=command_names[4],cursor='cross',command=lambda:[self.execute_preset(presets_matrix[4]),tentry_text.set(str(int(tentry_text.get())-1))])
+        command5 = ttk.Button(self.center_frame,text=command_names[4],cursor='cross',command=lambda:[self.execute_preset(presets_matrix[4]),tentry_text.set(str(float(tentry_text.get())-1))])
         command5.grid(column=0,row=3,padx=5,pady=2.5,sticky='nse')
 
-        command6 = ttk.Button(self.center_frame,text=command_names[5],cursor='cross',command=lambda:[self.execute_preset(presets_matrix[5]),xentry_text.set(str(int(xentry_text.get())+1))])
+        command6 = ttk.Button(self.center_frame,text=command_names[5],cursor='cross',command=lambda:[self.execute_preset(presets_matrix[5]),xentry_text.set(str(float(xentry_text.get())+1))])
         command6.grid(column=2,row=0,padx=5,pady=2.5,sticky='nsw')
-        command7 = ttk.Button(self.center_frame,text=command_names[6],cursor='cross',command=lambda:[self.execute_preset(presets_matrix[6]),yentry_text.set(str(int(yentry_text.get())+1))])
+        command7 = ttk.Button(self.center_frame,text=command_names[6],cursor='cross',command=lambda:[self.execute_preset(presets_matrix[6]),yentry_text.set(str(float(yentry_text.get())+1))])
         command7.grid(column=2,row=1,padx=5,pady=2.5,sticky='nsw')
-        command8 = ttk.Button(self.center_frame,text=command_names[7],cursor='cross',command=lambda:[self.execute_preset(presets_matrix[7]),zentry_text.set(str(int(zentry_text.get())+1))])
+        command8 = ttk.Button(self.center_frame,text=command_names[7],cursor='cross',command=lambda:[self.execute_preset(presets_matrix[7]),zentry_text.set(str(float(zentry_text.get())+1))])
         command8.grid(column=2,row=2,padx=5,pady=2.5,sticky='nsw')
-        command9 = ttk.Button(self.center_frame,text=command_names[8],cursor='cross',command=lambda:[self.execute_preset(presets_matrix[8]),tentry_text.set(str(int(tentry_text.get())+1))])
+        command9 = ttk.Button(self.center_frame,text=command_names[8],cursor='cross',command=lambda:[self.execute_preset(presets_matrix[8]),tentry_text.set(str(float(tentry_text.get())+1))])
         command9.grid(column=2,row=3,padx=5,pady=2.5,sticky='nsw')
 
         xentry,yentry,zentry,tentry=[ttk.Entry() for i in range(4)] #setting up text entry boxes
@@ -295,7 +295,7 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
     def create_plan(self):
         expr_plan_df= pd.read_excel(r'./dataset.xlsx')
         #print(expr_plan_df)
-        accepted_input = re.compile('^(\d+ ){3}$')
+        accepted_input = re.compile('^(\d+ ){2}\d$')
         for col in expr_plan_df:
             for item in expr_plan_df[col]:
                 print(item,end=' ')
@@ -315,7 +315,6 @@ class ReadMe(Frame):
         self.center_frame.grid(row=1,column=0,sticky='nsew')
         self.grid_columnconfigure(0,weight=1) #positioning header_frame and center_frame within ReadMe Frame
         self.grid_rowconfigure(1,weight=1)
-
 
         label = ttk.Label(self.header_frame,text='Help Page')#menu bar contained within header_frame
         label.grid(column=0,row=0,columnspan=3,sticky='nsew')
@@ -402,6 +401,17 @@ class Compiler:
                             match=self.is_valid(command_list)
                         except Exception as e:
                             messagebox.showerror(parent=self.parent,title='Compiler',message='Macro error: '+e+'\nSee \'README.txt\' for help')
+                    elif name == 'takepose':
+                        match = False
+                        filename = command[9:-1]
+                        try:
+                            with open('./SAVED_POSITIONS/'+filename.upper()+'.txt','r') as pos_file:
+                                pos_text = pos_file.read()
+                                pos_file.close()
+                            if re.match('^(\d+,){2}\d+$',pos_text):
+                                match=True
+                        except Exception as e:
+                            messagebox.showerror(parent=self.parent,title='Compiler',message='Position read '+filename.upper()+' error: '+e+'\nSee \'README.txt\' for help')
                 elif command == '': #caused by .split() returning '' when a semicolon is the last character of a string
                     match = True
             if not(match):
