@@ -109,7 +109,7 @@ int getPump(int input){
 }
 
 int getSteps(int pump, float input){//takes serial input and the motor calculated and returns the corresponding angle
-  int steps = ((input-((NUMBER_OF_MOTORS)*181)+1)-(pump*3001.)) - 1502;
+  int steps = ((input-((NUMBER_OF_MOTORS)*181)+1)-(pump*3001.)) - 1500.;
   return steps;
 }
 
