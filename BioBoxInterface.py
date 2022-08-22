@@ -266,7 +266,9 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
     def compile_text(self): #converts text into format ready for serial comms
         cmd_text = self.compiler.compile_text(text=self.get_text())
         self.controller.current_filename = self.compiler.save_compiled_file(cmd_text=cmd_text, filepath=self.controller.current_filename)
-
+    
+    def insert_text(self,text):
+        self.center_frame.text_box.insert('end',text)
 
     def execute_text(self,port):
         self.executer.execute_with_compile(self.controller.current_filename)
@@ -287,23 +289,35 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
             self.controller.current_filename=new_file.name #saves the name of the file that was opened, so when it is saved that name is set as default
             if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
                 self.clear_text()
-                self.center_frame.text_box.insert('1.0',new_file.read())
+                self.insert_text(new_file.read())
                 new_file.close()
         except Exception as e:
             messagebox.showerror('IOError','Unable to open file:\n'+str(e),parent=self)
 
     def create_plan(self):
+        instruction_list = []
         expr_plan_df= pd.read_excel(r'./dataset.xlsx')
-        #print(expr_plan_df)
-        accepted_input = re.compile('^(\d+ ){2}\d$')
-        for col in expr_plan_df:
-            for item in expr_plan_df[col]:
-                print(item,end=' ')
-                if not(re.match(accepted_input, str(item))):
+        accepted_input = re.compile('^(\d+) (\d+) (\d+)$')
+        self.clear_text()
+        for i, item in enumerate(expr_plan_df['A']):
+            for col in expr_plan_df:
+                item = expr_plan_df[col][i]
+                result = re.match(accepted_input, str(item))
+                #print(item,end=' ')
+                if not(result):
                     print(item,'not accepted')
-            print('')
-        print('----------')
-        #data_file.to_csv(r'./dataset.csv',index=None)
+                    # raise some kind of error
+                else:
+                    instruction_list.append(result.groups())
+        
+        self.insert_text('MACRO(PRE_EXPERIMENT);\n\n')
+        for i, instruction in enumerate(instruction_list):
+            self.insert_text('TAKEPOSE(COLLECT_SAMPLE);\n')
+            self.insert_text('PUMP(%s,%s);\n'%(instruction[0],instruction[1]))
+            self.insert_text('TAKEPOSE(IRRADIATE);\n')
+            self.insert_text('IRRD(%s);\n'%(instruction[2]))
+            self.insert_text('TAKEPOSE(WELL_%s);\n\n'%(i))
+        self.insert_text('MACRO(POST_EXPERIMENT);\n')
 
 class ReadMe(Frame):
     def __init__(self,parent,controller):
@@ -400,7 +414,7 @@ class Compiler:
                             command_list=text.split(';')
                             match=self.is_valid(command_list)
                         except Exception as e:
-                            messagebox.showerror(parent=self.parent,title='Compiler',message='Macro error: '+e+'\nSee \'README.txt\' for help')
+                            messagebox.showerror(parent=self.parent,title='Compiler',message='Macro error: '+str(e)+'\nSee \'README.txt\' for help')
                     elif name == 'takepose':
                         match = False
                         filename = command[9:-1]
