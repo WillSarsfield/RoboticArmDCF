@@ -60,13 +60,13 @@ class CommandInterpreter:
             x,y,z=x+self.x_ofst,y+self.y_ofst,z+self.z_ofst
             print(paramList)
             eff_ang=paramList[3]
+            self.x_pos,self.y_pos,self.z_pos,self.tilt=x,y,z,eff_ang
             angles=self.get_angle_from_coords(x, y, z, tilt=eff_ang)
             decomp_cmds=[]
             for i in range(len(angles)):
                 decomp_cmds.append(self.get_encoded_command(command='move(%s,%s)'%(i,angles[3-i]),cmd_type='move'))
             
             decomp_cmds.append(self.get_encoded_command(command='do(0)',cmd_type='do'))
-            self.x_pos,self.y_pos,self.z_pos,self.tilt=x,y,z,eff_ang
             encoded_val=decomp_cmds
 
         elif cmd_type=='shift':
