@@ -294,6 +294,33 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
         except Exception as e:
             messagebox.showerror('IOError','Unable to open file:\n'+str(e),parent=self)
 
+    def calculate_well_coords(self):
+        with open('./SAVED_POSITIONS/CALIBRATE_A.txt') as well_a:
+            a_text=well_a.read()
+            well_a.close()
+        with open('./SAVED_POSITIONS/CALIBRATE_B.txt') as well_b:
+            b_text=well_b.read()
+            well_b.close()
+        with open('./SAVED_POSITIONS/CALIBRATE_C.txt') as well_c:
+            c_text=well_c.read()
+            well_c.close()
+        print(a_text,b_text,c_text)
+        a_coords,b_coords,c_coords = (text.split(',') for text in (a_text,b_text,c_text))
+        x_0 = (a_coords[0]+c_coords[0])/2
+        y_0 = (a_coords[1]+b_coords[1])/2
+        z = (a_coords[2]+b_coords[2]+c_coords[2])/3
+        x_diff=0
+        y_diff=0
+        z=0
+        tilt=0
+        for y in range(0,4):
+            for x in range(0,6):
+                well_no = y*x +x
+                filename='WELL_'+well_no+'.txt'
+                with open('./SAVED_POSITIONS/'+filename,'w') as posfile:
+                    #posfile.write()
+                    posfile.close()
+
     def create_plan(self):
         instruction_list = []
         expr_plan_df= pd.read_excel(r'./dataset.xlsx')
@@ -318,6 +345,8 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
             self.insert_text('IRRD(%s);\n'%(instruction[2]))
             self.insert_text('TAKEPOSE(WELL_%s);\n\n'%(i))
         self.insert_text('MACRO(POST_EXPERIMENT);\n')
+
+        self.calculate_well_coords()
 
 class ReadMe(Frame):
     def __init__(self,parent,controller):
@@ -425,7 +454,7 @@ class Compiler:
                             if re.match('^(\d+,){2}\d+$',pos_text):
                                 match=True
                         except Exception as e:
-                            messagebox.showerror(parent=self.parent,title='Compiler',message='Position read '+filename.upper()+' error: '+e+'\nSee \'README.txt\' for help')
+                            messagebox.showerror(parent=self.parent,title='Compiler',message='Position read '+filename.upper()+' error: '+str(e)+'\nSee \'README.txt\' for help')
                 elif command == '': #caused by .split() returning '' when a semicolon is the last character of a string
                     match = True
             if not(match):
