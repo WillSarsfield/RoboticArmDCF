@@ -266,7 +266,9 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
     def compile_text(self): #converts text into format ready for serial comms
         cmd_text = self.compiler.compile_text(text=self.get_text())
         self.controller.current_filename = self.compiler.save_compiled_file(cmd_text=cmd_text, filepath=self.controller.current_filename)
-
+    
+    def insert_text(self,text):
+        self.center_frame.text_box.insert('end',text)
 
     def execute_text(self,port):
         self.executer.execute_with_compile(self.controller.current_filename)
@@ -287,23 +289,64 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
             self.controller.current_filename=new_file.name #saves the name of the file that was opened, so when it is saved that name is set as default
             if type(new_file)!=type(None): #cancelling the dialog box returns nonetype, text should only be replaced if there is a file to replace it
                 self.clear_text()
-                self.center_frame.text_box.insert('1.0',new_file.read())
+                self.insert_text(new_file.read())
                 new_file.close()
         except Exception as e:
             messagebox.showerror('IOError','Unable to open file:\n'+str(e),parent=self)
 
+    def calculate_well_coords(self):
+        with open('./SAVED_POSITIONS/CALIBRATE_A.txt') as well_a:
+            a_text=well_a.read()
+            well_a.close()
+        with open('./SAVED_POSITIONS/CALIBRATE_B.txt') as well_b:
+            b_text=well_b.read()
+            well_b.close()
+        with open('./SAVED_POSITIONS/CALIBRATE_C.txt') as well_c:
+            c_text=well_c.read()
+            well_c.close()
+        print(a_text,b_text,c_text)
+        a_coords,b_coords,c_coords = (text.split(',') for text in (a_text,b_text,c_text))
+        x_0 = (a_coords[0]+c_coords[0])/2
+        y_0 = (a_coords[1]+b_coords[1])/2
+        z = (a_coords[2]+b_coords[2]+c_coords[2])/3
+        x_diff=0
+        y_diff=0
+        z=0
+        tilt=0
+        for y in range(0,4):
+            for x in range(0,6):
+                well_no = y*x +x
+                filename='WELL_'+well_no+'.txt'
+                with open('./SAVED_POSITIONS/'+filename,'w') as posfile:
+                    #posfile.write()
+                    posfile.close()
+
     def create_plan(self):
+        instruction_list = []
         expr_plan_df= pd.read_excel(r'./dataset.xlsx')
-        #print(expr_plan_df)
-        accepted_input = re.compile('^(\d+ ){3}$')
-        for col in expr_plan_df:
-            for item in expr_plan_df[col]:
-                print(item,end=' ')
-                if not(re.match(accepted_input, str(item))):
+        accepted_input = re.compile('^(\d+) (\d+) (\d+)$')
+        self.clear_text()
+        for i, item in enumerate(expr_plan_df['A']):
+            for col in expr_plan_df:
+                item = expr_plan_df[col][i]
+                result = re.match(accepted_input, str(item))
+                #print(item,end=' ')
+                if not(result):
                     print(item,'not accepted')
-            print('')
-        print('----------')
-        #data_file.to_csv(r'./dataset.csv',index=None)
+                    # raise some kind of error
+                else:
+                    instruction_list.append(result.groups())
+        
+        self.insert_text('MACRO(PRE_EXPERIMENT);\n\n')
+        for i, instruction in enumerate(instruction_list):
+            self.insert_text('TAKEPOSE(COLLECT_SAMPLE);\n')
+            self.insert_text('PUMP(%s,%s);\n'%(instruction[0],instruction[1]))
+            self.insert_text('TAKEPOSE(IRRADIATE);\n')
+            self.insert_text('IRRD(%s);\n'%(instruction[2]))
+            self.insert_text('TAKEPOSE(WELL_%s);\n\n'%(i))
+        self.insert_text('MACRO(POST_EXPERIMENT);\n')
+
+        self.calculate_well_coords()
 
 class ReadMe(Frame):
     def __init__(self,parent,controller):
@@ -315,7 +358,6 @@ class ReadMe(Frame):
         self.center_frame.grid(row=1,column=0,sticky='nsew')
         self.grid_columnconfigure(0,weight=1) #positioning header_frame and center_frame within ReadMe Frame
         self.grid_rowconfigure(1,weight=1)
-
 
         label = ttk.Label(self.header_frame,text='Help Page')#menu bar contained within header_frame
         label.grid(column=0,row=0,columnspan=3,sticky='nsew')
@@ -401,7 +443,18 @@ class Compiler:
                             command_list=text.split(';')
                             match=self.is_valid(command_list)
                         except Exception as e:
-                            messagebox.showerror(parent=self.parent,title='Compiler',message='Macro error: '+e+'\nSee \'README.txt\' for help')
+                            messagebox.showerror(parent=self.parent,title='Compiler',message='Macro error: '+str(e)+'\nSee \'README.txt\' for help')
+                    elif name == 'takepose':
+                        match = False
+                        filename = command[9:-1]
+                        try:
+                            with open('./SAVED_POSITIONS/'+filename.upper()+'.txt','r') as pos_file:
+                                pos_text = pos_file.read()
+                                pos_file.close()
+                            if re.match('^(\d+,){2}\d+$',pos_text):
+                                match=True
+                        except Exception as e:
+                            messagebox.showerror(parent=self.parent,title='Compiler',message='Position read '+filename.upper()+' error: '+str(e)+'\nSee \'README.txt\' for help')
                 elif command == '': #caused by .split() returning '' when a semicolon is the last character of a string
                     match = True
             if not(match):
