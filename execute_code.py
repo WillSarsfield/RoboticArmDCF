@@ -16,10 +16,8 @@ class execute_code:
             elif float(cmd)<0:
                 self.arduino.write(bytes('0','utf-8'))
                 time.sleep((-(float(cmd)+1)+self.min_delay)/1000)
-                print("DO")
             else:
                 self.arduino.write(bytes(cmd,'utf-8'))
-                print("MOVE")
             time.sleep(self.timeout)
 
         print('done')
