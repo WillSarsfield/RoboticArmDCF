@@ -131,7 +131,7 @@ class CommandInterpreter:
     def get_angle_from_coords(self,x,y,z,tilt=0.0):
         angle = []
         tilt = float(tilt)
-        length = [10.5, 9.0, 6.6]
+        length = [10.5, 9.0, 5.0]
         if x == 0 and z != 0:
             angle.append(90)
             if z<=0:
