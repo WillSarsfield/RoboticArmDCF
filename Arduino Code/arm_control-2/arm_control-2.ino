@@ -141,7 +141,7 @@ void loop(){//then executes input instruction
     delay(5); 
     float input = Serial.readString().toFloat();
     input -= 1.;
-    Serial.println(input);
+    //Serial.println(input);
     if (input <= (-1.)){
       setFlag = false;
     } else if (input >=0 && input <= ((NUMBER_OF_MOTORS)*181)){
@@ -151,11 +151,11 @@ void loop(){//then executes input instruction
     } else if ((input >= ((NUMBER_OF_MOTORS)*181)+1) && (input <= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)))){
       int pump = getPump(input);
       int steps = getSteps(pump,input);
-      Serial.println("pump " + String(pump) + " " + String(steps));
+      //Serial.println("pump " + String(pump) + " " + String(steps));
     } else if (((input >= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181))+1)) && (input <= (((((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1))+NUMBER_OF_SWITCHES*2)+1)){
       int switchNumber = getSwitch(input);
       int switchPulse = getSwitchPulse(switchNumber, input);
-      Serial.println("switch " + String(switchNumber) + " " + String(switchPulse));
+      //Serial.println("switch " + String(switchNumber) + " " + String(switchPulse));
       digitalWrite(bitPin, switchPulse);
     }
   } else{
@@ -166,7 +166,7 @@ void loop(){//then executes input instruction
         if (checkBounds() != false){
           moveMotor(ang[x], motor[x]);
         } else {
-          Serial.println("out of bounds");
+          //Serial.println("out of bounds");
           valid = false;
           for (int y = 0; y < 5; y += 1){
             ang[y] = map(frame - 1, 0, 60, startAng[y], finishAng[y]);
