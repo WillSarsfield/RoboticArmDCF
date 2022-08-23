@@ -44,6 +44,7 @@ class CommandInterpreter:
             #convert bit and value here
         elif cmd_type=='pump':
             pump_num,steps=int(paramList[0]),int(paramList[1])
+            steps += 1500 #needs to convert to number in range -1500 -> 1500 to 0 -> 3000
             encoded_val = self.pump_ofst + pump_num*(self.max_steps+1) + steps
         elif cmd_type=='spin':
             speed=int(paramList[0])

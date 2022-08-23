@@ -17,7 +17,7 @@ class BioBoxInterface(Tk):
     def __init__(self, *args, **kwargs):
         #-----!!!need to choose port based on connection!!!-------
         #self.arduinoPort = '/dev/cu.usbmodem1101' #for mac - check bottom of arduino editor and modify 
-        self.arduinoPort = 'COM5' #for windows - may be a different number
+        self.arduinoPort = 'COM7' #for windows - may be a different number
         #---------------------------------------------------------
 
         self.current_filename='./COMMANDS/Untitled.txt' #relevant to execute_text, compile_text, open_file, save_file methods
