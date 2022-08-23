@@ -17,7 +17,7 @@ class BioBoxInterface(Tk):
     def __init__(self, *args, **kwargs):
         #-----!!!need to choose port based on connection!!!-------
         #self.arduinoPort = '/dev/cu.usbmodem1101' #for mac - check bottom of arduino editor and modify 
-        self.arduinoPort = 'COM7' #for windows - may be a different number
+        self.arduinoPort = 'COM5' #for windows - may be a different number
         #---------------------------------------------------------
 
         self.current_filename='./COMMANDS/Untitled.txt' #relevant to execute_text, compile_text, open_file, save_file methods
@@ -295,13 +295,24 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
             messagebox.showerror('IOError','Unable to open file:\n'+str(e),parent=self)
 
     def calculate_well_coords(self):
-        with open('./SAVED_POSITIONS/CALIBRATE_A.txt'), open('./SAVED_POSITIONS/CALIBRATE_B.txt'), open('./SAVED_POSITIONS/CALIBRATE_B.txt') as well_a, well_b, well_c:
-            a_text, b_text, c_text = well_a.read(), well_b.read(), well_c.read()
+        with open('./SAVED_POSITIONS/CALIBRATE_A.txt') as well_a:
+            a_text = well_a.read()
             well_a.close()
+        with open('./SAVED_POSITIONS/CALIBRATE_B.txt') as well_b:
+            b_text = well_b.read()
             well_b.close()
+        with open('./SAVED_POSITIONS/CALIBRATE_C.txt') as well_c:
+            c_text = well_c.read()
             well_c.close()
         print(a_text,b_text,c_text)
-        a_coords,b_coords,c_coords = (float(text.split(',')) for text in (a_text,b_text,c_text))
+
+        a_coords = (a_text.split(','))
+        b_coords = (b_text.split(','))
+        c_coords = (c_text.split(','))
+
+        for list in (a_coords,b_coords,c_coords):
+            for i,coords in enumerate(list):
+                list[i] = float(coords)
 
         #   MULTIIWELL PLATE CALIBRATION
         #     0 1 2 3 4 5 (i)
@@ -314,21 +325,24 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
 
         # calculating difference along i axis using A and B
         ix_diff = (b_coords[0]-a_coords[0])/5
+        iy_diff = (b_coords[1]-a_coords[1])/5
         iz_diff = (b_coords[2]-a_coords[2])/5
+        itilt = (b_coords[3]-a_coords[3])/5
         # calculating difference along j axis using A and C
         jx_diff = (c_coords[0]-a_coords[0])/3
+        jy_diff = (c_coords[1]-a_coords[1])/3
         jz_diff = (c_coords[2]-a_coords[2])/3
-        y_avg = (a_coords[1]+b_coords[1]+c_coords[1])/3 #average out the y diff and tilt diff
-        tilt = (a_coords[3]+b_coords[3]+c_coords[3])/3
+        jtilt = (c_coords[3]-a_coords[3])/3
         for j in range(0,4):
             for i in range(0,6):
-                well_no = j*i +i
-                filename='WELL_'+well_no+'.txt'
+                well_no = j*6 + i
+                print(well_no)
+                filename='WELL_'+str(well_no)+'.txt'
                 # calculating correct coordinates from incremental values
-                correct_x = i*ix_diff + j*jx_diff
-                correct_y = y_avg
-                correct_z = i*iz_diff + j*jz_diff
-                correct_t = tilt
+                correct_x = i*ix_diff + j*jx_diff + a_coords[0]
+                correct_y = i*iy_diff + j*jy_diff + a_coords[1]
+                correct_z = i*iz_diff + j*jz_diff + a_coords[2]
+                correct_t = i*itilt + j*jtilt + a_coords[3]
                 correct_coords = '%s,%s,%s,%s'%(correct_x,correct_y,correct_z,correct_t)
                 with open('./SAVED_POSITIONS/'+filename,'w') as posfile:
                     posfile.write(correct_coords)

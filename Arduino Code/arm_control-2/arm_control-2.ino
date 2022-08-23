@@ -40,7 +40,7 @@ void setup() {
   pwm.begin();
   pwm.setPWMFreq(FREQUENCY);
   for (int x = 0; x < 4; x++){
-    pinMode(pulsePin[x],OUTPUT);
+    pinMode(pumpPin[x],OUTPUT);
     pinMode(directionPin[x],OUTPUT);
     pinMode(enablePin[x],OUTPUT); 
     digitalWrite(enablePin[x],HIGH); 
@@ -170,7 +170,7 @@ void loop(){//then executes input instruction
       //Serial.println("switch " + String(switchNumber) + " " + String(switchPulse));
     }
   } else{
-    for (int x = 0; x < 4 x += 1){
+    for (int x = 0; x < 4; x += 1){
       if (pumpFlag[x] == true){
         movePump(x);
         pumpFlag[x] = false;
@@ -210,7 +210,7 @@ void movePump(int pump){
   } else{
     digitalWrite(directionPin, HIGH);
   }
-  for(i =0; i<steps[pump];i++){
+  for(int i =0; i<steps[pump];i++){
     digitalWrite(pumpPin[pump],HIGH);
     delayMicroseconds(600);
     digitalWrite(pumpPin[pump],LOW);//for pulse duration>4μs

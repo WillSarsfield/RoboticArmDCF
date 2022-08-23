@@ -1,0 +1,3 @@
+takepose(CALIBRATE_A);
+takepose(CALIBRATE_B);
+takepose(CALIBRATE_C);

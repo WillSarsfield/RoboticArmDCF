@@ -22,12 +22,13 @@ class CommandInterpreter:
         
 
     def get_encoded_command(self,command=None,cmd_type=''):
-        signed_float = re.compile('(-?\d+\.?\d{0,2})')
+        signed_float = re.compile('(-?\d+\.?\d*)')
         paramList=re.findall(signed_float,command)
         encoded_val=[]
         # ...-ve        |0      | +ve...
         # do cmd        | move cmd              | bit cmd | pump cmd | spin cmd             |
         if cmd_type=='move':
+            print('move ', paramList)
             servo_num,angle=int(paramList[0]),float(paramList[1]) # gets all numbers from the move command
             encoded_val= servo_num*(self.max_angle + 1)+angle      # maps (RxR)->R i.e. there is a unique positive encoded_val for each combination of servo&angle
             encoded_val+=1                                  # need to reserve zero for a separate commmand 
@@ -56,7 +57,6 @@ class CommandInterpreter:
             self.x_ofst,self.y_ofst,self.z_ofst=[int(paramList[i]) for i in (0,1,2)]
 
         elif cmd_type=='moveall':
-            print(paramList)
             x,y,z=[float(paramList[i]) for i in (0,1,2)]
             x,y,z=x+self.x_ofst,y+self.y_ofst,z+self.z_ofst
             print(paramList)
@@ -65,6 +65,7 @@ class CommandInterpreter:
             angles=self.get_angle_from_coords(x, y, z, tilt=eff_ang)
             decomp_cmds=[]
             for i in range(len(angles)):
+                print(i, ' ', angles[3-i])
                 decomp_cmds.append(self.get_encoded_command(command='move(%s,%s)'%(i,angles[3-i]),cmd_type='move'))
             
             decomp_cmds.append(self.get_encoded_command(command='do(0)',cmd_type='do'))
@@ -133,9 +134,6 @@ class CommandInterpreter:
         angle = []
         tilt = float(tilt)
         length = [10.5, 9.0, 11.7 ,9.3]
-        x = x + length[3]*(math.sin((tilt/180)*math.pi))
-        y = y - length[3]*(math.cos((tilt/180)*math.pi))
-        print(x,y)
         if x == 0 and z != 0:
             angle.append(90)
             if z<=0:
@@ -156,6 +154,8 @@ class CommandInterpreter:
                 x = -(math.sqrt(x**2 + z**2))
             elif x >= 0 and z >= 0:
                 x = math.sqrt(x**2 + z**2)
+        x = x + length[3]*(math.sin((tilt/180)*math.pi))
+        y = y - length[3]*(math.cos((tilt/180)*math.pi))
         x2 = (-(length[2]) * (math.cos((tilt*math.pi)/180))) + x
         y2 = (-(length[2]) * (math.sin((tilt*math.pi)/180))) + y
         d = math.sqrt((x2**2) + (y2**2))
@@ -177,7 +177,8 @@ class CommandInterpreter:
             angle[3] -= 270
         for i in range(4):
             if angle[i] > 180 or angle[i] < 0:
-                return None   
+                return None
+        print(angle)   
         return angle
 
     def get_steps_from_vol(self,vol):
