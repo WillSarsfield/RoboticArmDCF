@@ -28,13 +28,24 @@ float frame = 0.;
 bool setFlag = true;
 bool valid = true;
 int bitPin = 2;
+int pumpPin[4] = {12,12,12,12};
+int directionPin[4] = {11,11,11,11};
+int enablePin[4] = {10,10,10,10};
+bool pumpFlag[4] = {false, false, false, false};
+int steps[4] = {0,0,0,0};
 
 void setup() {
   Serial.begin(115200);
   Serial.setTimeout(.1005);
   pwm.begin();
   pwm.setPWMFreq(FREQUENCY);
-  pinMode(bitPin, OUTPUT);
+  for (int x = 0; x < 4; x++){
+    pinMode(pulsePin[x],OUTPUT);
+    pinMode(directionPin[x],OUTPUT);
+    pinMode(enablePin[x],OUTPUT); 
+    digitalWrite(enablePin[x],HIGH); 
+  }
+  pinMode(bitPin, OUTPUT); 
   calibrate();
 }
 
@@ -150,15 +161,21 @@ void loop(){//then executes input instruction
       finishAng[motor] = angle;
     } else if ((input >= ((NUMBER_OF_MOTORS)*181)+1) && (input <= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)))){
       int pump = getPump(input);
-      int steps = getSteps(pump,input);
+      steps[pump] = getSteps(pump,input);
+      pumpFlag[pump] = true;
       //Serial.println("pump " + String(pump) + " " + String(steps));
     } else if (((input >= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181))+1)) && (input <= (((((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1))+NUMBER_OF_SWITCHES*2)+1)){
       int switchNumber = getSwitch(input);
       int switchPulse = getSwitchPulse(switchNumber, input);
       //Serial.println("switch " + String(switchNumber) + " " + String(switchPulse));
-      digitalWrite(bitPin, switchPulse);
     }
   } else{
+    for (int x = 0; x < 4 x += 1){
+      if (pumpFlag[x] == true){
+        movePump(x);
+        pumpFlag[x] = false;
+      }
+    }
     frame += 0.25;
     for (int x = 0; x < 5; x += 1){    
       if (frame < 61 && valid != false){//within frames 0 to 90
@@ -166,7 +183,7 @@ void loop(){//then executes input instruction
         if (checkBounds() != false){
           moveMotor(ang[x], motor[x]);
         } else {
-          //Serial.println("out of bounds");
+          Serial.println("out of bounds");
           valid = false;
           for (int y = 0; y < 5; y += 1){
             ang[y] = map(frame - 1, 0, 60, startAng[y], finishAng[y]);
@@ -185,6 +202,21 @@ void loop(){//then executes input instruction
        }
     }
   }
+}
+
+void movePump(int pump){
+  if (steps[pump] < 0){
+    digitalWrite(directionPin, LOW);
+  } else{
+    digitalWrite(directionPin, HIGH);
+  }
+  for(i =0; i<steps[pump];i++){
+    digitalWrite(pumpPin[pump],HIGH);
+    delayMicroseconds(600);
+    digitalWrite(pumpPin[pump],LOW);//for pulse duration>4μs
+    delayMicroseconds(600);
+    delay(10);
+ }
 }
 
 void moveMotor(float angle, int motorOut){//takes the motor and angle specified and physically moves the corresponding servo
