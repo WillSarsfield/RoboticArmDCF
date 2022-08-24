@@ -427,7 +427,7 @@ class Compiler:
     def is_valid(self,command_list):
         cmd_regex={}
         #FUNDAMENTAL COMMANDS    
-        cmd_regex['move']=re.compile('^move\([0-3],(0\d{2}(\.\d{0,2})?|1([0-7]\d\.?\d+|80))\)$')          #matches 'MOVE(#,###)' as servo (unsigned), angle (unsigned)
+        cmd_regex['move']=re.compile('^move\([0-4],(0\d{2}(\.\d{0,2})?|1([0-7]\d\.?\d+|80))\)$')          #matches 'MOVE(#,###)' as servo (unsigned), angle (unsigned)
         cmd_regex['do']=re.compile('^do\(\d+\)$')                                       #matches 'DO(#)' (unsigned)
         cmd_regex['bit']=re.compile('^bit\(\d+,(high|low|1|0)\)$')                      #matches 'BIT(#,HIGH/LOW)' or 'BIT(#,1/0)' as pin (unsigned), pin_val (unsigned)
         cmd_regex['pump']=re.compile('^pump\(\d+,-?\d+\)$')                             #matches 'PUMP(#,#)' as pump_num (unsigned), num_steps (signed)
@@ -437,14 +437,14 @@ class Compiler:
 
         #HIGH LEVEL COMMANDS
         cmd_regex['offset']=re.compile('^offset\(-?\d+,-?\d+,-?\d+\)$')                 #matches 'OFFSET(#,#,#)' as x,y,z (signed) - need to add angle?
-        cmd_regex['moveall']=re.compile('^moveall\((-?\d+\.?\d{0,2}),(-?\d+\.?\d{0,2}),(-?\d+\.?\d{0,2}),(-?\d+\.?\d{0,2})\)$')           #matches 'MOVEALL(#,#,#,#)' as x,y,z (signed), tilt(unsigned)
-        cmd_regex['shift']=re.compile('^shift\((-?\d+\.?\d{0,2}),(-?\d+\.?\d{0,2}),(-?\d+\.?\d{0,2}),(-?\d+\.?\d{0,2})\)$')             #matches 'SHIFT(#,#,#,#)' as x,y,z,tilt (signed)
+        cmd_regex['moveall']=re.compile('^moveall\((-?\d+\.?\d),(-?\d+\.?\d),(-?\d+\.?\d),(-?\d+\.?\d)\)$')           #matches 'MOVEALL(#,#,#,#)' as x,y,z (signed), tilt(unsigned)
+        cmd_regex['shift']=re.compile('^shift\((-?\d+\.?\d),(-?\d+\.?\d),(-?\d+\.?\d),(-?\d+\.?\d)\)$')             #matches 'SHIFT(#,#,#,#)' as x,y,z,tilt (signed)
         cmd_regex['dispense']=re.compile('^dispense\(\d+,\d+\)$')                       #matches 'DISPENSE(#,#)' as pump_num (unsigned), sample_vol (unsigned)
         cmd_regex['learnas']=re.compile('^learnas\(.{3,}\)$')                    #matches 'LEARNAS([string][3+])'
         cmd_regex['takepose']=re.compile('^takepose\(.{3,}\)$')                  #matches 'TAKEPOSE([string][3+])'
         
         #FUNCTION-LIKE COMMANDS
-        cmd_regex['repeat']=re.compile('^repeat\([0-9]+,.+\)$')                         #matches 'REPEAT(#,[string])' where string should be an accepted command
+        cmd_regex['repeat']=re.compile('^repeat\(\d+,.+\)$')                         #matches 'REPEAT(#,[string])' where string should be an accepted command
         cmd_regex['macro']=re.compile('^macro\(.+\)$')                                  #matches 'MACRO(#,[string])' where string should be an existing macro file
 
         match = False
