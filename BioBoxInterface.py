@@ -304,7 +304,6 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
         with open('./SAVED_POSITIONS/CALIBRATE_C.txt') as well_c:
             c_text = well_c.read()
             well_c.close()
-        print(a_text,b_text,c_text)
 
         a_coords = (a_text.split(','))
         b_coords = (b_text.split(','))
@@ -336,7 +335,6 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
         for j in range(0,4):
             for i in range(0,6):
                 well_no = j*6 + i
-                print(well_no)
                 filename='WELL_'+str(well_no)+'.txt'
                 # calculating correct coordinates from incremental values
                 correct_x = i*ix_diff + j*jx_diff + a_coords[0]
@@ -477,10 +475,8 @@ class Compiler:
                         try:
                             with open('./SAVED_POSITIONS/'+filename.upper()+'.txt','r') as pos_file:
                                 pos_text = pos_file.read()
-                                print(pos_text)
                                 pos_file.close()
                             if re.match('^(-?\d+\.?\d+,){3}-?\d+\.?\d+$',str(pos_text)):
-                                print('match')
                                 match=True
                         except Exception as e:
                             messagebox.showerror(parent=self.parent,title='Compiler',message='Position read '+filename.upper()+' error: '+str(e)+'\nSee \'README.txt\' for help')
