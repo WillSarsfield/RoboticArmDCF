@@ -1,4 +1,3 @@
-from ast import Sub
 import re
 import math
 
@@ -28,7 +27,6 @@ class CommandInterpreter:
         # ...-ve        |0      | +ve...
         # do cmd        | move cmd              | bit cmd | pump cmd | spin cmd             |
         if cmd_type=='move':
-            print('move ', paramList)
             servo_num,angle=int(paramList[0]),float(paramList[1]) # gets all numbers from the move command
             encoded_val= servo_num*(self.max_angle + 1)+angle      # maps (RxR)->R i.e. there is a unique positive encoded_val for each combination of servo&angle
             encoded_val+=1                                  # need to reserve zero for a separate commmand 
@@ -59,13 +57,11 @@ class CommandInterpreter:
         elif cmd_type=='moveall':
             x,y,z=[float(paramList[i]) for i in (0,1,2)]
             x,y,z=x+self.x_ofst,y+self.y_ofst,z+self.z_ofst
-            print(paramList)
             eff_ang=paramList[3]
             self.x_pos,self.y_pos,self.z_pos,self.tilt=x,y,z,eff_ang
             angles=self.get_angle_from_coords(x, y, z, tilt=eff_ang)
             decomp_cmds=[]
             for i in range(len(angles)):
-                print(i, ' ', angles[3-i])
                 decomp_cmds.append(self.get_encoded_command(command='move(%s,%s)'%(i,angles[3-i]),cmd_type='move'))
             
             decomp_cmds.append(self.get_encoded_command(command='do(0)',cmd_type='do'))
@@ -99,17 +95,13 @@ class CommandInterpreter:
         elif cmd_type=='repeat':
             args = command[7:-1].split(',',1) #splits at the first & second comma
             sub_type=args[-1].split('(',1)[0]
-            print('subcmd',args,sub_type)
             encoded_val=[]
             encoded_cmd=self.get_encoded_command(command=args[-1],cmd_type=sub_type) #get encoded value(s) of desired repeated command
             if type(encoded_cmd)==type(0):
                 encoded_val.append(encoded_cmd)
             elif type(encoded_cmd)==type([]):
                 encoded_val.extend(encoded_cmd)
-            print(encoded_val)
-            print(type(args[0]),args[0])
             encoded_val=encoded_val*int(args[0]) #repeats commands specified number of times
-            print(encoded_val)
 
         elif cmd_type=='macro':
             filename=command[6:-1]
@@ -124,7 +116,6 @@ class CommandInterpreter:
                 for i, cmd in enumerate(sub_cmd_list):
                     encoded_val.append(cmd)
         else:
-            print(command,cmd_type)
             print('no commands recognised')
 
         # print(encoded_val)
@@ -177,8 +168,7 @@ class CommandInterpreter:
             angle[3] -= 270
         for i in range(4):
             if angle[i] > 180 or angle[i] < 0:
-                return None
-        print(angle)   
+                return None   
         return angle
 
     def get_steps_from_vol(self,vol):
