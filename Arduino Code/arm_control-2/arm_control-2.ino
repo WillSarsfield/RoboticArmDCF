@@ -28,9 +28,9 @@ float frame = 0.;
 bool setFlag = true;
 bool valid = true;
 int bitPin = 2;
-int pumpPin[4] = {12,12,12,12};
-int directionPin[4] = {11,11,11,11};
-int enablePin[4] = {10,10,10,10};
+int pumpPin[4] = {23,12,12,12};
+int directionPin[4] = {24,11,11,11};
+int enablePin[4] = {22,10,10,10};
 bool pumpFlag[4] = {false, false, false, false};
 int steps[4] = {0,0,0,0};
 
@@ -51,7 +51,7 @@ void setup() {
 
 void calibrate(){//sets the physical motors to the correct start position when called
   for (int x  = 180; x >= 0; x -= 2){
-    for (int y = 0; y < 5; y += 1){
+    for (int y = 0; y < 4; y += 1){
       ang[y] = x ;
       delay(5);
       moveMotor(x ,motor[y]);
@@ -115,12 +115,12 @@ int getMotor(float input){//takes serial input and returns the corresponding mot
 }
 
 int getPump(int input){
-  int pumpNumber = floor((input-(((NUMBER_OF_MOTORS)*181)+1))/3001.);
+  int pumpNumber = floor((input-(((NUMBER_OF_MOTORS)*181)-1))/3001.);
   return pumpNumber;
 }
 
 int getSteps(int pump, float input){//takes serial input and the motor calculated and returns the corresponding angle
-  int steps = ((input-((NUMBER_OF_MOTORS)*181))-(pump*3001.)) - 1501.;
+  int steps = ((input-((NUMBER_OF_MOTORS)*181)+1)-(pump*3001.)) - 1500.;
   return steps;
 }
 
@@ -155,23 +155,26 @@ void loop(){//then executes input instruction
     //Serial.println(input);
     if (input <= (-1.)){
       setFlag = false;
-    } else if (input >=0 && input <= ((NUMBER_OF_MOTORS)*181)){
+    } else if (input >=0 && input <= ((NUMBER_OF_MOTORS)*181)-1){
       int motor = getMotor(input);
       float angle = getAngle(motor,input);
+      Serial.println("motor " + String(motor) + " " + String(angle));
       finishAng[motor] = angle;
-    } else if ((input >= ((NUMBER_OF_MOTORS)*181)+1) && (input <= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)))){
+    } else if ((input >= ((NUMBER_OF_MOTORS)*181)) && (input <= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)))){
+      input -= 1;
       int pump = getPump(input);
       steps[pump] = getSteps(pump,input);
       pumpFlag[pump] = true;
-      //Serial.println("pump " + String(pump) + " " + String(steps));
+      Serial.println("pump " + String(pump) + " " + String(steps[pump]));
     } else if (((input >= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181))+1)) && (input <= (((((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1))+NUMBER_OF_SWITCHES*2)+1)){
       int switchNumber = getSwitch(input);
       int switchPulse = getSwitchPulse(switchNumber, input);
-      //Serial.println("switch " + String(switchNumber) + " " + String(switchPulse));
+      Serial.println("switch " + String(switchNumber) + " " + String(switchPulse));
     }
   } else{
     for (int x = 0; x < 4; x += 1){
       if (pumpFlag[x] == true){
+        Serial.println("done");
         movePump(x);
         pumpFlag[x] = false;
       }
@@ -206,17 +209,21 @@ void loop(){//then executes input instruction
 
 void movePump(int pump){
   if (steps[pump] < 0){
-    digitalWrite(directionPin, LOW);
+    digitalWrite(directionPin[pump], LOW);
+    Serial.println("down");
   } else{
-    digitalWrite(directionPin, HIGH);
+    digitalWrite(directionPin[pump], HIGH);
+    Serial.println("up");
   }
+  steps[pump] = abs(steps[pump]);
   for(int i =0; i<steps[pump];i++){
+    Serial.println(i+1);
     digitalWrite(pumpPin[pump],HIGH);
     delayMicroseconds(600);
     digitalWrite(pumpPin[pump],LOW);//for pulse duration>4μs
     delayMicroseconds(600);
     delay(10);
- }
+  }
 }
 
 void moveMotor(float angle, int motorOut){//takes the motor and angle specified and physically moves the corresponding servo
