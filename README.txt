@@ -95,7 +95,7 @@ Commands must be separated by a semicolon.
 -Format-
 move(<servo_no>,<angle>);
 -Description-
-Queues a servo to move to a desired angle in degrees, represented by # and ### respectively.
+Queues a servo to move to a desired angle in degrees.
 -Constraints-
 Argument one accepts one parameter with range 0-4, which selects the desired servo.
 Argument two accepts one three-digit parameter with range 000-180, which selects the desired angle.
@@ -106,7 +106,7 @@ Any group of move commands must be followed by a 'do()' command.
 -Format-
 do(<delay>);
 -Description-
-Executes all queued move commands simultaneously, followed by a time delay represented by #.
+Executes all queued move commands simultaneously, followed by a time delay.
 -Constraints-
 do() accepts one integer parameter with range 0+, which selects the delay time in milliseconds before the next command is executed.
 Note a minimum delay time is added to this value (~4 seconds) to allow the arm to move into its requested position before reading the next command.

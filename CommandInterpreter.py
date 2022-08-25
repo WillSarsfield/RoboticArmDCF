@@ -25,7 +25,7 @@ class CommandInterpreter:
         paramList=re.findall(signed_float,command)
         encoded_val=[]
         # ...-ve        |0      | +ve...
-        # do cmd        | move cmd              | bit cmd | pump cmd | spin cmd             |
+        # do cmd        | move cmd              | pump cmd | bit cmd | spin cmd             |
         if cmd_type=='move':
             servo_num,angle=int(paramList[0]),float(paramList[1]) # gets all numbers from the move command
             encoded_val= servo_num*(self.max_angle + 1)+angle      # maps (RxR)->R i.e. there is a unique positive encoded_val for each combination of servo&angle
