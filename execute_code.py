@@ -8,7 +8,6 @@ class execute_code:
         self.arduino=arduino
 
     def start(self,cmd_list=None):
-        print(cmd_list)
         for cmd in cmd_list:
             print(cmd)
             if cmd=='':

@@ -349,7 +349,7 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
     def create_plan(self):
         instruction_list = []
         expr_plan_df= pd.read_excel(r'./dataset.xlsx')
-        accepted_input = re.compile('^(\d+) (\d+) (\d+)$')
+        accepted_input = re.compile('^(\d+) (-?\d+) (\d+)$')
         self.clear_text()
         for i, item in enumerate(expr_plan_df['A']):
             for col in expr_plan_df:
@@ -366,6 +366,7 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
         for i, instruction in enumerate(instruction_list):
             self.insert_text('TAKEPOSE(COLLECT_SAMPLE);\n')
             self.insert_text('PUMP(%s,%s);\n'%(instruction[0],instruction[1]))
+            self.insert_text('DO(0);\n')
             self.insert_text('TAKEPOSE(IRRADIATE);\n')
             self.insert_text('IRRD(%s);\n'%(instruction[2]))
             self.insert_text('TAKEPOSE(WELL_%s);\n\n'%(i))
@@ -498,7 +499,7 @@ class Compiler:
                 cmd_type=command.split('(',1)[0]
                 enc_cmd = self.get_raw(command,cmd_type=cmd_type)
                 if type(enc_cmd)==int:
-                    encoded_cmds+=str(enc_cmd)
+                    encoded_cmds+=str(enc_cmd)+'\n'
                 elif type(enc_cmd)==list:
                     for cmd in enc_cmd:
                         encoded_cmds += str(cmd)+'\n'

@@ -53,7 +53,7 @@ void calibrate(){//sets the physical motors to the correct start position when c
   for (int x  = 180; x >= 0; x -= 2){
     for (int y = 0; y < 4; y += 1){
       ang[y] = x ;
-      delay(5);
+      delay(10);
       moveMotor(x ,motor[y]);
     }
   }
@@ -158,23 +158,23 @@ void loop(){//then executes input instruction
     } else if (input >=0 && input <= ((NUMBER_OF_MOTORS)*181)-1){
       int motor = getMotor(input);
       float angle = getAngle(motor,input);
-      Serial.println("motor " + String(motor) + " " + String(angle));
+      //Serial.println("motor " + String(motor) + " " + String(angle));
       finishAng[motor] = angle;
     } else if ((input >= ((NUMBER_OF_MOTORS)*181)) && (input <= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)))){
       input -= 1;
       int pump = getPump(input);
       steps[pump] = getSteps(pump,input);
       pumpFlag[pump] = true;
-      Serial.println("pump " + String(pump) + " " + String(steps[pump]));
+      //Serial.println("pump " + String(pump) + " " + String(steps[pump]));
     } else if (((input >= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181))+1)) && (input <= (((((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1))+NUMBER_OF_SWITCHES*2)+1)){
       int switchNumber = getSwitch(input);
       int switchPulse = getSwitchPulse(switchNumber, input);
-      Serial.println("switch " + String(switchNumber) + " " + String(switchPulse));
+      //Serial.println("switch " + String(switchNumber) + " " + String(switchPulse));
     }
   } else{
     for (int x = 0; x < 4; x += 1){
       if (pumpFlag[x] == true){
-        Serial.println("done");
+        //Serial.println("done");
         movePump(x);
         pumpFlag[x] = false;
       }
@@ -210,14 +210,14 @@ void loop(){//then executes input instruction
 void movePump(int pump){
   if (steps[pump] < 0){
     digitalWrite(directionPin[pump], LOW);
-    Serial.println("down");
+    //Serial.println("down");
   } else{
     digitalWrite(directionPin[pump], HIGH);
-    Serial.println("up");
+    //Serial.println("up");
   }
   steps[pump] = abs(steps[pump]);
   for(int i =0; i<steps[pump];i++){
-    Serial.println(i+1);
+    //Serial.println(i+1);
     digitalWrite(pumpPin[pump],HIGH);
     delayMicroseconds(600);
     digitalWrite(pumpPin[pump],LOW);//for pulse duration>4μs
