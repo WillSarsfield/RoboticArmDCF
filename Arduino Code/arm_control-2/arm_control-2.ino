@@ -53,7 +53,7 @@ void calibrate(){//sets the physical motors to the correct start position when c
   for (int x  = 180; x >= 0; x -= 2){
     for (int y = 0; y < 4; y += 1){
       ang[y] = x ;
-      delay(10);
+      delay(5);
       moveMotor(x ,motor[y]);
     }
   }
