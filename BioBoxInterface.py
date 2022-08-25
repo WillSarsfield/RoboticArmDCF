@@ -39,7 +39,7 @@ class BioBoxInterface(Tk):
 
         self.custom_style = 'awdark'            #tkinter theme downloadable from https://sourceforge.net/projects/tcl-awthemes
         self.geometry('460x300')#window start size
-        self.minsize(460,300)
+        self.minsize(600,300)
         self.maxsize(600,1000)
         self.configure(background='#323232')
         self.iconbitmap('./Arm_Icon.ico')
