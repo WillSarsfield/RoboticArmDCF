@@ -348,7 +348,7 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
 
     def create_plan(self):
         instruction_list = []
-        expr_plan_df= pd.read_excel(r'./dataset.xlsx')
+        expr_plan_df= pd.read_excel(r'./Experiment_Plan.xlsx')
         accepted_input = re.compile('^(\d+) (-?\d+) (\d+)$')
         self.clear_text()
         for i, item in enumerate(expr_plan_df['A']):
