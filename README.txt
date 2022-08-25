@@ -1,17 +1,31 @@
 ----ROBOT ARM INTERFACE INSTRUCTIONS----
-This application is created for assistance in controlling the robot arm as part of the Biobox project.
+This application is created for assistance in controlling the BioBox hardware.
+
 --FEATURES--
--Allows opening, editing and saving of text files by using the 'Open File' and 'Save File' buttons
-
--Clear text by using the 'Clear' button
-
--Built-in compiler with simple programming language
-
--Compile & execute program files via arduino serial communication using the 'Execute' button
+- BioBox programming interface with built-in compiler and executer
+- Control arduino with serial communication
+- Quickly generate and edit full experiment programs from the experiment plan spreadsheet
+- Produce high-level programs with the aim to automate the movement of the robot arm and syringe pumps
+- Use low-level commands for direct control over each servo within the robot arm and other equipment in BioBox
+- Easily control the robot arm's end effector position and angle through integrated use of inverse kinematics commands
+- Save multiple arm positions to the program's files for use in later programs
+- Modify saved positions and all dependent files will update accordingly
+- Generate all multiwell plate coordinates from three calibrated positions
+- Iterate over commands using the built-in 'repeat' command
+- Execute other saved program files from within your program by referencing them through the 'macro' command
 
 --INSTRUCTIONS--
-Upon creating or opening a program file you can check the syntax is correct by using the 'Compile' button
-(See Arm Programming Help).
+
+Upon opening, the software enters the 'Presets' page which allows you to enter and save positions for the robot arm.
+The inputs correspond to x,y,z coordinates followed by an end effector tilt angle. Using the 'Move' button can be used to move the robot to the position specified by the entry boxes listed above it.
+'Learn As' will prompt the user to save the coordinates and angle to a position file under the SAVED_POSITIONS directory.
+'Reset' moves the robot to its original position and resets the given parameters back to their original values.
+The keys either side of each entry will shift each coordinate by 1 unit. Note that these are quite slow so are more useful for calibration rather than defining new positions.
+
+There is a known issue with this page in that when using the shift keys, the robot may attempt to move out of bounds. This may cause the displayed coordinates to be inaccurate. The current workaround is to directly input coordinates and use the 'move' button to avoid going out of bounds.
+
+Opening the second page will show the text editor, where you can write programs for BioBox.
+Upon creating or opening a program file you can check the syntax is correct by using the 'Compile' button (See Arm Programming Help).
 If the syntax is recognised, the compiler will convert the program into serial-ready format and save to 'filename_cmd.txt'.
 Do not try to compile or execute this new file as the compiler will not recognise it.
 
@@ -19,6 +33,14 @@ Once you are happy with your program you can execute your file. This will first 
 to the arduino via serial which will then interpret each command and execute it.
 During this process a popup will show asking for you to wait until the arm has fully calibrated, which should take a few seconds.
 Pressing 'cancel' will cancel the start of the execution of the program.
+
+The 'Create Plan' button will pull data from the excel 'Experiment Plan' spreadsheet and generate an experiment program template.
+The excel spreadsheet mimics the layout of the multiwell plate. Each cell should be formatted in the form '<pump_num> <num_steps> <irradiation_time>' else this will not work.
+
+There is a known functionality issue with this editor; in order to correctly compile and execute the file you are working on, you must have your current file's filepath stored in the software memory.
+There are two ways to do this: open a file to edit, or save the current file. Most of the time this should not be a problem but occasionally the user may not have performed either of these actions in which case the system will attempt to compile the last saved or opened file which may not be the same file currently opened in the editor.
+
+The third page is the help page, which displays this README file.
 
 --BUGS--
 Most bugs occur when the arduino has not been set up properly.
@@ -65,6 +87,10 @@ macro(<filename>);
 
 More details about each command are given below.
 
+--SYNTAX--
+The syntax ignores whitespace and is not case sensitive. I recommend spacing out the commands with whitespace to make them more readable.
+Commands must be separated by a semicolon.
+
 --MOVE COMMAND--
 -Format-
 move(<servo_no>,<angle>);
@@ -74,6 +100,7 @@ Queues a servo to move to a desired angle in degrees, represented by # and ### r
 Argument one accepts one parameter with range 0-4, which selects the desired servo.
 Argument two accepts one three-digit parameter with range 000-180, which selects the desired angle.
 Note angles must be given in three digit form e.g. an angle of 10 degrees would be represented as 010.
+Any group of move commands must be followed by a 'do()' command.
 
 --DO COMMAND--
 -Format-
@@ -108,6 +135,7 @@ Argument one accepts a positive integer value which selects the pump.
 Argument two accepts a signed integer value which selects the number of steps the pump will move.
 If argument two is negative the pump will move in the opposite direction.
 i.e. 'pump(2,300);' will move pump 2 a total of 300 steps.
+Must be followed by a 'do()' command.
 
 --SPIN COMMAND--
 -Format-
@@ -205,9 +233,6 @@ macro() accepts one string parameter which must match the prefix of a file in ./
 All commands within this file must also accepted by syntax in order for execution to begin.
 i.e. 'macro(TEST_MACRO);' would execute the file 'TEST_MACRO.txt'
 
---SYNTAX--
-The syntax ignores whitespace and is not case sensitive. I recommend spacing out the commands with whitespace to make them more readable.
-Commands must be separated by a semicolon.
-
-
-If you are still having issues feel free to email me at joseph.percival-2@student.manchester.ac.uk.
+If you are still having issues feel free to email us:
+Hardware/arduino code issues :  william.sarsfield@student.manchester.ac.uk
+Software issues :               joseph.percival-2@student.manchester.ac.uk
