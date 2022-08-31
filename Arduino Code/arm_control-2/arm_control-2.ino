@@ -27,7 +27,10 @@ float finishAng[5] = {0.,0.,0.,0.,0.};
 float frame = 0.;
 bool setFlag = true;
 bool valid = true;
-int bitPin = 2;
+int spinPin = 6;
+int spinSpeed = 0;
+int bitPin[2] = {2,2};
+int bitPinVal[2] {0,0};
 int pumpPin[4] = {23,12,12,12};
 int directionPin[4] = {24,11,11,11};
 int enablePin[4] = {22,10,10,10};
@@ -43,6 +46,7 @@ void setup() {
     pinMode(pumpPin[x],OUTPUT);
     pinMode(directionPin[x],OUTPUT);
     pinMode(enablePin[x],OUTPUT); 
+    pinMode(spinPin, OUTPUT);
     digitalWrite(enablePin[x],HIGH); 
   }
   pinMode(bitPin, OUTPUT); 
@@ -158,21 +162,32 @@ void loop(){//then executes input instruction
     } else if (input >=0 && input <= ((NUMBER_OF_MOTORS)*181)-1){
       int motor = getMotor(input);
       float angle = getAngle(motor,input);
-      //Serial.println("motor " + String(motor) + " " + String(angle));
+      Serial.println("motor " + String(motor) + " " + String(angle));
       finishAng[motor] = angle;
-    } else if ((input >= ((NUMBER_OF_MOTORS)*181)) && (input <= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)))){
+    } else if ((input >= ((NUMBER_OF_MOTORS)*181)) && (input <= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)-1))){
       input -= 1;
       int pump = getPump(input);
       steps[pump] = getSteps(pump,input);
       pumpFlag[pump] = true;
-      //Serial.println("pump " + String(pump) + " " + String(steps[pump]));
-    } else if (((input >= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181))+1)) && (input <= (((((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)+1))+NUMBER_OF_SWITCHES*2)+1)){
+      Serial.println("pump " + String(pump) + " " + String(steps[pump]));
+    } else if (((input >= (((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)))) && (input <= (((((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)))+NUMBER_OF_SWITCHES*2-1))){
+      input += 1;
       int switchNumber = getSwitch(input);
-      int switchPulse = getSwitchPulse(switchNumber, input);
-      //Serial.println("switch " + String(switchNumber) + " " + String(switchPulse));
+      bitPinVal[switchNumber] = getSwitchPulse(switchNumber, input);
+      Serial.println("switch " + String(switchNumber) + " " + String(bitPinVal[switchNumber]));
+    }else if ((input <= ((((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181))+NUMBER_OF_SWITCHES*2)) && (input >= ((((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181))+NUMBER_OF_SWITCHES*2)+256)){
+      Serial.print("here");
+      analogWrite(spinPin, 255);
     }
   } else{
-    for (int x = 0; x < 4; x += 1){
+    for (int x = 0; x < NUMBER_OF_SWITCHES; x += 1){
+      if (bitPinVal[x] == 1){
+        digitalWrite(bitPin[x], HIGH);
+      } else{
+        digitalWrite(bitPin[x], LOW); 
+      }
+    }
+    for (int x = 0; x < NUMBER_OF_PUMPS; x += 1){
       if (pumpFlag[x] == true){
         //Serial.println("done");
         movePump(x);
