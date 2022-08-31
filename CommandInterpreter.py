@@ -17,7 +17,9 @@ class CommandInterpreter:
         self.pump_ofst = self.num_servos*(self.max_angle+1)
         self.num_pumps = 3
         self.max_steps = 3000
+        self.num_switches = 2
         self.bit_ofst = self.num_pumps*(self.max_steps+1)+self.pump_ofst
+        self.spin_ofst = self.bit_ofst + self.num_switches*2
         
 
     def get_encoded_command(self,command=None,cmd_type=''):
@@ -46,7 +48,7 @@ class CommandInterpreter:
             steps += 1500 #needs to convert to number in range -1500 -> 1500 to 0 -> 3000
             encoded_val = self.pump_ofst + pump_num*(self.max_steps+1) + steps
         elif cmd_type=='spin':
-            speed=int(paramList[0])
+            encoded_val = self.spin_ofst + int(paramList[0])
         elif cmd_type=='irrd':
             pass
         # elif cmd_type=='mckirrd':
