@@ -1,0 +1,3 @@
+takepose(COLLECT_SAMPLE);
+pump(0,-100);
+takepose(PRE_COLLECT_SAMPLE);

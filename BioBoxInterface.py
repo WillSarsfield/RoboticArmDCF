@@ -377,6 +377,7 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
             self.insert_text('SPIN(0);\n')
             self.insert_text('DO(0);\n')
             self.insert_text('TAKEPOSE(INTERMEDIATE);\n')
+            self.insert_text('TAKEPOSE(PRE_POUR);\n')
             self.insert_text('TAKEPOSE(WELL_%s);\n\n'%(i))
         self.insert_text('MACRO(POST_EXPERIMENT);\n')
 
