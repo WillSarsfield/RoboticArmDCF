@@ -11,8 +11,8 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define NUMBER_OF_SWITCHES 2
 #define length1 10.5
 #define length2 9
-#define length3 11.7
-#define length4 9.3
+#define length3 10.3
+#define length4 8
 #define lowerX -30
 #define upperX 30
 #define lowerY -30
@@ -175,9 +175,11 @@ void loop(){//then executes input instruction
       int switchNumber = getSwitch(input);
       bitPinVal[switchNumber] = getSwitchPulse(switchNumber, input);
       Serial.println("switch " + String(switchNumber) + " " + String(bitPinVal[switchNumber]));
-    }else if ((input <= ((((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181))+NUMBER_OF_SWITCHES*2)) && (input >= ((((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181))+NUMBER_OF_SWITCHES*2)+256)){
-      Serial.print("here");
-      analogWrite(spinPin, 255);
+    }else if (input >= (((((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)))+NUMBER_OF_SWITCHES*2-1)){
+      input -= 7;
+      Serial.println(input - ((((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)))+NUMBER_OF_SWITCHES*2-1);
+      int spinSpeed = input - ((((NUMBER_OF_PUMPS)*3001)+((NUMBER_OF_MOTORS)*181)))+NUMBER_OF_SWITCHES*2-1;
+      analogWrite(spinPin, spinSpeed); 
     }
   } else{
     for (int x = 0; x < NUMBER_OF_SWITCHES; x += 1){

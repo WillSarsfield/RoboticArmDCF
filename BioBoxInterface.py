@@ -17,7 +17,7 @@ class BioBoxInterface(Tk):
     def __init__(self, *args, **kwargs):
         #-----!!!need to choose port based on connection!!!-------
         #self.arduinoPort = '/dev/cu.usbmodem1101' #for mac - check bottom of arduino editor and modify 
-        self.arduinoPort = 'COM7' #for windows - may be a different number
+        self.arduinoPort = 'COM9' #for windows - may be a different number
         #---------------------------------------------------------
 
         self.current_filename='./COMMANDS/Untitled.txt' #relevant to execute_text, compile_text, open_file, save_file methods
@@ -364,11 +364,19 @@ class TextEditor(Frame): #code editor page for manually programming robot arm or
         
         self.insert_text('MACRO(PRE_EXPERIMENT);\n\n')
         for i, instruction in enumerate(instruction_list):
+            self.insert_text('TAKEPOSE(INTERMEDIATE);\n')
+            self.insert_text('TAKEPOSE(PRE_COLLECT_SAMPLE);\n')
             self.insert_text('TAKEPOSE(COLLECT_SAMPLE);\n')
             self.insert_text('PUMP(%s,%s);\n'%(instruction[0],instruction[1]))
             self.insert_text('DO(0);\n')
+            self.insert_text('TAKEPOSE(INTERMEDIATE);\n')
             self.insert_text('TAKEPOSE(IRRADIATE);\n')
             self.insert_text('IRRD(%s);\n'%(instruction[2]))
+            self.insert_text('SPIN(255);\n')
+            self.insert_text('DO(0);\n')
+            self.insert_text('SPIN(0);\n')
+            self.insert_text('DO(0);\n')
+            self.insert_text('TAKEPOSE(INTERMEDIATE);\n')
             self.insert_text('TAKEPOSE(WELL_%s);\n\n'%(i))
         self.insert_text('MACRO(POST_EXPERIMENT);\n')
 

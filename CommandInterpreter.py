@@ -1,5 +1,6 @@
 import re
 import math
+import socket
 
 class CommandInterpreter:
     #refers to the maximum range of motion each servo has in degrees
@@ -15,11 +16,11 @@ class CommandInterpreter:
         self.max_angle=180
         self.num_servos=5
         self.pump_ofst = self.num_servos*(self.max_angle+1)
-        self.num_pumps = 3
+        self.num_pumps = 4
         self.max_steps = 3000
         self.num_switches = 2
         self.bit_ofst = self.num_pumps*(self.max_steps+1)+self.pump_ofst
-        self.spin_ofst = self.bit_ofst + self.num_switches*2
+        self.spin_ofst = self.bit_ofst + (self.num_switches*2)
         
 
     def get_encoded_command(self,command=None,cmd_type=''):
@@ -48,11 +49,25 @@ class CommandInterpreter:
             steps += 1500 #needs to convert to number in range -1500 -> 1500 to 0 -> 3000
             encoded_val = self.pump_ofst + pump_num*(self.max_steps+1) + steps
         elif cmd_type=='spin':
-            encoded_val = self.spin_ofst + int(paramList[0])
+            encoded_val = self.spin_ofst + int(paramList[0]) + 1
         elif cmd_type=='irrd':
-            pass
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            HOST = socket.gethostname()  # Standard loopback interface address (localhost)
+            PORT = 6181  # Port to listen on (non-privileged ports are > 1023)
+            s.bind((HOST,PORT))
+            s.listen(5)
+            clientsocket, addr = s.accept()
+            print(f"Connection to {addr} establshed")
+            msg = input()
+            if paramList[0] == "1":
+                msg = "FC  L3-1|PosSC|1.03"
+            else:
+                msg = "FC  L3-1|PosSC|0.03"
+            msg = (f"{len(msg):<10}"+msg)
+            clientsocket.send(bytes(msg, "utf-8"))
+            clientsocket.close()
         # elif cmd_type=='mckirrd':
-        #     pass
+             #pass
         elif cmd_type=='offset':
             self.x_ofst,self.y_ofst,self.z_ofst=[int(paramList[i]) for i in (0,1,2)]
 
@@ -126,7 +141,7 @@ class CommandInterpreter:
     def get_angle_from_coords(self,x,y,z,tilt=0.0):
         angle = []
         tilt = float(tilt)
-        length = [10.5, 9.0, 11.7 ,9.3]
+        length = [10.5, 9.0, 10.3 ,8]
         if x == 0 and z != 0:
             angle.append(90)
             if z<=0:
