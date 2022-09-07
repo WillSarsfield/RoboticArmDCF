@@ -1,0 +1,3 @@
+takepose(PRE_POUR_BETA);
+takepose(POUR_BETA);
+takepose(PRE_POUR_BETA);

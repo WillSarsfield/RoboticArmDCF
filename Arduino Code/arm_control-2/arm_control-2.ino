@@ -31,9 +31,9 @@ int spinPin = 6;
 int spinSpeed = 0;
 int bitPin[2] = {2,2};
 int bitPinVal[2] {0,0};
-int pumpPin[4] = {23,12,12,12};
-int directionPin[4] = {24,11,11,11};
-int enablePin[4] = {22,10,10,10};
+int pumpPin[4] = {23,26,29,32};
+int directionPin[4] = {24,27,30,33};
+int enablePin[4] = {22,25,28,31};
 bool pumpFlag[4] = {false, false, false, false};
 int steps[4] = {0,0,0,0};
 
@@ -42,21 +42,21 @@ void setup() {
   Serial.setTimeout(.1005);
   pwm.begin();
   pwm.setPWMFreq(FREQUENCY);
-  for (int x = 0; x < 4; x++){
+  for (int x = 0; x < 4; x++){//sets the mode of the syringe pump pins
     pinMode(pumpPin[x],OUTPUT);
     pinMode(directionPin[x],OUTPUT);
     pinMode(enablePin[x],OUTPUT); 
     pinMode(spinPin, OUTPUT);
     digitalWrite(enablePin[x],HIGH); 
   }
-  pinMode(bitPin, OUTPUT); 
+  pinMode(bitPin, OUTPUT); //sets the mode of the DC motor pin
   calibrate();
 }
 
-void calibrate(){//sets the physical motors to the correct start position when called
+void calibrate(){//sets the physical motors all to 0 after going through every angle
   for (int x  = 180; x >= 0; x -= 2){
     for (int y = 0; y < 4; y += 1){
-      ang[y] = x ;
+      ang[y] = x;
       delay(5);
       moveMotor(x ,motor[y]);
     }

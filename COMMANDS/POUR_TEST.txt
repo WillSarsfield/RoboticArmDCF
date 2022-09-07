@@ -1,0 +1,8 @@
+takepose(INTERMEDIATE);
+takepose(PRE_POUR_BETA_1);
+takepose(POUR_BETA_1);
+takepose(PRE_POUR_BETA_2);
+takepose(POUR_BETA_2);
+takepose(PRE_POUR_BETA_3);
+takepose(POUR_BETA_3);
+takepose(PRE_POUR_BETA_3);

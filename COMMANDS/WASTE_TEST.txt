@@ -1,0 +1,12 @@
+takepose(INTERMEDIATE);
+
+takepose(PRE_COLLECT_SAMPLE_2);
+takepose(COLLECT_SAMPLE_2);
+pump(1,-100);
+DO(0);
+takepose(PRE_COLLECT_SAMPLE_2);
+takepose(INTERMEDIATE);
+takepose(PRE_POUR_WASTE);
+takepose(POUR_WASTE);
+
+takepose(INTERMEDIATE);

@@ -1,6 +1,7 @@
 import re
 import math
 import socket
+import time
 
 class CommandInterpreter:
     #refers to the maximum range of motion each servo has in degrees
@@ -51,25 +52,9 @@ class CommandInterpreter:
         elif cmd_type=='spin':
             encoded_val = self.spin_ofst + int(paramList[0]) + 1
         elif cmd_type=='irrd':
-            #s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            HOST = socket.gethostname()  # Standard loopback interface address (localhost)
-            PORT = 6181  # Port to listen on (non-privileged ports are > 1023)
-            print(HOST)
-            #s.bind((HOST,PORT))
-            #s.listen(5)
-            #clientsocket, addr = s.accept()
-            #print(f"Connection to {addr} establshed")
-            #msg = input()
-            #if paramList[0] == "1":
-            #    msg = "FC  L3-1|PosSC|1.03"
-            #else:
-            #    msg = "FC  L3-1|PosSC|0.03"
-            #msg = (f"{len(msg):<10}"+msg)
-            #clientsocket.send(bytes(msg, "utf-8"))
-            #clientsocket.close()
+            encoded_val = 15000 + int(paramList[0])
         # elif cmd_type=='mckirrd':
-             #pass
-             
+             #pass   
         elif cmd_type=='offset':
             self.x_ofst,self.y_ofst,self.z_ofst=[int(paramList[i]) for i in (0,1,2)]
 
